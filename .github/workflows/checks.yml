@@ -31,3 +31,6 @@ jobs:
 
       - name: Build
         run: bun --bun install --frozen-lockfile && bun --bun run build
+
+      - name: Run unit tests
+        run: bun --bun test

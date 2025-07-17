@@ -4,6 +4,7 @@ import Link from 'next/link';
 import {
   PackageDetails,
 } from '@/lib/types';
+import { getPkgverWithoutBuildnum } from '@/lib/utils';
 import {
   Card,
   CardContent,
@@ -55,6 +56,10 @@ function BadgeList({ items }: { items: string[] | null | undefined }) {
 }
 
 export default function PackageDetailsComponent({ pkg }: Readonly<PackageDetailsComponentProps>) {
+  const rebuildedPackage = ['-core-', '-extra-'].some(needle => pkg.repo_name.includes(needle));
+  const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version);
+
+  console.log(rebuildedPackage);
   return (
     <>
       <div className="mb-4">
@@ -81,6 +86,18 @@ export default function PackageDetailsComponent({ pkg }: Readonly<PackageDetails
                 </a>
               ) : 'N/A'}
             </DetailRow>
+            {rebuildedPackage && pkg.pkg_base && (
+              <DetailRow label="Source Files">
+                <a
+                  href={`https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  View Source Files
+                </a>
+              </DetailRow>
+            )}
             <DetailRow label="License(s)"><BadgeList items={pkg.pkg_license} /></DetailRow>
             <DetailRow label="Build Date">{pkg.pkg_builddate ? new Date(pkg.pkg_builddate * 1000).toLocaleString() : 'unknown'}</DetailRow>
             <DetailRow label="Packager">{pkg.pkg_packager || 'Unknown Packager'}</DetailRow>

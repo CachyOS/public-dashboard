@@ -7,8 +7,8 @@ import {
   PackagesSearchQueryParams,
 } from '@/lib/types';
 import { searchPackages } from '@/lib/actions';
+import PackageSearchResultsTable from '@/components/PackageSearchResultsTable';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -18,14 +18,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Label } from '@/components/ui/label';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, AlertCircle } from 'lucide-react';
 
@@ -200,43 +192,7 @@ export default function PackageSearch() {
 
             {results.packages.length > 0 ? (
               <>
-                <div className="rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Package Name</TableHead>
-                        <TableHead>Version</TableHead>
-                        <TableHead>Repository</TableHead>
-                        <TableHead>Architecture</TableHead>
-                        <TableHead>Last Updated</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {results.packages.map(pkg => (
-                        <TableRow
-                          key={`${pkg.repo_name}-${pkg.pkg_name}-${pkg.pkg_arch}`}
-                        >
-                          <TableCell className="font-medium">
-                            <Link
-                              href={`/package/${encodeURIComponent(pkg.repo_name)}/${encodeURIComponent(pkg.pkg_arch)}/${encodeURIComponent(pkg.pkg_name)}`}
-                              className="text-primary hover:underline"
-                            >
-                              {pkg.pkg_name}
-                            </Link>
-                          </TableCell>
-                          <TableCell>{pkg.pkg_version}</TableCell>
-                          <TableCell>{pkg.repo_name}</TableCell>
-                          <TableCell>{pkg.pkg_arch}</TableCell>
-                          <TableCell>
-                            {new Date(
-                              pkg.pkg_builddate * 1000,
-                            ).toLocaleDateString()}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+                <PackageSearchResultsTable results={results} />
                 {/* Pagination Controls */}
                 <div className="flex items-center justify-end space-x-2">
                   <Button
@@ -269,64 +225,4 @@ export default function PackageSearch() {
       </div>
     </div>
   );
-
-  /*
-  useEffect(() => {
-    const fetchPackages = async () => {
-      try {
-        const response = await fetch(`localhost:5862/api/v1/packages-search?search=${search}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch packages");
-        }
-        const data = await response.json();
-        setPackages(data.packages);
-      } catch (err) {
-        setError(err.message);
-      }
-    };
-
-    const debounce = setTimeout(() => {
-      if (search) {
-        fetchPackages();
-      } else {
-        setPackages([]);
-      }
-    }, 500);
-
-    return () => clearTimeout(debounce);
-  }, [search]);
-  return (
-    <div className="container mx-auto p-4">
-      <input
-        type="text"
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search for packages..."
-        className="w-full p-2 border rounded"
-      />
-      {error && <p className="text-red-500">{error}</p>}
-      <table className="w-full mt-4 text-left table-auto">
-        <thead>
-          <tr>
-            <th className="px-4 py-2">Name</th>
-            <th className="px-4 py-2">Version</th>
-            <th className="px-4 py-2">Repository</th>
-            <th className="px-4 py-2">Architecture</th>
-            <th className="px-4 py-2">Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          {packages.map((pkg) => (
-            <tr key={`${pkg.repo_name}/${pkg.pkg_name}`}>
-              <td className="border px-4 py-2">{pkg.pkg_name}</td>
-              <td className="border px-4 py-2">{pkg.pkg_version}</td>
-              <td className="border px-4 py-2">{pkg.repo_name}</td>
-              <td className="border px-4 py-2">{pkg.pkg_arch}</td>
-              <td className="border px-4 py-2">{pkg.pkg_desc}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );*/
 }

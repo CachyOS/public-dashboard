@@ -1,21 +1,24 @@
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
-import { ThemeProvider } from '@/components/theme-provider';
+import type {Metadata} from 'next';
+
+import {Geist, Geist_Mono} from 'next/font/google';
+
+import {ThemeProvider} from '@/components/theme-provider';
+
 import './globals.css';
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+  subsets: ['latin'],
+  variable: '--font-geist-sans',
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  subsets: ['latin'],
+  variable: '--font-geist-mono',
 });
 
 export const metadata: Metadata = {
-  title: "Repo Manage Util UI",
-  description: "Dashboard for packages in your repositories",
+  description: 'Dashboard for packages in your repositories',
+  title: 'Repo Manage Util UI',
 };
 
 export default function RootLayout({
@@ -31,8 +34,8 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
-          enableSystem
           disableTransitionOnChange
+          enableSystem
         >
           {children}
         </ThemeProvider>

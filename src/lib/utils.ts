@@ -1,8 +1,8 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import {type ClassValue, clsx} from 'clsx';
+import {twMerge} from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
 
 /**
@@ -13,23 +13,23 @@ export function cn(...inputs: ClassValue[]) {
  *          Otherwise, returns the original pkgver string.
  */
 export function getPkgverWithoutBuildnum(pkgver: string): string {
-    // Find the last dash in the string.
-    const dashPos = pkgver.lastIndexOf('-');
+  // Find the last dash in the string.
+  const dashPos = pkgver.lastIndexOf('-');
 
-    // Ignore invalid package version.
-    if (dashPos === -1) {
-        return pkgver;
-    }
+  // Ignore invalid package version.
+  if (dashPos === -1) {
+    return pkgver;
+  }
 
-    const pkgrel = pkgver.slice(dashPos + 1);
-    const dotPos = pkgrel.indexOf('.');
+  const pkgrel = pkgver.slice(dashPos + 1);
+  const dotPos = pkgrel.indexOf('.');
 
-    // If no dot is found in the pkgrel, it means there's no build number suffix.
-    if (dotPos === -1) {
-        return pkgver;
-    }
+  // If no dot is found in the pkgrel, it means there's no build number suffix.
+  if (dotPos === -1) {
+    return pkgver;
+  }
 
-    // `dashPos` is the index of the last dash in `pkgver`.
-    // `dotPos` is the index of the first dot in `pkgrel`.
-    return pkgver.substring(0, dashPos + dotPos + 1);
+  // `dashPos` is the index of the last dash in `pkgver`.
+  // `dotPos` is the index of the first dot in `pkgrel`.
+  return pkgver.substring(0, dashPos + dotPos + 1);
 }

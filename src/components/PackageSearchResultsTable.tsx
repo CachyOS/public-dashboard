@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import {
   Table,
   TableBody,
@@ -7,9 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  PackageSearchResponse,
-} from '@/lib/types';
+import {PackageSearchResponse} from '@/lib/types';
 
 interface PackageSearchResultsTableProps {
   results: PackageSearchResponse;
@@ -32,13 +31,11 @@ export default function PackageSearchResultsTable({
         </TableHeader>
         <TableBody>
           {results.packages.map(pkg => (
-            <TableRow
-              key={`${pkg.repo_name}-${pkg.pkg_name}-${pkg.pkg_arch}`}
-            >
+            <TableRow key={`${pkg.repo_name}-${pkg.pkg_name}-${pkg.pkg_arch}`}>
               <TableCell className="font-medium">
                 <Link
-                  href={`/package/${encodeURIComponent(pkg.repo_name)}/${encodeURIComponent(pkg.pkg_arch)}/${encodeURIComponent(pkg.pkg_name)}`}
                   className="text-primary hover:underline"
+                  href={`/package/${encodeURIComponent(pkg.repo_name)}/${encodeURIComponent(pkg.pkg_arch)}/${encodeURIComponent(pkg.pkg_name)}`}
                 >
                   {pkg.pkg_name}
                 </Link>
@@ -47,9 +44,7 @@ export default function PackageSearchResultsTable({
               <TableCell>{pkg.repo_name}</TableCell>
               <TableCell>{pkg.pkg_arch}</TableCell>
               <TableCell>
-                {new Date(
-                  pkg.pkg_builddate * 1000,
-                ).toLocaleDateString()}
+                {new Date(pkg.pkg_builddate * 1000).toLocaleDateString()}
               </TableCell>
             </TableRow>
           ))}

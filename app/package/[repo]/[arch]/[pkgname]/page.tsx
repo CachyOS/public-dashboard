@@ -1,24 +1,29 @@
-import { notFound } from 'next/navigation';
-import { PackageArch, PackageRepo } from '@/lib/types';
-import { getPackageDetails } from '@/lib/actions';
+import {notFound} from 'next/navigation';
+
 import PackageDetailsComponent from '@/components/PackageDetails';
+import {getPackageDetails} from '@/lib/actions';
+import {PackageArch, PackageRepo} from '@/lib/types';
 
 // Define the page's props, which include the dynamic route params
 type PackageDetailsPageProps = {
-  repo: PackageRepo;
   arch: PackageArch;
   pkgname: string;
+  repo: PackageRepo;
 };
 
-export default async function PackageDetailsPage({ params }: { params: Promise<PackageDetailsPageProps>}) {
-  const { repo, arch, pkgname } = await params;
+export default async function PackageDetailsPage({
+  params,
+}: {
+  params: Promise<PackageDetailsPageProps>;
+}) {
+  const {arch, pkgname, repo} = await params;
 
   let packageResponse;
   try {
     packageResponse = await getPackageDetails({
-      repo: repo,
       arch: arch,
       pkgname: pkgname,
+      repo: repo,
     });
   } catch (error) {
     // render Next.js's default 404 page.

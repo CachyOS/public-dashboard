@@ -1,44 +1,45 @@
 'use client';
 
-import {
-  PackageRepo,
-  PackageArch,
-  PackageSearchResponse,
-  PackagesSearchQueryParams,
-} from '@/lib/types';
-import { searchPackages } from '@/lib/actions';
+import {AlertCircle, Loader2} from 'lucide-react';
+import {useEffect, useState} from 'react';
+
 import PackageSearchResultsTable from '@/components/PackageSearchResultsTable';
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
+import {Button} from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, AlertCircle } from 'lucide-react';
+import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
+import {searchPackages} from '@/lib/actions';
+import {
+  PackageArch,
+  PackageRepo,
+  PackageSearchResponse,
+  PackagesSearchQueryParams,
+} from '@/lib/types';
 
 export default function PackageSearch() {
   const [params, setParams] = useState<PackagesSearchQueryParams>({
-    search: '',
-    repo: '',
     arch: '',
     current_page: 1,
     page_size: 15,
+    repo: '',
+    search: '',
   });
 
-  const [results, setResults] = useState<PackageSearchResponse | null>(null);
+  const [results, setResults] = useState<null | PackageSearchResponse>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<null | string>(null);
 
   const handleSearch = async (page = 1) => {
     setIsLoading(true);
     setError(null);
 
-    const searchParams = { ...params, current_page: page };
+    const searchParams = {...params, current_page: page};
 
     try {
       const response = await searchPackages(searchParams);
@@ -71,19 +72,19 @@ export default function PackageSearch() {
   const onInputChange = (
     e:
       | React.ChangeEvent<HTMLInputElement>
-      | { target: { name: string; value: string } },
+      | {target: {name: string; value: string}}
   ) => {
-    const { name, value } = e.target;
-    setParams(prev => ({ ...prev, [name]: value }));
+    const {name, value} = e.target;
+    setParams(prev => ({...prev, [name]: value}));
   };
 
-  const handleSelectionChange = (name: 'repo' | 'arch', value: string) => {
+  const handleSelectionChange = (name: 'arch' | 'repo', value: string) => {
     const currentValues = params[name] ? params[name].split(',') : [];
     const newValues = currentValues.includes(value)
       ? currentValues.filter(v => v !== value)
       : [...currentValues, value];
 
-    onInputChange({ target: { name, value: newValues.join(',') } });
+    onInputChange({target: {name, value: newValues.join(',')}});
   };
 
   const repoValues = params.repo ? params.repo.split(',').filter(Boolean) : [];
@@ -92,16 +93,16 @@ export default function PackageSearch() {
   return (
     <div className="space-y-8">
       {/* Search Form */}
-      <form onSubmit={onFormSubmit} className="space-y-4">
+      <form className="space-y-4" onSubmit={onFormSubmit}>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="search">Package Name/Description</Label>
             <Input
               id="search"
               name="search"
+              onChange={onInputChange}
               placeholder="e.g., openssl"
               value={params.search}
-              onChange={onInputChange}
             />
           </div>
           <div className="space-y-2">
@@ -109,8 +110,8 @@ export default function PackageSearch() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant="outline"
                   className="w-full justify-start font-normal"
+                  variant="outline"
                 >
                   <div className="truncate">
                     {repoValues.length > 0
@@ -119,11 +120,11 @@ export default function PackageSearch() {
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="start">
+              <DropdownMenuContent align="start" className="w-56">
                 {Object.values(PackageRepo).map(repo => (
                   <DropdownMenuCheckboxItem
-                    key={repo}
                     checked={repoValues.includes(repo)}
+                    key={repo}
                     onCheckedChange={() => handleSelectionChange('repo', repo)}
                   >
                     {repo}
@@ -137,8 +138,8 @@ export default function PackageSearch() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  variant="outline"
                   className="w-full justify-start font-normal"
+                  variant="outline"
                 >
                   <div className="truncate">
                     {archValues.length > 0
@@ -147,11 +148,11 @@ export default function PackageSearch() {
                   </div>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="start">
+              <DropdownMenuContent align="start" className="w-56">
                 {Object.values(PackageArch).map(arch => (
                   <DropdownMenuCheckboxItem
-                    key={arch}
                     checked={archValues.includes(arch)}
+                    key={arch}
                     onCheckedChange={() => handleSelectionChange('arch', arch)}
                   >
                     {arch}
@@ -161,7 +162,7 @@ export default function PackageSearch() {
             </DropdownMenu>
           </div>
         </div>
-        <Button type="submit" disabled={isLoading}>
+        <Button disabled={isLoading} type="submit">
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -196,20 +197,20 @@ export default function PackageSearch() {
                 {/* Pagination Controls */}
                 <div className="flex items-center justify-end space-x-2">
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSearch(params.current_page! - 1)}
                     disabled={isLoading || params.current_page! <= 1}
+                    onClick={() => handleSearch(params.current_page! - 1)}
+                    size="sm"
+                    variant="outline"
                   >
                     Previous
                   </Button>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSearch(params.current_page! + 1)}
                     disabled={
                       isLoading || params.current_page! >= results.total_pages
                     }
+                    onClick={() => handleSearch(params.current_page! + 1)}
+                    size="sm"
+                    variant="outline"
                   >
                     Next
                   </Button>

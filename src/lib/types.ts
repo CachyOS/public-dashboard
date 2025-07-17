@@ -9,15 +9,15 @@ export const packageArchValues = Object.values(PackageArch);
 
 export enum PackageRepo {
   CACHYOS = 'cachyos',
-  CACHYOS_V3 = 'cachyos-v3',
   CACHYOS_CORE_V3 = 'cachyos-core-v3',
-  CACHYOS_EXTRA_V3 = 'cachyos-extra-v3',
-  CACHYOS_V4 = 'cachyos-v4',
   CACHYOS_CORE_V4 = 'cachyos-core-v4',
-  CACHYOS_EXTRA_V4 = 'cachyos-extra-v4',
-  CACHYOS_ZNVER4 = 'cachyos-znver4',
   CACHYOS_CORE_ZNVER4 = 'cachyos-core-znver4',
+  CACHYOS_EXTRA_V3 = 'cachyos-extra-v3',
+  CACHYOS_EXTRA_V4 = 'cachyos-extra-v4',
   CACHYOS_EXTRA_ZNVER4 = 'cachyos-extra-znver4',
+  CACHYOS_V3 = 'cachyos-v3',
+  CACHYOS_V4 = 'cachyos-v4',
+  CACHYOS_ZNVER4 = 'cachyos-znver4',
 }
 
 export const packageRepoValues = Object.values(PackageRepo);
@@ -27,65 +27,97 @@ export const packageRepoValues = Object.values(PackageRepo);
  */
 export interface BriefPackage {
   /**
-   * The name of the package.
-   */
-  pkg_name: string;
-  /**
-   * The name of the repository the package belongs to.
-   */
-  repo_name: PackageRepo;
-  /**
    * The architecture of the package.
    */
   pkg_arch: PackageArch;
   /**
-   * The version of the package.
+   * The timestamp (Unix epoch) when the package was last updated.
    */
-  pkg_version: string;
+  pkg_builddate: number;
   /**
    * A brief description of the package.
    */
   pkg_desc: string;
   /**
-   * The timestamp (Unix epoch) when the package was last updated.
+   * The name of the package.
    */
-  pkg_builddate: number;
+  pkg_name: string;
+  /**
+   * The version of the package.
+   */
+  pkg_version: string;
+  /**
+   * The name of the repository the package belongs to.
+   */
+  repo_name: PackageRepo;
 }
 
 /**
  * Detailed information for a specific package.
  */
 export interface PackageDetails {
-  repo_name: PackageRepo;
+  pkg_arch: null | PackageArch;
+  pkg_base: null | string;
+  pkg_builddate: null | number;
+  pkg_checkdepends: null | string[];
+  pkg_conflicts: null | string[];
+  pkg_csize: null | number;
+  pkg_depends: null | string[];
+  pkg_desc: null | string;
+  pkg_files: null | string[];
+  pkg_groups: null | string[];
+  pkg_isize: null | number;
+  pkg_license: null | string[];
+  pkg_makedepends: null | string[];
   pkg_name: string;
+  pkg_optdepends: null | string[];
+  pkg_packager: null | string;
+  pkg_pgpsig: null | string;
+  pkg_provides: null | string[];
+  pkg_replaces: null | string[];
+  pkg_sha256sum: null | string;
+  pkg_url: null | string;
   pkg_version: string;
-  pkg_base: string | null;
-  pkg_desc: string | null;
-  pkg_groups: string[] | null;
-  pkg_url: string | null;
-  pkg_license: string[] | null;
-  pkg_arch: PackageArch | null;
-  pkg_builddate: number | null;
-  pkg_packager: string | null;
-  pkg_csize: number | null;
-  pkg_isize: number | null;
-  pkg_sha256sum: string | null;
-  pkg_pgpsig: string | null;
-  pkg_replaces: string[] | null;
-  pkg_depends: string[] | null;
-  pkg_optdepends: string[] | null;
-  pkg_makedepends: string[] | null;
-  pkg_checkdepends: string[] | null;
-  pkg_conflicts: string[] | null;
-  pkg_provides: string[] | null;
-  pkg_files: string[] | null;
+  repo_name: PackageRepo;
   updated: number;
+}
+
+/**
+ * Path parameters for getting package details.
+ */
+export interface PackageDetailsPathParams {
+  /**
+   * The architecture of the package.
+   * @example "x86_64"
+   */
+  arch: PackageArch;
+  /**
+   * The name of the package.
+   * @example "openssl"
+   */
+  pkgname: string;
+  /**
+   * The name of the repository.
+   * @example "my-stable-repo"
+   */
+  repo: PackageRepo;
+}
+
+/**
+ * The response body for a successful package details request.
+ */
+export interface PackageDetailsResponse {
+  package: PackageDetails;
 }
 
 /**
  * The response schema for a package search request.
  */
 export interface PackageSearchResponse {
+  /**
+   * An array of packages matching the search criteria for the current page.
+   */
+  packages: BriefPackage[];
   /**
    * The total number of packages matching the search criteria.
    */
@@ -94,25 +126,12 @@ export interface PackageSearchResponse {
    * The total number of pages available.
    */
   total_pages: number;
-  /**
-   * An array of packages matching the search criteria for the current page.
-   */
-  packages: BriefPackage[];
 }
 
 /**
  * Query parameters for the package search endpoint.
  */
 export interface PackagesSearchQueryParams {
-  /**
-   * The search term to find packages by name or description.
-   */
-  search?: string;
-  /**
-   * A comma-separated list of repository names to filter by.
-   * @example "my-repo-1,my-repo-2"
-   */
-  repo?: string;
   /**
    * A comma-separated list of architectures to filter by.
    * @example "x86_64,aarch64"
@@ -128,32 +147,13 @@ export interface PackagesSearchQueryParams {
    * @default 100
    */
   page_size?: number;
-}
-
-/**
- * Path parameters for getting package details.
- */
-export interface PackageDetailsPathParams {
   /**
-   * The name of the repository.
-   * @example "my-stable-repo"
+   * A comma-separated list of repository names to filter by.
+   * @example "my-repo-1,my-repo-2"
    */
-  repo: PackageRepo;
+  repo?: string;
   /**
-   * The architecture of the package.
-   * @example "x86_64"
+   * The search term to find packages by name or description.
    */
-  arch: PackageArch;
-  /**
-   * The name of the package.
-   * @example "openssl"
-   */
-  pkgname: string;
-}
-
-/**
- * The response body for a successful package details request.
- */
-export interface PackageDetailsResponse {
-  package: PackageDetails;
+  search?: string;
 }

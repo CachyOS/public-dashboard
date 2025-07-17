@@ -1,40 +1,14 @@
 'use server';
 
+import {headers} from 'next/headers';
+
 import fetcher from '@/lib/fetcher';
 import {
+  PackageDetailsPathParams,
+  PackageDetailsResponse,
   PackageSearchResponse,
   PackagesSearchQueryParams,
-  PackageDetailsResponse,
-  PackageDetailsPathParams,
 } from '@/lib/types';
-
-import { headers } from 'next/headers';
-
-/**
- * Searches for packages across all repositories based on query parameters.
- *
- * @param params - The search, filter, and pagination parameters.
- * @returns A promise that resolves to the search results.
- */
-export async function searchPackages(
-  params: PackagesSearchQueryParams,
-): Promise<PackageSearchResponse> {
-  const query = new URLSearchParams();
-
-  if (params.search) query.append('search', params.search);
-  if (params.repo) query.append('repo', params.repo);
-  if (params.arch) query.append('arch', params.arch);
-  if (params.current_page) query.append('current_page', String(params.current_page));
-  if (params.page_size) query.append('page_size', String(params.page_size));
-
-  const queryString = query.toString();
-  const path = `/v1/packages-search${queryString ? `?${queryString}` : ''}`;
-
-  const clientHeaders = await headers();
-  return fetcher<PackageSearchResponse>(path, clientHeaders, {
-    method: 'GET',
-  });
-}
 
 /**
  * Retrieves detailed information for a specific package.
@@ -43,16 +17,43 @@ export async function searchPackages(
  * @returns A promise that resolves to the detailed package information.
  */
 export async function getPackageDetails(
-  params: PackageDetailsPathParams,
+  params: PackageDetailsPathParams
 ): Promise<PackageDetailsResponse> {
-  const { repo, arch, pkgname } = params;
+  const {arch, pkgname, repo} = params;
 
   const path = `/v1/package/${encodeURIComponent(repo)}/${encodeURIComponent(
-    arch,
+    arch
   )}/${encodeURIComponent(pkgname)}`;
 
   const clientHeaders = await headers();
   return fetcher<PackageDetailsResponse>(path, clientHeaders, {
+    method: 'GET',
+  });
+}
+
+/**
+ * Searches for packages across all repositories based on query parameters.
+ *
+ * @param params - The search, filter, and pagination parameters.
+ * @returns A promise that resolves to the search results.
+ */
+export async function searchPackages(
+  params: PackagesSearchQueryParams
+): Promise<PackageSearchResponse> {
+  const query = new URLSearchParams();
+
+  if (params.search) query.append('search', params.search);
+  if (params.repo) query.append('repo', params.repo);
+  if (params.arch) query.append('arch', params.arch);
+  if (params.current_page)
+    query.append('current_page', String(params.current_page));
+  if (params.page_size) query.append('page_size', String(params.page_size));
+
+  const queryString = query.toString();
+  const path = `/v1/packages-search${queryString ? `?${queryString}` : ''}`;
+
+  const clientHeaders = await headers();
+  return fetcher<PackageSearchResponse>(path, clientHeaders, {
     method: 'GET',
   });
 }

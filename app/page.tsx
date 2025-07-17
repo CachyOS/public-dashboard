@@ -1,3 +1,5 @@
+import PackageSearch from '@/components/PackageSearch';
+import {ThemeToggle} from '@/components/theme-toggle';
 import {
   Card,
   CardContent,
@@ -5,8 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import PackageSearch from "@/components/PackageSearch";
-import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function Home() {
   return (

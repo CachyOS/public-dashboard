@@ -55,11 +55,18 @@ function BadgeList({ items }: { items: string[] | null | undefined }) {
   );
 }
 
-export default function PackageDetailsComponent({ pkg }: Readonly<PackageDetailsComponentProps>) {
+function getArchLinuxSourceUrl(pkg: PackageDetails): string | null {
   const rebuildedPackage = ['-core-', '-extra-'].some(needle => pkg.repo_name.includes(needle));
+  if (!rebuildedPackage || !pkg.pkg_base) {
+    return null;
+  }
   const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version);
+  return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`;
+}
 
-  console.log(rebuildedPackage);
+export default function PackageDetailsComponent({ pkg }: Readonly<PackageDetailsComponentProps>) {
+  const sourceUrl = getArchLinuxSourceUrl(pkg);
+
   return (
     <>
       <div className="mb-4">
@@ -86,10 +93,10 @@ export default function PackageDetailsComponent({ pkg }: Readonly<PackageDetails
                 </a>
               ) : 'N/A'}
             </DetailRow>
-            {rebuildedPackage && pkg.pkg_base && (
+            {sourceUrl && (
               <DetailRow label="Source Files">
                 <a
-                  href={`https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`}
+                  href={sourceUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary hover:underline"

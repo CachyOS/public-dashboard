@@ -157,3 +157,5 @@ export interface PackagesSearchQueryParams {
    */
   search?: string;
 }
+
+export type SplitPackagesResponse = string[];

@@ -158,4 +158,20 @@ export interface PackagesSearchQueryParams {
   search?: string;
 }
 
-export type SplitPackagesResponse = string[];
+/**
+ * Query parameters for the split packages endpoint.
+ */
+export interface SplitPackagesQueryParams {
+  /**
+   * The name of the package base.
+   * @example "openssl"
+   */
+  pkgbase: string;
+  /**
+   * The name of the repository.
+   * @example "my-stable-repo"
+   */
+  repo: PackageRepo;
+}
+
+export type SplitPackagesResponse = BriefPackage[];

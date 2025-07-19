@@ -8,6 +8,7 @@ import {
   PackageDetailsResponse,
   PackageSearchResponse,
   PackagesSearchQueryParams,
+  SplitPackagesQueryParams,
   SplitPackagesResponse,
 } from '@/lib/types';
 
@@ -35,15 +36,16 @@ export async function getPackageDetails(
 /**
  * Retrieves the list of split packages for a given base package.
  *
- * @param repo - The repository name.
- * @param pkgbase - The base package name.
+ * @param params - The query parameters for the split packages request, including the package base and repository.
  * @returns A promise that resolves to an array of split package names.
  */
 export async function getSplitPackages(
-  repo: string,
-  pkgbase: string
+  params: SplitPackagesQueryParams
 ): Promise<SplitPackagesResponse> {
+  const {pkgbase, repo} = params;
+
   const path = `/v1/split/${encodeURIComponent(repo)}/${encodeURIComponent(pkgbase)}`;
+
   const clientHeaders = await headers();
   return fetcher<SplitPackagesResponse>(path, clientHeaders, {
     method: 'GET',

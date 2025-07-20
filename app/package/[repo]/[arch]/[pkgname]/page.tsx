@@ -1,3 +1,4 @@
+import {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 
 import PackageDetailsComponent from '@/components/PackageDetails';
@@ -10,6 +11,18 @@ type PackageDetailsPageProps = {
   pkgname: string;
   repo: PackageRepo;
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<PackageDetailsPageProps>;
+}): Promise<Metadata> {
+  const {arch, pkgname} = await params;
+
+  return {
+    title: `${pkgname} (${arch})`,
+  };
+}
 
 export default async function PackageDetailsPage({
   params,

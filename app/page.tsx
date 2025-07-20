@@ -1,3 +1,5 @@
+import {Metadata} from 'next';
+
 import PackageSearch from '@/components/PackageSearch';
 import {ThemeToggle} from '@/components/theme-toggle';
 import {
@@ -7,6 +9,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+
+export const metadata: Metadata = {
+  title: 'Package Search | CachyOS',
+};
 
 export default function Home() {
   return (

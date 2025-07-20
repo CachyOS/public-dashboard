@@ -17,8 +17,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  description: 'Dashboard for packages in your repositories',
-  title: 'Repo Manage Util UI',
+  title: {
+    default: 'CachyOS',
+    template: '%s | CachyOS',
+  },
 };
 
 export default function RootLayout({

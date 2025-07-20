@@ -1,5 +1,15 @@
 # CachyOS Repository Dashboard
 
+<div align="center">
+    <a href="example.png">
+        <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="example-dark.png">
+            <source media="(prefers-color-scheme: light)" srcset="example-light.png">
+            <img alt="Screenshot of the dashboard" src="example-light.png" width="600px">
+        </picture>
+    </a>
+</div>
+
 The web dashboard for the CachyOS repositories provides a user-friendly interface to search and view packages.
 
 ### Prerequisites

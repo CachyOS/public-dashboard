@@ -17,10 +17,10 @@ export async function generateMetadata({
 }: {
   params: Promise<PackageDetailsPageProps>;
 }): Promise<Metadata> {
-  const {arch, pkgname} = await params;
+  const {arch, pkgname, repo} = await params;
 
   return {
-    title: `${pkgname} (${arch})`,
+    title: `${pkgname} - ${repo} (${arch})`,
   };
 }
 

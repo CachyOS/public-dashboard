@@ -53,6 +53,14 @@ export interface BriefPackage {
 }
 
 /**
+ * Represents an error response from the API.
+ */
+export type ErrorResponse = {
+  code: number;
+  message: string;
+};
+
+/**
  * Detailed information for a specific package.
  */
 export interface PackageDetails {
@@ -157,3 +165,21 @@ export interface PackagesSearchQueryParams {
    */
   search?: string;
 }
+
+/**
+ * Query parameters for the split packages endpoint.
+ */
+export interface SplitPackagesQueryParams {
+  /**
+   * The name of the package base.
+   * @example "openssl"
+   */
+  pkgbase: string;
+  /**
+   * The name of the repository.
+   * @example "my-stable-repo"
+   */
+  repo: PackageRepo;
+}
+
+export type SplitPackagesResponse = BriefPackage[];

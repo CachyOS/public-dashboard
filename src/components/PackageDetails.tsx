@@ -2,6 +2,7 @@
 
 import {ArrowLeft} from 'lucide-react';
 import Link from 'next/link';
+import {useState} from 'react';
 
 import {Badge} from '@/components/ui/badge';
 import {
@@ -11,15 +12,17 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {PackageDetails} from '@/lib/types';
+import {BriefPackage, PackageDetails} from '@/lib/types';
 import {getPkgverWithoutBuildnum} from '@/lib/utils';
 
 type PackageDetailsComponentProps = {
   pkg: PackageDetails;
+  pkgSplits: BriefPackage[];
 };
 
 export default function PackageDetailsComponent({
   pkg,
+  pkgSplits,
 }: Readonly<PackageDetailsComponentProps>) {
   const sourceUrl = getArchLinuxSourceUrl(pkg);
 
@@ -69,6 +72,21 @@ export default function PackageDetailsComponent({
                 >
                   View Source Files
                 </a>
+              </DetailRow>
+            )}
+            {pkg.pkg_name === pkg.pkg_base && pkgSplits.length > 0 && (
+              <DetailRow label="Split Packages">
+                <SplitPackagesList splits={pkgSplits} />
+              </DetailRow>
+            )}
+            {pkg.pkg_name !== pkg.pkg_base && pkg.pkg_base && (
+              <DetailRow label="Base Package">
+                <Link
+                  className="text-primary hover:underline"
+                  href={`/package/${pkg.repo_name}/${pkg.pkg_arch}/${pkg.pkg_base}`}
+                >
+                  {pkg.pkg_base}
+                </Link>
               </DetailRow>
             )}
             <DetailRow label="License(s)">
@@ -179,4 +197,34 @@ function getArchLinuxSourceUrl(pkg: PackageDetails): null | string {
   }
   const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version);
   return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`;
+}
+
+// Component to display a list of split packages
+function SplitPackagesList({splits}: {splits: BriefPackage[]}) {
+  const [expanded, setExpanded] = useState(false);
+  const visibleSplits = expanded ? splits : splits.slice(0, 5);
+  const hasMore = splits.length > 5;
+
+  return (
+    <div className="flex flex-wrap gap-1 items-center">
+      {visibleSplits.map(split => (
+        <Link
+          className="text-primary hover:underline"
+          href={`/package/${split.repo_name}/${split.pkg_arch}/${split.pkg_name}`}
+          key={split.pkg_name}
+        >
+          {split.pkg_name}
+        </Link>
+      ))}
+      {hasMore && (
+        <button
+          className="text-primary hover:underline ml-2"
+          onClick={() => setExpanded(e => !e)}
+          type="button"
+        >
+          {expanded ? 'Less...' : 'More...'}
+        </button>
+      )}
+    </div>
+  );
 }

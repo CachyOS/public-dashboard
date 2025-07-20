@@ -3,7 +3,7 @@
 import {AlertCircle, Loader2} from 'lucide-react';
 import {useEffect, useState} from 'react';
 
-import PackageSearchResultsTable from '@/components/PackageSearchResultsTable';
+import PackageTable from '@/components/PackageTable';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {Button} from '@/components/ui/button';
 import {
@@ -175,55 +175,53 @@ export default function PackageSearch() {
       </form>
 
       {/* Results Section */}
-      <div className="results-area">
-        {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        {results && (
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Found {results.total_packages.toLocaleString()} packages. Page{' '}
-              {params.current_page} of {results.total_pages.toLocaleString()}.
+      {results && (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Found {results.total_packages.toLocaleString()} packages. Page{' '}
+            {params.current_page} of {results.total_pages.toLocaleString()}.
+          </p>
+
+          {results.packages.length > 0 ? (
+            <>
+              <PackageTable packages={results.packages} />
+              {/* Pagination Controls */}
+              <div className="flex items-center justify-end space-x-2">
+                <Button
+                  disabled={isLoading || params.current_page! <= 1}
+                  onClick={() => handleSearch(params.current_page! - 1)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Previous
+                </Button>
+                <Button
+                  disabled={
+                    isLoading || params.current_page! >= results.total_pages
+                  }
+                  onClick={() => handleSearch(params.current_page! + 1)}
+                  size="sm"
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              </div>
+            </>
+          ) : (
+            <p className="text-center text-muted-foreground">
+              No packages found matching your criteria.
             </p>
-
-            {results.packages.length > 0 ? (
-              <>
-                <PackageSearchResultsTable results={results} />
-                {/* Pagination Controls */}
-                <div className="flex items-center justify-end space-x-2">
-                  <Button
-                    disabled={isLoading || params.current_page! <= 1}
-                    onClick={() => handleSearch(params.current_page! - 1)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    disabled={
-                      isLoading || params.current_page! >= results.total_pages
-                    }
-                    onClick={() => handleSearch(params.current_page! + 1)}
-                    size="sm"
-                    variant="outline"
-                  >
-                    Next
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <p className="text-center text-muted-foreground">
-                No packages found matching your criteria.
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

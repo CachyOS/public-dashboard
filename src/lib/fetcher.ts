@@ -1,6 +1,8 @@
 // thanks to https://github.com/CachyOS/builder-dashboard/blob/main/lib/fetcher.ts ;)
 import {ReadonlyHeaders} from 'next/dist/server/web/spec-extension/adapters/headers';
 
+import {FetcherError} from './errors';
+
 const EndpointURL =
   process.env.PUBLIC_ENDPOINT_URL ?? 'http://localhost:5862/api';
 
@@ -28,12 +30,31 @@ export default async function fetcher<T>(
   }).then(res => processResponse<T>(res, responseMode));
 }
 
-export function processResponse<T>(
+export async function processResponse<T>(
   response: Response,
   mode: ResponseType
 ): Promise<T> {
-  switch (mode) {
-    case 'json':
-      return response.json() as Promise<T>;
+  if (mode !== 'json') {
+    throw new Error(
+      `Unsupported response mode "${mode}" for URL "${response.url}". Status: ${response.status} ${response.statusText}.`
+    );
   }
+
+  let json;
+  try {
+    json = await response.json();
+  } catch (error) {
+    console.warn(`Failed to parse JSON response from ${response.url}:`, error);
+    throw new FetcherError(response.status, 'Invalid JSON response');
+  }
+
+  if (!response.ok) {
+    throw new FetcherError(
+      response.status,
+      response.statusText || 'Fetch error',
+      json
+    );
+  }
+
+  return json satisfies Promise<T>;
 }

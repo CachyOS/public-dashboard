@@ -8,14 +8,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {PackageSearchResponse} from '@/lib/types';
+import {BriefPackage} from '@/lib/types';
 
 interface PackageSearchResultsTableProps {
-  results: PackageSearchResponse;
+  packages: BriefPackage[];
 }
 
-export default function PackageSearchResultsTable({
-  results,
+export default function PackageTable({
+  packages,
 }: PackageSearchResultsTableProps) {
   return (
     <div className="rounded-md border">
@@ -30,7 +30,7 @@ export default function PackageSearchResultsTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {results.packages.map(pkg => (
+          {packages.map(pkg => (
             <TableRow key={`${pkg.repo_name}-${pkg.pkg_name}-${pkg.pkg_arch}`}>
               <TableCell className="font-medium">
                 <Link

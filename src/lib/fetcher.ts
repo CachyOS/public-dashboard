@@ -24,6 +24,8 @@ export default async function fetcher<T>(
         '',
       ...init?.headers,
     },
+    // revalidate(expire) data after hour
+    next: {revalidate: 3600},
     ...init,
   }).then(res => processResponse<T>(res, responseMode));
 }

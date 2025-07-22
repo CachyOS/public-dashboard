@@ -43,5 +43,9 @@
     "typescript": "^5.8.3",
     "vite-tsconfig-paths": "^5.1.4",
     "vitest": "^3.2.4"
-  }
+  },
+  "trustedDependencies": [
+    "@tailwindcss/oxide",
+    "unrs-resolver"
+  ]
 }

@@ -24,7 +24,7 @@ env:
 jobs:
   test-build:
     runs-on: ubuntu-latest
-    container: oven/bun:1-slim
+    container: oven/bun:1-debian
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,5 +38,5 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.32.0
         with:
-          scan-type: 'fs'
+          scan-type: 'repo'
           scan-ref: '.'

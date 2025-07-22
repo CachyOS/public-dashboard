@@ -3,15 +3,15 @@ name: Dashboard Checks
 on:
   push:
     paths-ignore:
-    - '.github/ISSUE_TEMPLATE/**'
-    - '*.md'
-    - '*.sh'
-    - 'LICENSE'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '*.md'
+      - '*.sh'
+      - 'LICENSE'
     branches:
-    - develop
+      - develop
   pull_request:
     branches:
-    - develop
+      - develop
 
 concurrency:
   group: dashboard-checks-${{ github.ref }}
@@ -28,6 +28,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Cache
+        uses: actions/cache@v4
+        with:
+          # https://github.com/actions/cache/blob/main/examples.md#bun
+          path: |
+            ~/.bun/install/cache
+            ${{ github.workspace }}/.next/cache
+          # Generate a new cache whenever packages or source files change.
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
+          # If source files changed but packages didn't, rebuild from a prior cache.
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/bun.lock') }}-
 
       - name: Build
         run: bun --bun install --frozen-lockfile && bun --bun run build

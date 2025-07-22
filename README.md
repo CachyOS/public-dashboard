@@ -14,18 +14,20 @@ The web dashboard for the CachyOS repositories provides a user-friendly interfac
 
 ### Prerequisites
 
-*   [Node.js](https://nodejs.org/) (v20 or later)
-*   [Bun](https://bun.sh/) (v1.2 or later)
+- [Node.js](https://nodejs.org/) (v20 or later)
+- [Bun](https://bun.sh/) (v1.2 or later)
 
 ### Installation
 
 1.  Clone the repository:
+
     ```bash
     git clone https://github.com/cachyos/public-dashboard.git
     cd public-dashboard
     ```
 
 2.  Install the dependencies:
+
     ```bash
     bun --bun install
     ```
@@ -36,6 +38,24 @@ The web dashboard for the CachyOS repositories provides a user-friendly interfac
     ```
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
+
+## Testing
+
+This project uses [Vitest](https://vitest.dev/) and [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) for testing.
+
+### Running Tests
+
+To run all tests:
+
+```bash
+bun run test
+```
+
+### References
+
+- [Next.js Testing Guide](https://nextjs.org/docs/app/guides/testing/vitest)
+- [Vitest Documentation](https://vitest.dev/guide/)
+- [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/)
 
 ### Building for Production
 

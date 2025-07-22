@@ -9,10 +9,10 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@anthropic-ai/claude-code": "1.0.23",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
-    "better-call": "1.0.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.525.0",

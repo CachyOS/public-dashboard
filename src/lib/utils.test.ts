@@ -1,7 +1,9 @@
+import {describe, expect, test} from 'bun:test';
+
 import {getPkgverWithoutBuildnum} from './utils';
 
 describe('gather original pkgver without build number', () => {
-  it('simple', () => {
+  test('simple', () => {
     const expectedVal = '34-1';
     expect(getPkgverWithoutBuildnum('34-1')).toBe(expectedVal);
     expect(getPkgverWithoutBuildnum('34-1.1')).toBe(expectedVal);
@@ -11,7 +13,7 @@ describe('gather original pkgver without build number', () => {
     expect(getPkgverWithoutBuildnum('34-1.3\\@')).toBe(expectedVal);
     expect(getPkgverWithoutBuildnum('34-1.\\@')).toBe(expectedVal);
   });
-  it('complex', () => {
+  test('complex', () => {
     const expectedVal = '6.7.0git20240406-1';
     expect(getPkgverWithoutBuildnum('6.7.0git20240406-1')).toBe(expectedVal);
     expect(getPkgverWithoutBuildnum('6.7.0git20240406-1.1')).toBe(expectedVal);
@@ -25,7 +27,7 @@ describe('gather original pkgver without build number', () => {
       expectedVal
     );
   });
-  it('git ver', () => {
+  test('git ver', () => {
     const expectedVal = '1:0+374+9e8c5423-1';
     expect(getPkgverWithoutBuildnum('1:0+374+9e8c5423-1')).toBe(expectedVal);
     expect(getPkgverWithoutBuildnum('1:0+374+9e8c5423-1.1')).toBe(expectedVal);

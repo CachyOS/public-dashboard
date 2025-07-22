@@ -24,7 +24,7 @@ env:
 jobs:
   test-build:
     runs-on: ubuntu-latest
-    container: oven/bun:1-debian
+    container: oven/bun:1-slim
     steps:
       - name: Checkout
         uses: actions/checkout@v4

@@ -35,6 +35,9 @@ jobs:
       - name: Run unit tests
         run: bun --bun test
 
+      - name: Install curl
+        run: apt-get update && apt-get install -y curl
+
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@0.32.0
         with:

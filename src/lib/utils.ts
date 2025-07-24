@@ -6,6 +6,32 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
+ * Converts a URLSearchParams object into a more usable typed object format.
+ *
+ * @param params The `URLSearchParams` object to convert. Can be `null`.
+ * @returns A record representing the converted search parameters.
+ *
+ * @example
+ * const params = new URLSearchParams('q=test&filter=new&filter=active');
+ * const result = convertURLSearchParamsToObject(params);
+ * // result is { q: 'test', filter: ['new', 'active'] }
+ */
+export function convertURLSearchParamsToObject(
+  params: null | URLSearchParams
+): Record<string, readonly string[] | string> {
+  if (!params) {
+    return {};
+  }
+
+  const result: Record<string, readonly string[] | string> = {};
+  for (const key of params.keys()) {
+    const allValues = params.getAll(key);
+    result[key] = allValues.length > 1 ? allValues : allValues[0];
+  }
+  return result;
+}
+
+/**
  * Extracts the package version without the build number suffix.
  *
  * @param pkgver The full package version string (e.g., "1.0.0-1.2", "20230101-1", "1.2.3-1").

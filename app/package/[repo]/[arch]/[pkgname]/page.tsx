@@ -2,7 +2,7 @@ import {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 
 import PackageDetailsComponent from '@/components/PackageDetails';
-import SplitPackageDetails from '@/components/SplitPackageDetailts';
+import SplitPackageDetails from '@/components/SplitPackageDetails';
 import {getPackageDetails, getSplitPackages} from '@/lib/actions';
 import {FetcherError} from '@/lib/errors';
 import {

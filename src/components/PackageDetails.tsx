@@ -2,6 +2,7 @@
 
 import {ArrowLeft} from 'lucide-react';
 import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 import {useState} from 'react';
 
 import {Badge} from '@/components/ui/badge';
@@ -24,18 +25,20 @@ export default function PackageDetailsComponent({
   pkg,
   pkgSplits,
 }: Readonly<PackageDetailsComponentProps>) {
-  const sourceUrl = getArchLinuxSourceUrl(pkg);
+  const {back} = useRouter();
 
+  const sourceUrl = getArchLinuxSourceUrl(pkg);
   return (
     <>
       <div className="mb-4">
-        <Link
+        <button
           className="inline-flex items-center text-sm text-primary hover:underline"
-          href="/"
+          onClick={() => back()}
+          type="button"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Search
-        </Link>
+        </button>
       </div>
 
       <Card>

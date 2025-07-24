@@ -1,5 +1,7 @@
+'use client';
+
 import {ArrowLeft} from 'lucide-react';
-import Link from 'next/link';
+import {useRouter} from 'next/navigation';
 
 import {BriefPackage} from '@/lib/types';
 
@@ -17,16 +19,18 @@ export default function SplitPackageDetails({
   packages,
   pkgname,
 }: SplitPackageDetailsProps) {
+  const {back} = useRouter();
   return (
     <>
       <div className="mb-4">
-        <Link
+        <button
           className="inline-flex items-center text-sm text-primary hover:underline"
-          href="/"
+          onClick={() => back()}
+          type="button"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Search
-        </Link>
+        </button>
       </div>
       <Card>
         <CardHeader>

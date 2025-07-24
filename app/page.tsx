@@ -1,4 +1,5 @@
 import {Metadata} from 'next';
+import {Suspense} from 'react';
 
 import PackageSearch from '@/components/PackageSearch';
 import {ThemeToggle} from '@/components/theme-toggle';
@@ -31,7 +32,9 @@ export default function Home() {
             </div>
           </CardHeader>
           <CardContent>
-            <PackageSearch />
+            <Suspense fallback={<p>Loading...</p>}>
+              <PackageSearch />
+            </Suspense>
           </CardContent>
         </Card>
       </main>

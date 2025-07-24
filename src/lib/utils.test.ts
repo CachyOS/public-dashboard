@@ -1,6 +1,50 @@
 import {describe, expect, test} from 'bun:test';
 
-import {getPkgverWithoutBuildnum} from './utils';
+import {
+  convertURLSearchParamsToObject,
+  getPkgverWithoutBuildnum,
+} from './utils';
+
+describe('convertURLSearchParamsToObject', () => {
+  test('should return an empty object for null input', () => {
+    expect(convertURLSearchParamsToObject(null)).toEqual({});
+  });
+
+  test('should return an empty object for empty URLSearchParams', () => {
+    const params = new URLSearchParams('');
+    expect(convertURLSearchParamsToObject(params)).toEqual({});
+  });
+
+  test('should handle single values correctly', () => {
+    const params = new URLSearchParams('a=1&b=2');
+    expect(convertURLSearchParamsToObject(params)).toEqual({a: '1', b: '2'});
+  });
+
+  test('should handle multiple values correctly', () => {
+    const params = new URLSearchParams('a=1&a=2&b=3');
+    expect(convertURLSearchParamsToObject(params)).toEqual({
+      a: ['1', '2'],
+      b: '3',
+    });
+  });
+
+  test('should handle a mix of single and multiple values', () => {
+    const params = new URLSearchParams('a=1&b=2&b=3&c=4');
+    expect(convertURLSearchParamsToObject(params)).toEqual({
+      a: '1',
+      b: ['2', '3'],
+      c: '4',
+    });
+  });
+
+  test('should handle special characters in values', () => {
+    const params = new URLSearchParams('a=a%20b&b=c%26d');
+    expect(convertURLSearchParamsToObject(params)).toEqual({
+      a: 'a b',
+      b: 'c&d',
+    });
+  });
+});
 
 describe('gather original pkgver without build number', () => {
   test('simple', () => {

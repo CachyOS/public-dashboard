@@ -1,6 +1,7 @@
 'use client';
 
 import {AlertCircle, Loader2} from 'lucide-react';
+import {usePathname, useRouter, useSearchParams} from 'next/navigation';
 import {useEffect, useState} from 'react';
 
 import PackageTable from '@/components/PackageTable';
@@ -21,24 +22,44 @@ import {
   PackageSearchResponse,
   PackagesSearchQueryParams,
 } from '@/lib/types';
+import {convertURLSearchParamsToObject} from '@/lib/utils';
 
 export default function PackageSearch() {
+  const searchParams = convertURLSearchParamsToObject(
+    useSearchParams()
+  ) as PackagesSearchQueryParams;
+
+  const pathname = usePathname();
+  const {replace} = useRouter();
+
   const [params, setParams] = useState<PackagesSearchQueryParams>({
-    arch: '',
-    current_page: 1,
+    arch: searchParams?.arch || '',
+    current_page: Number(searchParams?.current_page) || 1,
     page_size: 15,
-    repo: '',
-    search: '',
+    repo: searchParams?.repo || '',
+    search: searchParams?.search || '',
   });
 
   const [results, setResults] = useState<null | PackageSearchResponse>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
+  const setSearchParams = (page = 1) => {
+    const query = new URLSearchParams();
+
+    if (params.search) query.append('search', params.search);
+    if (params.repo) query.append('repo', params.repo);
+    if (params.arch) query.append('arch', params.arch);
+    if (page > 1) query.append('current_page', String(page));
+
+    replace(`${pathname}?${query.toString()}`);
+  };
+
   const handleSearch = async (page = 1) => {
     setIsLoading(true);
     setError(null);
 
+    setSearchParams(page);
     const searchParams = {...params, current_page: page};
 
     try {
@@ -58,7 +79,7 @@ export default function PackageSearch() {
   // load search packages without params on page load
   useEffect(() => {
     setIsLoading(true);
-    handleSearch();
+    handleSearch(params.current_page);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -66,7 +87,7 @@ export default function PackageSearch() {
     e.preventDefault();
 
     // reset page
-    handleSearch();
+    handleSearch(params.current_page);
   };
 
   const onInputChange = (

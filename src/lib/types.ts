@@ -53,6 +53,31 @@ export interface BriefPackage {
 }
 
 /**
+ * Represents a cache entry.
+ * Each entry has a key, value, creation timestamp, and an optional time-to-live (TTL).
+ */
+export interface CacheEntry {
+  created_at: number;
+  key: string;
+  ttl: null | number;
+  value: null | string;
+}
+
+/**
+ * Options for configuring the cache.
+ * - `cleanupInterval`: How often to clean up expired entries (in milliseconds).
+ * - `defaultTtl`: Default time-to-live for cache entries (in milliseconds).
+ * - `filename`: The file where the cache is stored.
+ * - `maxSize`: Maximum number of entries in the cache.
+ */
+export interface CacheOptions {
+  cleanupInterval?: number;
+  defaultTtl?: number;
+  filename?: string;
+  maxSize?: number;
+}
+
+/**
  * Represents an error response from the API.
  */
 export type ErrorResponse = {

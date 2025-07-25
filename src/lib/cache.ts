@@ -1,4 +1,4 @@
-import {Database, Statement} from 'bun:sqlite';
+import {constants, Database, Statement} from 'bun:sqlite';
 
 import {CacheError} from '@/lib/errors';
 import {CacheEntry, CacheOptions} from '@/lib/types';
@@ -25,6 +25,10 @@ export class Cache {
     };
 
     this.store = new Database(this.options.filename);
+
+    // Enable Write-Ahead Logging (WAL) mode for better concurrency
+    this.store.exec('PRAGMA journal_mode = WAL;');
+
     this.initializeSchema();
 
     try {

@@ -3,6 +3,7 @@ import {describe, expect, test} from 'bun:test';
 import {
   convertURLSearchParamsToObject,
   getPkgverWithoutBuildnum,
+  parseTreeItemPath,
 } from '@/lib/utils';
 
 describe('convertURLSearchParamsToObject', () => {
@@ -84,5 +85,44 @@ describe('gather original pkgver without build number', () => {
     expect(getPkgverWithoutBuildnum('1:0+374+9e8c5423-1.\\@')).toBe(
       expectedVal
     );
+  });
+});
+
+describe('parseTreeItemPath', () => {
+  test.each([
+    {
+      expected: {pkgname: 'mkinitcpio', pkgpath: 'mkinitcpio'},
+      path: 'mkinitcpio/PKGBUILD',
+    },
+    {
+      expected: {pkgname: 'mesa', pkgpath: 'mesa/mesa'},
+      path: 'mesa/mesa/PKGBUILD',
+    },
+    {
+      expected: {pkgname: 'lib32-mesa', pkgpath: 'mesa/lib32-mesa'},
+      path: 'mesa/lib32-mesa/PKGBUILD',
+    },
+    {
+      expected: null,
+      path: 'mesa/lib32-mesa/.SRCINFO',
+    },
+    {
+      expected: null,
+      path: 'mesa/lib32-mesa',
+    },
+    {
+      expected: null,
+      path: 'mesa',
+    },
+    {
+      expected: null,
+      path: 'PKGBUILD',
+    },
+    {
+      expected: null,
+      path: '/PKGBUILD',
+    },
+  ])('parseTreeItemPath($path) returns $expected', ({expected, path}) => {
+    expect(parseTreeItemPath(path)).toEqual(expected);
   });
 });

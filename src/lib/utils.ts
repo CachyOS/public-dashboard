@@ -59,3 +59,21 @@ export function getPkgverWithoutBuildnum(pkgver: string): string {
   // `dotPos` is the index of the first dot in `pkgrel`.
   return pkgver.substring(0, dashPos + dotPos + 1);
 }
+
+/**
+ * Parses a GitHub repository tree item path to extract package name and path.
+ * @param path - The path of the tree item.
+ * @return An object containing the package name and path, or null if the path is invalid.
+ */
+export function parseTreeItemPath(path: string) {
+  if (!path.endsWith('/PKGBUILD')) {
+    return null;
+  }
+  const parts = path.split('/');
+  const pkgname = parts.at(-2);
+  if (!pkgname) {
+    return null;
+  }
+  const pkgpath = parts.slice(0, -1).join('/');
+  return {pkgname, pkgpath};
+}

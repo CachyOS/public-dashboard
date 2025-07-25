@@ -197,8 +197,9 @@ function getSourceUrl(pkg: PackageDetails): null | string {
     return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`;
   }
 
-  if (cache.hasKey(pkg.pkg_name)) {
-    return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${pkg.pkg_name}`;
+  const pkgpath = cache.get<string>(pkg.pkg_name);
+  if (pkgpath) {
+    return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${pkgpath}`;
   }
 
   return null;

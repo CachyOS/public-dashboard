@@ -25,13 +25,15 @@ const cachyRepoRefreshJob = new Cron('@hourly', async () => {
       continue;
     }
 
-    const cacheKey = item.path.split('/').at(-2);
+    const items = item.path.split('/');
+    const cacheKey = items.at(-2);
     if (!cacheKey) {
       continue;
     }
+    const pkgpath = items.slice(0, -1).join('/');
 
-    cache.put(cacheKey, null);
-    console.log(`Cached ${item.path} with key ${cacheKey}`);
+    cache.put(cacheKey, pkgpath);
+    console.log(`Cached ${pkgpath} with key ${cacheKey}`);
   }
 });
 

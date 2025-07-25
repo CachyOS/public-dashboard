@@ -19,7 +19,7 @@ type PackageDetailsComponentProps = {
   pkgSplits: BriefPackage[];
 };
 
-export default async function PackageDetailsComponent({
+export default function PackageDetailsComponent({
   pkg,
   pkgSplits,
 }: Readonly<PackageDetailsComponentProps>) {

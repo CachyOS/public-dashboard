@@ -1,4 +1,4 @@
-import {ErrorResponse} from './types';
+import {ErrorResponse} from '@/lib/types';
 
 export class CacheError extends Error {
   constructor(

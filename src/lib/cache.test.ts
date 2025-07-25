@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, setSystemTime} from 'bun:test';
 
-import {Cache} from './cache';
+import {Cache} from '@/lib/cache';
 
 describe('Cache', () => {
   let cache: Cache;
@@ -67,19 +67,6 @@ describe('Cache', () => {
     expect(cache.delete('del-key')).toBe(true);
     expect(cache.get('del-key')).toBeNull();
     expect(cache.delete('del-key')).toBe(false);
-  });
-
-  it('should enforce max size', () => {
-    const smallCache = new Cache({maxSize: 3});
-    smallCache.put('k1', 1);
-    smallCache.put('k2', 2);
-    smallCache.put('k3', 3);
-    smallCache.put('k4', 4);
-    expect(smallCache.size()).toBeLessThanOrEqual(3);
-    expect(smallCache.get('k1')).toBeNull(); // k1 should be evicted
-    expect(smallCache.get<number>('k2')).toBe(2);
-    expect(smallCache.get<number>('k3')).toBe(3);
-    expect(smallCache.get<number>('k4')).toBe(4);
   });
 
   it('should cleanup expired entries', () => {

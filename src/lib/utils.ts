@@ -1,4 +1,5 @@
 import {type ClassValue, clsx} from 'clsx';
+import {SearchParams} from 'next/dist/server/request/search-params';
 import {twMerge} from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {

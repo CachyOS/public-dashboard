@@ -1,7 +1,7 @@
 // thanks to https://github.com/CachyOS/builder-dashboard/blob/main/lib/fetcher.ts ;)
 import {ReadonlyHeaders} from 'next/dist/server/web/spec-extension/adapters/headers';
 
-import {FetcherError} from './errors';
+import {FetcherError} from '@/lib/errors';
 
 const EndpointURL =
   process.env.PUBLIC_ENDPOINT_URL ?? 'http://localhost:5862/api';

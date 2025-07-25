@@ -22,7 +22,6 @@ export class Cache {
       cleanupInterval: options.cleanupInterval ?? 300_000, // 5 minutes
       defaultTtl: options.defaultTtl ?? 3_600_000, // 1 hour default
       filename: options.filename || ':memory:', // Default to in-memory database
-      maxSize: options.maxSize ?? 10_000,
     };
 
     this.store = new Database(this.options.filename);
@@ -181,9 +180,6 @@ export class Cache {
     const currentTime = Date.now();
 
     try {
-      // Check if we need to make room
-      this.enforceMaxSize();
-
       const serializedValue = value === true ? null : JSON.stringify(value);
 
       this.statements.put.run(
@@ -208,24 +204,6 @@ export class Cache {
       return result.count;
     } catch (error) {
       throw new CacheError(`Failed to get cache size: ${error}`, 'size');
-    }
-  }
-
-  private enforceMaxSize() {
-    const currentSize = this.size();
-    if (currentSize >= this.options.maxSize) {
-      const toRemove = Math.max(1, Math.floor(this.options.maxSize * 0.1)); // Remove 10%
-      this.store.run(
-        `
-        DELETE FROM cache 
-        WHERE key IN (
-          SELECT key FROM cache 
-          ORDER BY created_at ASC 
-          LIMIT ?
-        )
-      `,
-        [toRemove]
-      );
     }
   }
 

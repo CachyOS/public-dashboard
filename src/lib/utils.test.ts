@@ -3,7 +3,7 @@ import {describe, expect, test} from 'bun:test';
 import {
   convertURLSearchParamsToObject,
   getPkgverWithoutBuildnum,
-} from './utils';
+} from '@/lib/utils';
 
 describe('convertURLSearchParamsToObject', () => {
   test('should return an empty object for null input', () => {

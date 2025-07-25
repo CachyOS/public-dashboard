@@ -3,10 +3,9 @@
 import {ArrowLeft} from 'lucide-react';
 import {useRouter} from 'next/navigation';
 
+import PackageTable from '@/components/PackageTable';
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import {BriefPackage} from '@/lib/types';
-
-import PackageTable from './PackageTable';
-import {Card, CardContent, CardHeader, CardTitle} from './ui/card';
 
 interface SplitPackageDetailsProps {
   arch: string;

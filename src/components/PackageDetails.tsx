@@ -1,10 +1,7 @@
-'use client';
-
 import {ArrowLeft} from 'lucide-react';
 import Link from 'next/link';
-import {useRouter} from 'next/navigation';
-import {useState} from 'react';
 
+import {SplitPackagesList} from '@/components/SplitPackagesList';
 import {Badge} from '@/components/ui/badge';
 import {
   Card,
@@ -13,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {cache} from '@/globals';
 import {BriefPackage, PackageDetails} from '@/lib/types';
 import {getPkgverWithoutBuildnum} from '@/lib/utils';
 
@@ -21,24 +19,22 @@ type PackageDetailsComponentProps = {
   pkgSplits: BriefPackage[];
 };
 
-export default function PackageDetailsComponent({
+export default async function PackageDetailsComponent({
   pkg,
   pkgSplits,
 }: Readonly<PackageDetailsComponentProps>) {
-  const {back} = useRouter();
+  const sourceUrl = getSourceUrl(pkg);
 
-  const sourceUrl = getArchLinuxSourceUrl(pkg);
   return (
     <>
       <div className="mb-4">
-        <button
+        <Link
           className="inline-flex items-center text-sm text-primary hover:underline"
-          onClick={() => back()}
-          type="button"
+          href="/"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Search
-        </button>
+        </Link>
       </div>
 
       <Card>
@@ -191,43 +187,19 @@ function formatBytes(bytes: number, decimals = 2): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
-function getArchLinuxSourceUrl(pkg: PackageDetails): null | string {
+function getSourceUrl(pkg: PackageDetails): null | string {
   const rebuildedPackage = ['-core-', '-extra-'].some(needle =>
     pkg.repo_name.includes(needle)
   );
-  if (!rebuildedPackage || !pkg.pkg_base) {
-    return null;
+
+  if (rebuildedPackage && pkg.pkg_base) {
+    const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version);
+    return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`;
   }
-  const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version);
-  return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`;
-}
 
-// Component to display a list of split packages
-function SplitPackagesList({splits}: {splits: BriefPackage[]}) {
-  const [expanded, setExpanded] = useState(false);
-  const visibleSplits = expanded ? splits : splits.slice(0, 5);
-  const hasMore = splits.length > 5;
+  if (cache.hasKey(pkg.pkg_name)) {
+    return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${pkg.pkg_name}`;
+  }
 
-  return (
-    <div className="flex flex-wrap gap-1 items-center">
-      {visibleSplits.map(split => (
-        <Link
-          className="text-primary hover:underline"
-          href={`/package/${split.repo_name}/${split.pkg_arch}/${split.pkg_name}`}
-          key={split.pkg_name}
-        >
-          {split.pkg_name}
-        </Link>
-      ))}
-      {hasMore && (
-        <button
-          className="text-primary hover:underline ml-2"
-          onClick={() => setExpanded(e => !e)}
-          type="button"
-        >
-          {expanded ? 'Less...' : 'More...'}
-        </button>
-      )}
-    </div>
-  );
+  return null;
 }

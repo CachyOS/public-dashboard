@@ -74,7 +74,6 @@ export interface CacheOptions {
   cleanupInterval?: number;
   defaultTtl?: number;
   filename?: string;
-  maxSize?: number;
 }
 
 /**
@@ -83,6 +82,29 @@ export interface CacheOptions {
 export type ErrorResponse = {
   code: number;
   message: string;
+};
+
+/**
+ * Represents a GitHub repository tree structure.
+ * This is used to represent the file structure of a repository.
+ */
+export type GitHubRepositoryTree = {
+  sha: string;
+  tree: GitHubTreeItem[];
+  truncated: boolean;
+  url: string;
+};
+
+/**
+ * Represents an item in a GitHub repository tree.
+ * Each item has a mode, path, SHA, type, and URL.
+ */
+export type GitHubTreeItem = {
+  mode: string;
+  path: string;
+  sha: string;
+  type: string;
+  url: string;
 };
 
 /**

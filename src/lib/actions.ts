@@ -4,6 +4,7 @@ import {headers} from 'next/headers';
 
 import fetcher from '@/lib/fetcher';
 import {
+  GitHubRepositoryTree,
   PackageDetailsPathParams,
   PackageDetailsResponse,
   PackageSearchResponse,
@@ -11,6 +12,33 @@ import {
   SplitPackagesQueryParams,
   SplitPackagesResponse,
 } from '@/lib/types';
+
+/**
+ * Get GitHub repository tree for CachyOS/CachyOS-PKGBUILDS.
+ * @see https://docs.github.com/en/rest/git/trees
+ * @param branch - The branch to fetch the tree from, defaults to 'master'.
+ * @param recursive - Whether to fetch the tree recursively, defaults to true.
+ * @return A promise that resolves to the repository tree.
+ */
+export async function getGitHubRepoTree(
+  branch: string = 'master',
+  recursive: boolean = true
+): Promise<GitHubRepositoryTree> {
+  const path = `repos/CachyOS/CachyOS-PKGBUILDS/git/trees/${encodeURIComponent(branch)}?recursive=${String(recursive)}`;
+
+  return fetcher<GitHubRepositoryTree>(
+    path,
+    new Headers(),
+    {
+      headers: {
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      method: 'GET',
+    },
+    `https://api.github.com/`
+  );
+}
 
 /**
  * Retrieves detailed information for a specific package.

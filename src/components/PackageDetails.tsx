@@ -1,10 +1,7 @@
-'use client';
-
-import {ArrowLeft} from 'lucide-react';
 import Link from 'next/link';
-import {useRouter} from 'next/navigation';
-import {useState} from 'react';
 
+import BackButton from '@/components/BackButton';
+import SplitPackagesList from '@/components/SplitPackagesList';
 import {Badge} from '@/components/ui/badge';
 import {
   Card,
@@ -26,20 +23,11 @@ export default function PackageDetailsComponent({
   pkg,
   pkgSplits,
 }: Readonly<PackageDetailsComponentProps>) {
-  const {back} = useRouter();
-
   const sourceUrl = getSourceUrl(pkg);
   return (
     <>
       <div className="mb-4">
-        <button
-          className="inline-flex items-center text-sm text-primary hover:underline"
-          onClick={() => back()}
-          type="button"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Search
-        </button>
+        <BackButton />
       </div>
 
       <Card>
@@ -208,34 +196,4 @@ function getSourceUrl(pkg: PackageDetails): null | string {
 
   const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version);
   return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`;
-}
-
-// Component to display a list of split packages
-function SplitPackagesList({splits}: {splits: BriefPackage[]}) {
-  const [expanded, setExpanded] = useState(false);
-  const visibleSplits = expanded ? splits : splits.slice(0, 5);
-  const hasMore = splits.length > 5;
-
-  return (
-    <div className="flex flex-wrap gap-1 items-center">
-      {visibleSplits.map(split => (
-        <Link
-          className="text-primary hover:underline"
-          href={`/package/${split.repo_name}/${split.pkg_arch}/${split.pkg_name}`}
-          key={split.pkg_name}
-        >
-          {split.pkg_name}
-        </Link>
-      ))}
-      {hasMore && (
-        <button
-          className="text-primary hover:underline ml-2"
-          onClick={() => setExpanded(e => !e)}
-          type="button"
-        >
-          {expanded ? 'Less...' : 'More...'}
-        </button>
-      )}
-    </div>
-  );
 }

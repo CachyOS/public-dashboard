@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {cachyosPaths} from '@/lib/cachy';
 import {BriefPackage, PackageDetails} from '@/lib/types';
 import {getPkgverWithoutBuildnum} from '@/lib/utils';
 
@@ -27,7 +28,7 @@ export default function PackageDetailsComponent({
 }: Readonly<PackageDetailsComponentProps>) {
   const {back} = useRouter();
 
-  const sourceUrl = getArchLinuxSourceUrl(pkg);
+  const sourceUrl = getSourceUrl(pkg);
   return (
     <>
       <div className="mb-4">
@@ -191,13 +192,20 @@ function formatBytes(bytes: number, decimals = 2): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
-function getArchLinuxSourceUrl(pkg: PackageDetails): null | string {
-  const rebuildedPackage = ['-core-', '-extra-'].some(needle =>
+function getSourceUrl(pkg: PackageDetails): null | string {
+  const isRebuilded = ['-core-', '-extra-'].some(needle =>
     pkg.repo_name.includes(needle)
   );
-  if (!rebuildedPackage || !pkg.pkg_base) {
+
+  const cachyosPath = cachyosPaths[pkg.pkg_name as keyof typeof cachyosPaths];
+  if (!isRebuilded && cachyosPath) {
+    return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${cachyosPath}`;
+  }
+
+  if (!isRebuilded || !pkg.pkg_base) {
     return null;
   }
+
   const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version);
   return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`;
 }

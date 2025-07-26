@@ -1,5 +1,5 @@
 // https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master
-export const cachyosPaths: Record<string, string> = {
+export const cachyosPaths = {
   adaptivemm: 'adaptivemm',
   'adios-dkms': 'adios-dkms',
   'archlinux-keyring': 'archlinux-keyring',

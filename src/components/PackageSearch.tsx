@@ -213,7 +213,15 @@ export default function PackageSearch() {
 
           {results.packages.length > 0 ? (
             <>
-              <PackageTable packages={results.packages} />
+              <PackageTable
+                onArchitectureClick={arch => {
+                  handleSelectionChange('arch', arch);
+                }}
+                onRepositoryClick={repo => {
+                  handleSelectionChange('repo', repo);
+                }}
+                packages={results.packages}
+              />
               {/* Pagination Controls */}
               <div className="flex items-center justify-end space-x-2">
                 <Button

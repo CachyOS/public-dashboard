@@ -11,10 +11,14 @@ import {
 import {BriefPackage} from '@/lib/types';
 
 interface PackageSearchResultsTableProps {
+  onArchitectureClick?: (arch: string) => void;
+  onRepositoryClick?: (repo: string) => void;
   packages: BriefPackage[];
 }
 
 export default function PackageTable({
+  onArchitectureClick,
+  onRepositoryClick,
   packages,
 }: PackageSearchResultsTableProps) {
   return (
@@ -41,8 +45,18 @@ export default function PackageTable({
                 </Link>
               </TableCell>
               <TableCell>{pkg.pkg_version}</TableCell>
-              <TableCell>{pkg.repo_name}</TableCell>
-              <TableCell>{pkg.pkg_arch}</TableCell>
+              <TableCell
+                className="cursor-pointer text-primary hover:underline"
+                onClick={() => onRepositoryClick?.(pkg.repo_name)}
+              >
+                {pkg.repo_name}
+              </TableCell>
+              <TableCell
+                className="cursor-pointer text-primary hover:underline"
+                onClick={() => onArchitectureClick?.(pkg.pkg_arch)}
+              >
+                {pkg.pkg_arch}
+              </TableCell>
               <TableCell>
                 {new Date(pkg.pkg_builddate * 1000).toLocaleDateString()}
               </TableCell>

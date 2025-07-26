@@ -193,16 +193,19 @@ function formatBytes(bytes: number, decimals = 2): string {
 }
 
 function getSourceUrl(pkg: PackageDetails): null | string {
-  const path = cachyosPaths[pkg.pkg_name as keyof typeof cachyosPaths];
-  if (path) {
-    return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${path}`;
-  }
-  const rebuildedPackage = ['-core-', '-extra-'].some(needle =>
+  const isRebuilded = ['-core-', '-extra-'].some(needle =>
     pkg.repo_name.includes(needle)
   );
-  if (!rebuildedPackage || !pkg.pkg_base) {
+
+  const cachyosPath = cachyosPaths[pkg.pkg_name as keyof typeof cachyosPaths];
+  if (!isRebuilded && cachyosPath) {
+    return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${cachyosPath}`;
+  }
+
+  if (!isRebuilded || !pkg.pkg_base) {
     return null;
   }
+
   const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version);
   return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`;
 }

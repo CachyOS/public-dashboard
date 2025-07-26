@@ -40,7 +40,7 @@ describe('processResponse', () => {
     });
     expect(processResponse(res, 'json')).rejects.toThrow(FetcherError);
     expect(processResponse(res, 'json')).rejects.toMatchObject({
-      payload: {error: 'not found'},
+      payload: JSON.stringify({error: 'not found'}),
       status: 404,
     });
   });

@@ -53,14 +53,6 @@ export interface BriefPackage {
 }
 
 /**
- * Represents an error response from the API.
- */
-export type ErrorResponse = {
-  code: number;
-  message: string;
-};
-
-/**
  * Detailed information for a specific package.
  */
 export interface PackageDetails {

@@ -1,9 +1,7 @@
-import {ErrorResponse} from './types';
-
 export class FetcherError extends Error {
-  payload?: ErrorResponse;
+  payload?: string;
   status: number;
-  constructor(status: number, message: string, payload?: ErrorResponse) {
+  constructor(status: number, message: string, payload?: string) {
     super(message);
     this.name = 'FetcherError';
     this.status = status;

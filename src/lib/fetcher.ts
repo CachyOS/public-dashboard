@@ -54,7 +54,7 @@ export async function processResponse<T>(
     throw new FetcherError(
       response.status,
       response.statusText || 'Fetch error',
-      json
+      JSON.stringify(json)
     );
   }
 

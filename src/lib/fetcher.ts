@@ -1,7 +1,8 @@
 // thanks to https://github.com/CachyOS/builder-dashboard/blob/main/lib/fetcher.ts ;)
 import {ReadonlyHeaders} from 'next/dist/server/web/spec-extension/adapters/headers';
 
-import {FetcherError} from './errors';
+import {FetcherError} from '@/lib/errors';
+import {ErrorResponse} from '@/lib/types';
 
 const EndpointURL =
   process.env.PUBLIC_ENDPOINT_URL ?? 'http://localhost:5862/api';
@@ -51,10 +52,10 @@ export async function processResponse<T>(
   }
 
   if (!response.ok) {
+    const errorResponse = json as ErrorResponse;
     throw new FetcherError(
-      response.status,
-      response.statusText || 'Fetch error',
-      JSON.stringify(json)
+      errorResponse.code || response.status,
+      errorResponse.message || response.statusText || 'Fetch error'
     );
   }
 

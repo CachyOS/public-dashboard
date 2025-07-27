@@ -1,12 +1,10 @@
-import {ErrorResponse} from './types';
-
 export class FetcherError extends Error {
-  payload?: ErrorResponse;
   status: number;
-  constructor(status: number, message: string, payload?: ErrorResponse) {
+  constructor(status: number, message: string, cause?: string, stack?: string) {
     super(message);
     this.name = 'FetcherError';
     this.status = status;
-    this.payload = payload;
+    this.cause = cause || 'Unknown cause';
+    this.stack = stack || new Error().stack;
   }
 }

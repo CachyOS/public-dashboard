@@ -54,7 +54,7 @@ export async function processResponse<T>(
   if (!response.ok) {
     const errorResponse = json as ErrorResponse;
     throw new FetcherError(
-      errorResponse.code || response.status,
+      Number(errorResponse.code) || response.status,
       errorResponse.message || response.statusText || 'Fetch error'
     );
   }

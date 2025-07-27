@@ -1,201 +1,93 @@
 'use client';
 
-import {AlertCircle, Loader2} from 'lucide-react';
+import {AlertCircle} from 'lucide-react';
 import {usePathname, useRouter, useSearchParams} from 'next/navigation';
-import {useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 
+import PackageSearchForm from '@/components/PackageSearchForm';
 import PackageTable from '@/components/PackageTable';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {Button} from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {Input} from '@/components/ui/input';
-import {Label} from '@/components/ui/label';
 import {searchPackages} from '@/lib/actions';
-import {
-  PackageArch,
-  PackageRepo,
-  PackageSearchResponse,
-  PackagesSearchQueryParams,
-} from '@/lib/types';
-import {convertURLSearchParamsToObject} from '@/lib/utils';
+import {PackageSearchResponse, PackagesSearchQueryParams} from '@/lib/types';
 
 export default function PackageSearch() {
-  const searchParams = convertURLSearchParamsToObject(
-    useSearchParams()
-  ) as PackagesSearchQueryParams;
-
+  const {push} = useRouter();
   const pathname = usePathname();
-  const {replace} = useRouter();
+  const currentParams = useSearchParams();
 
-  const [params, setParams] = useState<PackagesSearchQueryParams>({
-    arch: searchParams?.arch || '',
-    current_page: Number(searchParams?.current_page) || 1,
-    page_size: 15,
-    repo: searchParams?.repo || '',
-    search: searchParams?.search || '',
-  });
+  const parsedParams = useMemo(
+    () =>
+      ({
+        arch: currentParams.get('arch') || '',
+        current_page: Number(currentParams.get('current_page')) || 1,
+        page_size: 15,
+        repo: currentParams.getAll('repo').join(','),
+        search: currentParams.getAll('search').join(','),
+      }) satisfies PackagesSearchQueryParams,
+    [currentParams]
+  );
 
+  // TODO: Replace with Tanstack Query or SWR for better data fetching and caching.
   const [results, setResults] = useState<null | PackageSearchResponse>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<null | string>(null);
 
-  const setSearchParams = (page = 1) => {
-    const query = new URLSearchParams();
+  const setSearchParams = useCallback(
+    (searchParams: PackagesSearchQueryParams) => {
+      const query = new URLSearchParams();
 
-    if (params.search) query.append('search', params.search);
-    if (params.repo) query.append('repo', params.repo);
-    if (params.arch) query.append('arch', params.arch);
-    if (page > 1) query.append('current_page', String(page));
+      if (searchParams.search) query.append('search', searchParams.search);
+      if (searchParams.repo) query.append('repo', searchParams.repo);
+      if (searchParams.arch) query.append('arch', searchParams.arch);
+      if (searchParams.current_page && searchParams.current_page > 1)
+        query.append('current_page', String(searchParams.current_page));
 
-    replace(`${pathname}?${query.toString()}`);
-  };
+      push(`${pathname}?${query.toString()}`);
+    },
+    [pathname, push]
+  );
 
-  const handleSearch = async (page = 1) => {
-    setIsLoading(true);
-    setError(null);
+  const handleSearch = useCallback(
+    async (searchParams: PackagesSearchQueryParams) => {
+      setIsLoading(true);
+      setError(null);
 
-    setSearchParams(page);
-    const searchParams = {...params, current_page: page};
+      try {
+        // FIXME: At the moment it uses server action due to internal use of `fetch`.
+        const response = await searchPackages(searchParams);
+        setResults(response);
+      } catch (err) {
+        console.error(err);
+        setError('Failed to fetch packages. Please try again later.');
+        setResults(null);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
-    try {
-      const response = await searchPackages(searchParams);
-      setResults(response);
-      // Update current_page in state after a successful search
-      setParams(searchParams);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to fetch packages. Please try again later.');
-      setResults(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // load search packages without params on page load
   useEffect(() => {
-    setIsLoading(true);
-    handleSearch(params.current_page);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    handleSearch(parsedParams);
+  }, [parsedParams, handleSearch]);
 
-  const onFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    // reset page
-    handleSearch(params.current_page);
+  const onFormSubmit = (searchParams: PackagesSearchQueryParams) => {
+    // Reset to first page on new search to avoid out-of-bounds issue
+    searchParams.current_page = 1;
+    setSearchParams(searchParams);
   };
-
-  const onInputChange = (
-    e:
-      | React.ChangeEvent<HTMLInputElement>
-      | {target: {name: string; value: string}}
-  ) => {
-    const {name, value} = e.target;
-    setParams(prev => ({...prev, [name]: value}));
-  };
-
-  const handleSelectionChange = (name: 'arch' | 'repo', value: string) => {
-    const currentValues = params[name] ? params[name].split(',') : [];
-    const newValues = currentValues.includes(value)
-      ? currentValues.filter(v => v !== value)
-      : [...currentValues, value];
-
-    onInputChange({target: {name, value: newValues.join(',')}});
-  };
-
-  const repoValues = params.repo ? params.repo.split(',').filter(Boolean) : [];
-  const archValues = params.arch ? params.arch.split(',').filter(Boolean) : [];
 
   return (
     <div className="space-y-8">
-      {/* Search Form */}
-      <form className="space-y-4" onSubmit={onFormSubmit}>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          <div className="space-y-2">
-            <Label htmlFor="search">Package Name/Description</Label>
-            <Input
-              id="search"
-              name="search"
-              onChange={onInputChange}
-              placeholder="e.g., openssl"
-              value={params.search}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="repo">Repository</Label>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  className="w-full justify-start font-normal"
-                  variant="outline"
-                >
-                  <div className="truncate">
-                    {repoValues.length > 0
-                      ? repoValues.join(', ')
-                      : 'Select repositories'}
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                {Object.values(PackageRepo).map(repo => (
-                  <DropdownMenuCheckboxItem
-                    checked={repoValues.includes(repo)}
-                    key={repo}
-                    onCheckedChange={() => handleSelectionChange('repo', repo)}
-                  >
-                    {repo}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="arch">Architecture</Label>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  className="w-full justify-start font-normal"
-                  variant="outline"
-                >
-                  <div className="truncate">
-                    {archValues.length > 0
-                      ? archValues.join(', ')
-                      : 'Select an architecture'}
-                  </div>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-56">
-                {Object.values(PackageArch).map(arch => (
-                  <DropdownMenuCheckboxItem
-                    checked={archValues.includes(arch)}
-                    key={arch}
-                    onCheckedChange={() => handleSelectionChange('arch', arch)}
-                  >
-                    {arch}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </div>
-        <Button disabled={isLoading} type="submit">
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Searching...
-            </>
-          ) : (
-            'Search'
-          )}
-        </Button>
-      </form>
+      <PackageSearchForm
+        initialParams={parsedParams}
+        isLoading={isLoading}
+        // FIXME: Bug where have to force re-render to update dropdown.
+        key={parsedParams.search + parsedParams.repo + parsedParams.arch}
+        onSubmit={onFormSubmit}
+      />
 
-      {/* Results Section */}
       {error && (
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
@@ -208,25 +100,36 @@ export default function PackageSearch() {
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Found {results.total_packages.toLocaleString()} packages. Page{' '}
-            {params.current_page} of {results.total_pages.toLocaleString()}.
+            {parsedParams.current_page} of{' '}
+            {results.total_pages.toLocaleString()}.
           </p>
 
           {results.packages.length > 0 ? (
             <>
               <PackageTable
                 onArchitectureClick={arch => {
-                  handleSelectionChange('arch', arch);
+                  setSearchParams({
+                    ...parsedParams,
+                    arch: arch === parsedParams.arch ? '' : arch,
+                  });
                 }}
                 onRepositoryClick={repo => {
-                  handleSelectionChange('repo', repo);
+                  setSearchParams({
+                    ...parsedParams,
+                    repo: repo === parsedParams.repo ? '' : repo,
+                  });
                 }}
                 packages={results.packages}
               />
-              {/* Pagination Controls */}
               <div className="flex items-center justify-end space-x-2">
                 <Button
-                  disabled={isLoading || params.current_page! <= 1}
-                  onClick={() => handleSearch(params.current_page! - 1)}
+                  disabled={isLoading || parsedParams.current_page <= 1}
+                  onClick={() =>
+                    setSearchParams({
+                      ...parsedParams,
+                      current_page: parsedParams.current_page - 1,
+                    })
+                  }
                   size="sm"
                   variant="outline"
                 >
@@ -234,9 +137,15 @@ export default function PackageSearch() {
                 </Button>
                 <Button
                   disabled={
-                    isLoading || params.current_page! >= results.total_pages
+                    isLoading ||
+                    parsedParams.current_page >= results.total_pages
                   }
-                  onClick={() => handleSearch(params.current_page! + 1)}
+                  onClick={() =>
+                    setSearchParams({
+                      ...parsedParams,
+                      current_page: parsedParams.current_page + 1,
+                    })
+                  }
                   size="sm"
                   variant="outline"
                 >

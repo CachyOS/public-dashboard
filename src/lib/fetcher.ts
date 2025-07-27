@@ -38,8 +38,10 @@ export async function processResponse<T>(
   mode: ResponseType
 ): Promise<T> {
   if (mode !== 'json') {
-    throw new Error(
-      `Unsupported response mode "${mode}" for URL "${response.url}". Status: ${response.status} ${response.statusText}.`
+    throw new FetcherError(
+      500,
+      `Unsupported response mode: ${mode}`,
+      `URL: "${response.url}". Status: ${response.status} ${response.statusText}.`
     );
   }
 
@@ -47,8 +49,11 @@ export async function processResponse<T>(
   try {
     json = await response.json();
   } catch (error) {
-    console.warn(`Failed to parse JSON response from ${response.url}:`, error);
-    throw new FetcherError(response.status, 'Invalid JSON response');
+    throw new FetcherError(
+      response.status,
+      'Invalid JSON response',
+      `Failed to parse JSON response from ${response.url}: ${error}`
+    );
   }
 
   if (!response.ok) {

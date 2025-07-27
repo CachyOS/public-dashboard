@@ -1,10 +1,10 @@
 export class FetcherError extends Error {
-  payload?: unknown;
   status: number;
-  constructor(status: number, message: string, payload?: unknown) {
+  constructor(status: number, message: string, cause?: string, stack?: string) {
     super(message);
     this.name = 'FetcherError';
     this.status = status;
-    this.payload = payload;
+    this.cause = cause || 'Unknown cause';
+    this.stack = stack || new Error().stack;
   }
 }

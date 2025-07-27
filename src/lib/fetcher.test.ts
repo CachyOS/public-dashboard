@@ -33,7 +33,7 @@ describe('processResponse', () => {
 
   test('throws FetcherError with parsed json when response is not ok', () => {
     const res = mockResponse({
-      json: {code: 400, message: 'not found (really)'},
+      json: {code: '400', message: 'not found (really)'},
       ok: false,
       status: 404,
       statusText: 'Not Found',

@@ -23,9 +23,7 @@ export async function getPackageDetails(
 ): Promise<PackageDetailsResponse> {
   const {arch, pkgname, repo} = params;
 
-  const path = `/v1/package/${encodeURIComponent(repo)}/${encodeURIComponent(
-    arch
-  )}/${encodeURIComponent(pkgname)}`;
+  const path = `/v1/package/${repo}/${arch}/${pkgname}`;
 
   const clientHeaders = await headers();
   return fetcher<PackageDetailsResponse>(path, clientHeaders, {
@@ -44,7 +42,7 @@ export async function getSplitPackages(
 ): Promise<SplitPackagesResponse> {
   const {pkgbase, repo} = params;
 
-  const path = `/v1/split/${encodeURIComponent(repo)}/${encodeURIComponent(pkgbase)}`;
+  const path = `/v1/split/${repo}/${pkgbase}`;
 
   const clientHeaders = await headers();
   return fetcher<SplitPackagesResponse>(path, clientHeaders, {

@@ -36,7 +36,10 @@ export default async function PackageDetailsPage({
 }: {
   params: Promise<PackageDetailsPageProps>;
 }) {
-  const {arch, pkgname, repo} = await params;
+  let {arch, pkgname, repo} = await params;
+  arch = decodeURIComponent(arch) as PackageArch;
+  pkgname = decodeURIComponent(pkgname);
+  repo = decodeURIComponent(repo) as PackageRepo;
 
   const packageResponse = await getPackageDetailsOrSplits({
     arch,

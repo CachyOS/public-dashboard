@@ -1,7 +1,7 @@
 'use client';
 
 import {Loader2} from 'lucide-react';
-import {useState} from 'react';
+import {useCallback, useRef, useState} from 'react';
 
 import {Button} from '@/components/ui/button';
 import {
@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
+import {useGenericShortcutListener} from '@/hooks/use-keyboard-shortcut-listener';
 import {PackageArch, PackageRepo, PackagesSearchQueryParams} from '@/lib/types';
 
 interface PackageSearchFormProps {
@@ -27,6 +28,15 @@ export default function PackageSearchForm({
 }: PackageSearchFormProps) {
   const [params, setParams] =
     useState<PackagesSearchQueryParams>(initialParams);
+
+  const primarySearchFilterInputRef = useRef<HTMLInputElement>(null);
+  const primarySearchFilterShortcutCallback = useCallback(() => {
+    if (primarySearchFilterInputRef.current) {
+      primarySearchFilterInputRef.current.focus();
+    }
+  }, []);
+
+  useGenericShortcutListener('/', primarySearchFilterShortcutCallback, true);
 
   const onInputChange = (
     e:
@@ -64,6 +74,7 @@ export default function PackageSearchForm({
             name="search"
             onChange={onInputChange}
             placeholder="e.g., openssl"
+            ref={primarySearchFilterInputRef}
             value={params.search}
           />
         </div>

@@ -173,26 +173,32 @@ export const PackagesSearchQueryParamsSchema = z.strictObject({
    * A comma-separated list of architectures to filter by.
    * @example "x86_64,aarch64"
    */
-  arch: z.string().min(3).optional(),
+  arch: z.string().optional(),
   /**
    * The page number to retrieve.
    * @default 1
    */
-  current_page: z.number('Current page must be a positive integer').positive(),
+  current_page: z
+    .number('Current page must be a positive integer')
+    .positive()
+    .catch(1),
   /**
    * The number of packages to return per page.
-   * @default 100
+   * @default 15
    */
-  page_size: z.number('Page size must be a positive integer').positive(),
+  page_size: z
+    .number('Page size must be a positive integer')
+    .positive()
+    .catch(15),
   /**
    * A comma-separated list of repository names to filter by.
    * @example "my-repo-1,my-repo-2"
    */
-  repo: z.string().min(3).optional(),
+  repo: z.string(),
   /**
    * The search term to find packages by name or description.
    */
-  search: z.string().min(1).optional(),
+  search: z.string(),
 });
 export type PackagesSearchQueryParams = z.infer<
   typeof PackagesSearchQueryParamsSchema

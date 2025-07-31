@@ -12,7 +12,6 @@ import {
   PackageRepo,
 } from '@/lib/types';
 
-// Define the page's props, which include the dynamic route params
 type PackageDetailsPageProps = {
   arch: PackageArch;
   pkgname: string;

@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card';
 
 export const metadata: Metadata = {
-  title: 'Package Search | CachyOS',
+  title: 'Package Search',
 };
 
 export default function Home() {

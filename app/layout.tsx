@@ -19,7 +19,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: {
     default: 'CachyOS',
-    template: '%s | CachyOS',
+    template: 'CachyOS | %s ',
   },
 };
 

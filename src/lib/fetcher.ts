@@ -2,7 +2,7 @@
 import {ReadonlyHeaders} from 'next/dist/server/web/spec-extension/adapters/headers';
 
 import {FetcherError} from '@/lib/errors';
-import {ErrorResponse} from '@/lib/types';
+import {ErrorResponseSchema} from '@/lib/types';
 
 const EndpointURL =
   process.env.PUBLIC_ENDPOINT_URL ?? 'http://localhost:5862/api';
@@ -57,11 +57,14 @@ export async function processResponse<T>(
   }
 
   if (!response.ok) {
-    const errorResponse = json as ErrorResponse;
-    throw new FetcherError(
-      Number(errorResponse.code) || response.status,
-      errorResponse.message || response.statusText || 'Fetch error'
-    );
+    const errorResponse = ErrorResponseSchema.safeParse(json);
+    if (errorResponse.success) {
+      throw new FetcherError(
+        Number(errorResponse.data.code) || response.status,
+        errorResponse.data.message || response.statusText || 'Fetch error'
+      );
+    }
+    throw new FetcherError(response.status, response.statusText, 'Fetch error');
   }
 
   return json satisfies Promise<T>;

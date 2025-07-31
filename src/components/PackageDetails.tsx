@@ -11,12 +11,12 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {cachyosPaths} from '@/lib/cachy';
-import {BriefPackage, PackageDetails} from '@/lib/types';
+import {BriefPackageList, PackageDetails} from '@/lib/types';
 import {getPkgverWithoutBuildnum} from '@/lib/utils';
 
 type PackageDetailsComponentProps = {
   pkg: PackageDetails;
-  pkgSplits: BriefPackage[];
+  pkgSplits: BriefPackageList;
 };
 
 export default function PackageDetailsComponent({

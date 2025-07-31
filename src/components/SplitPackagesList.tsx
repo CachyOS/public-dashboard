@@ -3,9 +3,13 @@
 import Link from 'next/link';
 import {useState} from 'react';
 
-import {BriefPackage} from '@/lib/types';
+import {BriefPackageList} from '@/lib/types';
 
-export default function SplitPackagesList({splits}: {splits: BriefPackage[]}) {
+export default function SplitPackagesList({
+  splits,
+}: {
+  splits: BriefPackageList;
+}) {
   const [expanded, setExpanded] = useState(false);
   const visibleSplits = expanded ? splits : splits.slice(0, 5);
   const hasMore = splits.length > 5;

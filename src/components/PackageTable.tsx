@@ -8,12 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {BriefPackage} from '@/lib/types';
+import {BriefPackageList} from '@/lib/types';
 
 interface PackageSearchResultsTableProps {
   onArchitectureClick?: (arch: string) => void;
   onRepositoryClick?: (repo: string) => void;
-  packages: BriefPackage[];
+  packages: BriefPackageList;
 }
 
 export default function PackageTable({

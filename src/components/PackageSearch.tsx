@@ -111,11 +111,13 @@ export default function PackageSearch() {
                   setSearchParams({
                     ...parsedParams,
                     arch: arch === parsedParams.arch ? '' : arch,
+                    current_page: 1,
                   });
                 }}
                 onRepositoryClick={repo => {
                   setSearchParams({
                     ...parsedParams,
+                    current_page: 1,
                     repo: repo === parsedParams.repo ? '' : repo,
                   });
                 }}

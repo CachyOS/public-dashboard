@@ -9,7 +9,9 @@ import {
   BriefPackage,
   PackageArch,
   PackageDetails,
+  PackageDetailsPathParamsSchema,
   PackageRepo,
+  SplitPackagesQueryParamsSchema,
 } from '@/lib/types';
 
 type PackageDetailsPageProps = {
@@ -35,10 +37,14 @@ export default async function PackageDetailsPage({
 }: {
   params: Promise<PackageDetailsPageProps>;
 }) {
-  let {arch, pkgname, repo} = await params;
+  const validation = PackageDetailsPathParamsSchema.safeParse(await params);
+  if (!validation.success) {
+    notFound();
+  }
+  let {arch, pkgname, repo} = validation.data;
   arch = decodeURIComponent(arch) as PackageArch;
   pkgname = decodeURIComponent(pkgname);
-  repo = decodeURIComponent(repo) as PackageRepo;
+  repo = decodeURIComponent(repo);
 
   const packageResponse = await getPackageDetailsOrSplits({
     arch,
@@ -75,7 +81,7 @@ async function getPackageDetailsOrSplits({
 }: {
   arch: PackageArch;
   pkgname: string;
-  repo: PackageRepo;
+  repo: string;
 }) {
   try {
     const packageResponse = await getPackageDetails({arch, pkgname, repo});
@@ -92,18 +98,23 @@ async function getPackageDetailsOrSplits({
 
 async function getSplitPackagesForBase(
   pkg: PackageDetails,
-  repo: PackageRepo
+  repo: string
 ): Promise<BriefPackage[]> {
   if (pkg.pkg_name !== pkg.pkg_base) {
     return [];
   }
 
   try {
-    const splitPackagesResponse = await getSplitPackages({
+    const validation = SplitPackagesQueryParamsSchema.safeParse({
       pkgbase: pkg.pkg_base,
       repo: repo,
     });
+    if (!validation.success) {
+      console.error(validation.error);
+      return [];
+    }
 
+    const splitPackagesResponse = await getSplitPackages(validation.data);
     return splitPackagesResponse.filter(p => p.pkg_name !== pkg.pkg_base);
   } catch (error) {
     console.error(`Failed to fetch split packages:`, error);
@@ -113,14 +124,19 @@ async function getSplitPackagesForBase(
 
 async function handleSplitPackageFallback(
   pkgname: string,
-  repo: PackageRepo
+  repo: string
 ): Promise<BriefPackage[]> {
   try {
-    const splitsResponse = await getSplitPackages({
+    const validation = SplitPackagesQueryParamsSchema.safeParse({
       pkgbase: pkgname,
       repo: repo,
     });
+    if (!validation.success) {
+      console.error(validation.error);
+      notFound();
+    }
 
+    const splitsResponse = await getSplitPackages(validation.data);
     if (splitsResponse.length === 0) {
       notFound();
     }

@@ -6,10 +6,13 @@ import fetcher from '@/lib/fetcher';
 import {
   PackageDetailsPathParams,
   PackageDetailsResponse,
+  PackageDetailsResponseSchema,
   PackageSearchResponse,
+  PackageSearchResponseSchema,
   PackagesSearchQueryParams,
   SplitPackagesQueryParams,
   SplitPackagesResponse,
+  SplitPackagesResponseSchema,
 } from '@/lib/types';
 
 /**
@@ -26,7 +29,7 @@ export async function getPackageDetails(
   const path = `/v1/package/${repo}/${arch}/${pkgname}`;
 
   const clientHeaders = await headers();
-  return fetcher<PackageDetailsResponse>(path, clientHeaders, {
+  return fetcher(path, clientHeaders, PackageDetailsResponseSchema, {
     method: 'GET',
   });
 }
@@ -45,7 +48,7 @@ export async function getSplitPackages(
   const path = `/v1/split/${repo}/${pkgbase}`;
 
   const clientHeaders = await headers();
-  return fetcher<SplitPackagesResponse>(path, clientHeaders, {
+  return fetcher(path, clientHeaders, SplitPackagesResponseSchema, {
     method: 'GET',
   });
 }
@@ -72,7 +75,7 @@ export async function searchPackages(
   const path = `/v1/packages-search${queryString ? `?${queryString}` : ''}`;
 
   const clientHeaders = await headers();
-  return fetcher<PackageSearchResponse>(path, clientHeaders, {
+  return fetcher(path, clientHeaders, PackageSearchResponseSchema, {
     method: 'GET',
   });
 }

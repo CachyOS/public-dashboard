@@ -9,24 +9,28 @@ import PackageTable from '@/components/PackageTable';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {Button} from '@/components/ui/button';
 import {searchPackages} from '@/lib/actions';
-import {PackageSearchResponse, PackagesSearchQueryParams} from '@/lib/types';
+import {
+  PackageSearchResponse,
+  PackagesSearchQueryParams,
+  PackagesSearchQueryParamsSchema,
+} from '@/lib/types';
 
 export default function PackageSearch() {
   const {push} = useRouter();
   const pathname = usePathname();
   const currentParams = useSearchParams();
 
-  const parsedParams = useMemo(
-    () =>
-      ({
-        arch: currentParams.get('arch') || '',
-        current_page: Number(currentParams.get('current_page')) || 1,
-        page_size: 15,
-        repo: currentParams.getAll('repo').join(','),
-        search: currentParams.getAll('search').join(','),
-      }) satisfies PackagesSearchQueryParams,
-    [currentParams]
-  );
+  const parsedParams = useMemo(() => {
+    const params = {
+      arch: currentParams.get('arch') ?? '',
+      current_page: Number(currentParams.get('current_page')) || 1,
+      page_size: 15,
+      repo: currentParams.getAll('repo').join(','),
+      search: currentParams.getAll('search').join(','),
+    } satisfies PackagesSearchQueryParams;
+    // FIXME: should also set the browser search query params to the returned parsedParams
+    return PackagesSearchQueryParamsSchema.parse(params);
+  }, [currentParams]);
 
   // TODO: Replace with Tanstack Query or SWR for better data fetching and caching.
   const [results, setResults] = useState<null | PackageSearchResponse>(null);

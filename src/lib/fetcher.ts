@@ -1,21 +1,39 @@
 // thanks to https://github.com/CachyOS/builder-dashboard/blob/main/lib/fetcher.ts ;)
 import {ReadonlyHeaders} from 'next/dist/server/web/spec-extension/adapters/headers';
+import {z} from 'zod';
 
 import {FetcherError} from '@/lib/errors';
-import {ErrorResponse} from '@/lib/types';
+import {ErrorResponseSchema} from '@/lib/types';
 
 const EndpointURL =
   process.env.PUBLIC_ENDPOINT_URL ?? 'http://localhost:5862/api';
 
 export type ResponseType = 'json';
 
+export default async function fetcher<T extends z.ZodType>(
+  path: string,
+  clientHeaders: ReadonlyHeaders,
+  schema: T,
+  init?: RequestInit,
+  baseURL?: string,
+  responseMode?: ResponseType
+): Promise<z.infer<T>>;
 export default async function fetcher<T>(
   path: string,
   clientHeaders: ReadonlyHeaders,
+  schema?: null,
+  init?: RequestInit,
+  baseURL?: string,
+  responseMode?: ResponseType
+): Promise<T>;
+export default async function fetcher<T extends z.ZodType>(
+  path: string,
+  clientHeaders: ReadonlyHeaders,
+  schema?: null | T,
   init?: RequestInit,
   baseURL = EndpointURL,
   responseMode: ResponseType = 'json'
-): Promise<T> {
+) {
   return fetch(`${baseURL}${path}`, {
     cache: 'force-cache',
     headers: {
@@ -30,13 +48,14 @@ export default async function fetcher<T>(
     // revalidate(expire) data after hour
     next: {revalidate: 3600},
     ...init,
-  }).then(res => processResponse<T>(res, responseMode));
+  }).then(res => processResponse(res, responseMode, schema));
 }
 
-export async function processResponse<T>(
+export async function processResponse<T extends z.ZodType>(
   response: Response,
-  mode: ResponseType
-): Promise<T> {
+  mode: ResponseType,
+  schema?: null | T
+): Promise<z.infer<T>> {
   if (mode !== 'json') {
     throw new FetcherError(
       500,
@@ -57,12 +76,30 @@ export async function processResponse<T>(
   }
 
   if (!response.ok) {
-    const errorResponse = json as ErrorResponse;
-    throw new FetcherError(
-      Number(errorResponse.code) || response.status,
-      errorResponse.message || response.statusText || 'Fetch error'
-    );
+    const errorResponse = ErrorResponseSchema.safeParse(json);
+    if (errorResponse.success) {
+      throw new FetcherError(
+        Number(errorResponse.data.code) || response.status,
+        errorResponse.data.message || response.statusText || 'Fetch error'
+      );
+    }
+    throw new FetcherError(response.status, response.statusText, 'Fetch error');
   }
 
-  return json satisfies Promise<T>;
+  // skip if user didn't provide zod schema for the response
+  if (!schema) {
+    return json;
+  }
+
+  const parsed = schema.safeParse(json);
+  if (parsed.success) {
+    return parsed.data;
+  }
+
+  console.error(`Failed to parse response from ${response.url}:`, parsed.error);
+  throw new FetcherError(
+    500,
+    'Schema validation failed',
+    `Failed to parse response from ${response.url}`
+  );
 }

@@ -1,3 +1,5 @@
+import {z} from 'zod';
+
 export enum PackageArch {
   Any = 'any',
   x86_64 = 'x86_64',
@@ -6,6 +8,10 @@ export enum PackageArch {
 }
 
 export const packageArchValues = Object.values(PackageArch);
+export const PackageArchSchema = z.enum(
+  PackageArch,
+  `Architecture must be one of: ${packageArchValues.join(', ')}`
+);
 
 export enum PackageRepo {
   CACHYOS = 'cachyos',
@@ -22,164 +28,200 @@ export enum PackageRepo {
 
 export const packageRepoValues = Object.values(PackageRepo);
 
+// NOTE: Package Repo currently not always match enum values
+//export const PackageRepoSchema = z.enum(PackageRepo);
+export const PackageRepoSchema = z.string().min(3);
+
 /**
  * A brief representation of a package.
  */
-export interface BriefPackage {
+export const BriefPackageSchema = z.strictObject({
   /**
    * The architecture of the package.
    */
-  pkg_arch: PackageArch;
+  pkg_arch: PackageArchSchema,
   /**
    * The timestamp (Unix epoch) when the package was last updated.
    */
-  pkg_builddate: number;
+  pkg_builddate: z
+    .number('BuildDate must be an positive integer')
+    .nonnegative(),
   /**
    * A brief description of the package.
    */
-  pkg_desc: string;
+  pkg_desc: z.string(),
   /**
    * The name of the package.
    */
-  pkg_name: string;
+  pkg_name: z.string(),
   /**
    * The version of the package.
    */
-  pkg_version: string;
+  pkg_version: z.string(),
   /**
    * The name of the repository the package belongs to.
    */
-  repo_name: PackageRepo;
-}
+  repo_name: PackageRepoSchema,
+});
+export type BriefPackage = z.infer<typeof BriefPackageSchema>;
+
+export const BriefPackageListSchema = z.array(BriefPackageSchema);
+export type BriefPackageList = z.infer<typeof BriefPackageListSchema>;
 
 /**
  * Represents an error response from the API.
  */
-export type ErrorResponse = {
-  code: number;
-  message: string;
-};
+export const ErrorResponseSchema = z.strictObject({
+  code: z.string().min(3).max(3),
+  message: z.string().min(1),
+});
+export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 
 /**
  * Detailed information for a specific package.
  */
-export interface PackageDetails {
-  pkg_arch: null | PackageArch;
-  pkg_base: null | string;
-  pkg_builddate: null | number;
-  pkg_checkdepends: null | string[];
-  pkg_conflicts: null | string[];
-  pkg_csize: null | number;
-  pkg_depends: null | string[];
-  pkg_desc: null | string;
-  pkg_files: null | string[];
-  pkg_groups: null | string[];
-  pkg_isize: null | number;
-  pkg_license: null | string[];
-  pkg_makedepends: null | string[];
-  pkg_name: string;
-  pkg_optdepends: null | string[];
-  pkg_packager: null | string;
-  pkg_pgpsig: null | string;
-  pkg_provides: null | string[];
-  pkg_replaces: null | string[];
-  pkg_sha256sum: null | string;
-  pkg_url: null | string;
-  pkg_version: string;
-  repo_name: PackageRepo;
-  updated: number;
-}
+export const PackageDetailsSchema = z.strictObject({
+  pkg_arch: PackageArchSchema,
+  pkg_base: z.string(),
+  pkg_builddate: z
+    .number('BuildDate must be an positive integer')
+    .nonnegative(),
+  pkg_checkdepends: z.array(z.string()),
+  pkg_conflicts: z.array(z.string()),
+  pkg_csize: z.number('CSIZE must be an positive integer').nonnegative(),
+  pkg_depends: z.array(z.string()),
+  pkg_desc: z.string(),
+  pkg_files: z.array(z.string()),
+  pkg_groups: z.array(z.string()),
+  pkg_isize: z.number('ISIZE must be an positive integer').nonnegative(),
+  pkg_license: z.array(z.string()),
+  pkg_makedepends: z.array(z.string()),
+  pkg_name: z.string(),
+  pkg_optdepends: z.array(z.string()),
+  pkg_packager: z.string(),
+  pkg_pgpsig: z.string(),
+  pkg_provides: z.array(z.string()),
+  pkg_replaces: z.array(z.string()),
+  pkg_sha256sum: z.string(),
+  pkg_url: z.string().nullable(),
+  pkg_version: z.string(),
+  repo_name: PackageRepoSchema,
+  updated: z.number('Updated must be an positive integer').nonnegative(),
+});
+export type PackageDetails = z.infer<typeof PackageDetailsSchema>;
 
 /**
  * Path parameters for getting package details.
  */
-export interface PackageDetailsPathParams {
+export const PackageDetailsPathParamsSchema = z.strictObject({
   /**
    * The architecture of the package.
    * @example "x86_64"
    */
-  arch: PackageArch;
+  arch: PackageArchSchema,
   /**
    * The name of the package.
    * @example "openssl"
    */
-  pkgname: string;
+  pkgname: z.string().min(1),
   /**
    * The name of the repository.
    * @example "my-stable-repo"
    */
-  repo: PackageRepo;
-}
+  repo: PackageRepoSchema,
+});
+export type PackageDetailsPathParams = z.infer<
+  typeof PackageDetailsPathParamsSchema
+>;
 
 /**
  * The response body for a successful package details request.
  */
-export interface PackageDetailsResponse {
-  package: PackageDetails;
-}
+export const PackageDetailsResponseSchema = z.strictObject({
+  package: PackageDetailsSchema,
+});
+export type PackageDetailsResponse = z.infer<
+  typeof PackageDetailsResponseSchema
+>;
 
 /**
  * The response schema for a package search request.
  */
-export interface PackageSearchResponse {
+export const PackageSearchResponseSchema = z.strictObject({
   /**
    * An array of packages matching the search criteria for the current page.
    */
-  packages: BriefPackage[];
+  packages: BriefPackageListSchema,
   /**
    * The total number of packages matching the search criteria.
    */
-  total_packages: number;
+  total_packages: z
+    .number('Total packages must be a positive integer')
+    .nonnegative(),
   /**
    * The total number of pages available.
    */
-  total_pages: number;
-}
+  total_pages: z.number('Total pages must be a positive integer').nonnegative(),
+});
+export type PackageSearchResponse = z.infer<typeof PackageSearchResponseSchema>;
 
 /**
  * Query parameters for the package search endpoint.
  */
-export interface PackagesSearchQueryParams {
+export const PackagesSearchQueryParamsSchema = z.strictObject({
   /**
    * A comma-separated list of architectures to filter by.
    * @example "x86_64,aarch64"
    */
-  arch?: string;
+  arch: z.string().optional(),
   /**
    * The page number to retrieve.
    * @default 1
    */
-  current_page?: number;
+  current_page: z
+    .number('Current page must be a positive integer')
+    .positive()
+    .catch(1),
   /**
    * The number of packages to return per page.
-   * @default 100
+   * @default 15
    */
-  page_size?: number;
+  page_size: z
+    .number('Page size must be a positive integer')
+    .positive()
+    .catch(15),
   /**
    * A comma-separated list of repository names to filter by.
    * @example "my-repo-1,my-repo-2"
    */
-  repo?: string;
+  repo: z.string(),
   /**
    * The search term to find packages by name or description.
    */
-  search?: string;
-}
+  search: z.string(),
+});
+export type PackagesSearchQueryParams = z.infer<
+  typeof PackagesSearchQueryParamsSchema
+>;
 
 /**
  * Query parameters for the split packages endpoint.
  */
-export interface SplitPackagesQueryParams {
+export const SplitPackagesQueryParamsSchema = z.strictObject({
   /**
    * The name of the package base.
    * @example "openssl"
    */
-  pkgbase: string;
+  pkgbase: z.string().min(1),
   /**
    * The name of the repository.
    * @example "my-stable-repo"
    */
-  repo: PackageRepo;
-}
+  repo: PackageRepoSchema,
+});
+export type SplitPackagesQueryParams = z.infer<
+  typeof SplitPackagesQueryParamsSchema
+>;
 
-export type SplitPackagesResponse = BriefPackage[];
+export const SplitPackagesResponseSchema = BriefPackageListSchema;
+export type SplitPackagesResponse = z.infer<typeof SplitPackagesResponseSchema>;

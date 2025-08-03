@@ -1,6 +1,10 @@
 'use client';
 
-import {keepPreviousData, useQuery} from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {AlertCircle} from 'lucide-react';
 import {usePathname, useSearchParams} from 'next/navigation';
 import {useCallback, useMemo} from 'react';
@@ -9,8 +13,9 @@ import PackageSearchForm from '@/components/PackageSearchForm';
 import PackageTable from '@/components/PackageTable';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {Button} from '@/components/ui/button';
+import {searchQueryFn} from '@/lib/query-actions';
+import {STALE_TIME} from '@/lib/query-client';
 import {
-  PackageSearchResponse,
   PackagesSearchQueryParams,
   PackagesSearchQueryParamsSchema,
 } from '@/lib/types';
@@ -18,6 +23,7 @@ import {
 export default function PackageSearch() {
   const pathname = usePathname();
   const currentParams = useSearchParams();
+  const queryClient = useQueryClient();
 
   const parsedParams = useMemo<PackagesSearchQueryParams>(() => {
     return PackagesSearchQueryParamsSchema.parse({
@@ -31,22 +37,7 @@ export default function PackageSearch() {
 
   const {data, error, isPending, isPlaceholderData} = useQuery({
     placeholderData: keepPreviousData,
-    queryFn: async ({signal}) => {
-      const query = new URLSearchParams({
-        arch: parsedParams.arch ?? '',
-        current_page: String(parsedParams.current_page),
-        page_size: String(parsedParams.page_size),
-        repo: parsedParams.repo,
-        search: parsedParams.search,
-      }).toString();
-      const response = await fetch(`/api/search?${query}`, {signal});
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch search results: ${response.statusText}`
-        );
-      }
-      return response.json() as Promise<PackageSearchResponse>;
-    },
+    queryFn: searchQueryFn(parsedParams),
     queryKey: ['search', parsedParams],
   });
 
@@ -69,6 +60,14 @@ export default function PackageSearch() {
     // Reset to first page on new search to avoid out-of-bounds issue
     searchParams.current_page = 1;
     setSearchParams(searchParams);
+  };
+
+  const prefetch = (page: number) => {
+    queryClient.prefetchQuery({
+      queryFn: searchQueryFn({...parsedParams, current_page: page}),
+      queryKey: ['search', {...parsedParams, current_page: page}],
+      staleTime: STALE_TIME,
+    });
   };
 
   return (
@@ -123,6 +122,8 @@ export default function PackageSearch() {
                       current_page: parsedParams.current_page - 1,
                     })
                   }
+                  onFocus={() => prefetch(parsedParams.current_page - 1)}
+                  onMouseEnter={() => prefetch(parsedParams.current_page - 1)}
                   size="sm"
                   variant="outline"
                 >
@@ -139,6 +140,8 @@ export default function PackageSearch() {
                       current_page: parsedParams.current_page + 1,
                     })
                   }
+                  onFocus={() => prefetch(parsedParams.current_page + 1)}
+                  onMouseEnter={() => prefetch(parsedParams.current_page + 1)}
                   size="sm"
                   variant="outline"
                 >

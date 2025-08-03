@@ -13,7 +13,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {searchPackages} from '@/lib/actions';
-import {getQueryClient} from '@/lib/get-query-client';
+import {getQueryClient} from '@/lib/query-client';
 import {PackagesSearchQueryParamsSchema} from '@/lib/types';
 
 export const metadata: Metadata = {
@@ -25,21 +25,7 @@ export default async function Home({
 }: {
   searchParams: Promise<{[key: string]: string | string[] | undefined}>;
 }) {
-  const {
-    arch = '',
-    current_page = 1,
-    page_size = 15,
-    repo = '',
-    search = '',
-  } = await searchParams;
-
-  const params = PackagesSearchQueryParamsSchema.parse({
-    arch,
-    current_page: Number(current_page),
-    page_size,
-    repo: Array.isArray(repo) ? repo.join(',') : repo,
-    search: Array.isArray(search) ? search.join(',') : search,
-  });
+  const params = parseSearchParams(await searchParams);
 
   const queryClient = getQueryClient();
 
@@ -74,4 +60,20 @@ export default async function Home({
       </main>
     </div>
   );
+}
+
+function parseSearchParams(searchParams: {
+  [key: string]: string | string[] | undefined;
+}) {
+  return PackagesSearchQueryParamsSchema.parse({
+    arch: searchParams.arch ?? '',
+    current_page: Number(searchParams.current_page) || 1,
+    page_size: searchParams.page_size ?? '15',
+    repo: Array.isArray(searchParams.repo)
+      ? searchParams.repo.join(',')
+      : (searchParams.repo ?? ''),
+    search: Array.isArray(searchParams.search)
+      ? searchParams.search.join(',')
+      : (searchParams.search ?? ''),
+  });
 }

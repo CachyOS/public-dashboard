@@ -27,7 +27,7 @@ function mockResponse({
 describe('processResponse', () => {
   test('returns JSON when response is ok', async () => {
     const res = mockResponse({json: {foo: 'bar'}});
-    const data = await processResponse<{foo: string}>(res, 'json');
+    const data = await processResponse(res, 'json');
     expect(data).toEqual({foo: 'bar'});
   });
 

@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 import {
   Table,
   TableBody,
@@ -9,6 +7,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {BriefPackageList} from '@/lib/types';
+
+import {HoverPrefetchLink} from './HoverPrefetchLink';
 
 interface PackageSearchResultsTableProps {
   onArchitectureClick?: (arch: string) => void;
@@ -37,12 +37,12 @@ export default function PackageTable({
           {packages.map(pkg => (
             <TableRow key={`${pkg.repo_name}-${pkg.pkg_name}-${pkg.pkg_arch}`}>
               <TableCell className="font-medium">
-                <Link
+                <HoverPrefetchLink
                   className="text-primary hover:underline"
                   href={`/package/${encodeURIComponent(pkg.repo_name)}/${encodeURIComponent(pkg.pkg_arch)}/${encodeURIComponent(pkg.pkg_name)}`}
                 >
                   {pkg.pkg_name}
-                </Link>
+                </HoverPrefetchLink>
               </TableCell>
               <TableCell>{pkg.pkg_version}</TableCell>
               <TableCell

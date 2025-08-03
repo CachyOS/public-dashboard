@@ -8,7 +8,6 @@ import PackageSearchForm from '@/components/PackageSearchForm';
 import PackageTable from '@/components/PackageTable';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {Button} from '@/components/ui/button';
-import {searchPackages} from '@/lib/actions';
 import {
   PackageSearchResponse,
   PackagesSearchQueryParams,
@@ -58,9 +57,20 @@ export default function PackageSearch() {
       setError(null);
 
       try {
-        // FIXME: At the moment it uses server action due to internal use of `fetch`.
-        const response = await searchPackages(searchParams);
-        setResults(response);
+        const searchParamsString = new URLSearchParams({
+          arch: searchParams.arch ?? '',
+          current_page: String(searchParams.current_page),
+          repo: searchParams.repo,
+          search: searchParams.search,
+        });
+        const response = await fetch(`/api/search?${searchParamsString}`);
+        if (!response.ok) {
+          throw new Error(
+            `HTTP error! status: ${response.status}, ${response.statusText}`
+          );
+        }
+        const responseData = await response.json();
+        setResults(responseData);
       } catch (err) {
         console.error(err);
         setError('Failed to fetch packages. Please try again later.');

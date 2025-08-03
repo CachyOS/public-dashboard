@@ -85,9 +85,16 @@ export default function PackageDetailsComponent({
               <BadgeList items={pkg.pkg_license} />
             </DetailRow>
             <DetailRow label="Build Date">
-              {pkg.pkg_builddate
-                ? new Date(pkg.pkg_builddate * 1000).toLocaleString()
-                : 'unknown'}
+              {pkg.pkg_builddate ? (
+                <time
+                  dateTime={new Date(pkg.pkg_builddate * 1000).toISOString()}
+                  suppressHydrationWarning
+                >
+                  {new Date(pkg.pkg_builddate * 1000).toLocaleString()}
+                </time>
+              ) : (
+                'unknown'
+              )}
             </DetailRow>
             <DetailRow label="Packager">
               {pkg.pkg_packager || 'Unknown Packager'}

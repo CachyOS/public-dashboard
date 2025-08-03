@@ -58,7 +58,12 @@ export default function PackageTable({
                 {pkg.pkg_arch}
               </TableCell>
               <TableCell>
-                {new Date(pkg.pkg_builddate * 1000).toLocaleDateString()}
+                <time
+                  dateTime={new Date(pkg.pkg_builddate * 1000).toISOString()}
+                  suppressHydrationWarning
+                >
+                  {new Date(pkg.pkg_builddate * 1000).toLocaleDateString()}
+                </time>
               </TableCell>
             </TableRow>
           ))}

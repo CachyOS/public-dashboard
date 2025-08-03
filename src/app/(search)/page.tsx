@@ -1,3 +1,4 @@
+import {dehydrate, HydrationBoundary} from '@tanstack/react-query';
 import {Metadata} from 'next';
 import {Suspense} from 'react';
 
@@ -11,12 +12,42 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {searchPackages} from '@/lib/actions';
+import {getQueryClient} from '@/lib/get-query-client';
+import {PackagesSearchQueryParamsSchema} from '@/lib/types';
 
 export const metadata: Metadata = {
   title: 'Package Search',
 };
 
-export default function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{[key: string]: string | string[] | undefined}>;
+}) {
+  const {
+    arch = '',
+    current_page = 1,
+    page_size = 15,
+    repo = '',
+    search = '',
+  } = await searchParams;
+
+  const params = PackagesSearchQueryParamsSchema.parse({
+    arch,
+    current_page: Number(current_page),
+    page_size,
+    repo: Array.isArray(repo) ? repo.join(',') : repo,
+    search: Array.isArray(search) ? search.join(',') : search,
+  });
+
+  const queryClient = getQueryClient();
+
+  await queryClient.prefetchQuery({
+    queryFn: () => searchPackages(params),
+    queryKey: ['search', params],
+  });
+
   return (
     <div className="font-[family-name:var(--font-geist-sans)]">
       <main className="container mx-auto p-4 md:p-8">
@@ -33,9 +64,11 @@ export default function Home() {
             </div>
           </CardHeader>
           <CardContent>
-            <Suspense fallback={<PackageSearchSkeleton />}>
-              <PackageSearch />
-            </Suspense>
+            <HydrationBoundary state={dehydrate(queryClient)}>
+              <Suspense fallback={<PackageSearchSkeleton />}>
+                <PackageSearch />
+              </Suspense>
+            </HydrationBoundary>
           </CardContent>
         </Card>
       </main>

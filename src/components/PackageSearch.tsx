@@ -1,8 +1,9 @@
 'use client';
 
+import {keepPreviousData, useQuery} from '@tanstack/react-query';
 import {AlertCircle} from 'lucide-react';
-import {usePathname, useRouter, useSearchParams} from 'next/navigation';
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {usePathname, useSearchParams} from 'next/navigation';
+import {useCallback, useMemo} from 'react';
 
 import PackageSearchForm from '@/components/PackageSearchForm';
 import PackageTable from '@/components/PackageTable';
@@ -15,26 +16,39 @@ import {
 } from '@/lib/types';
 
 export default function PackageSearch() {
-  const {push} = useRouter();
   const pathname = usePathname();
   const currentParams = useSearchParams();
 
-  const parsedParams = useMemo(() => {
-    const params = {
+  const parsedParams = useMemo<PackagesSearchQueryParams>(() => {
+    return PackagesSearchQueryParamsSchema.parse({
       arch: currentParams.get('arch') ?? '',
       current_page: Number(currentParams.get('current_page')) || 1,
       page_size: 15,
       repo: currentParams.getAll('repo').join(','),
       search: currentParams.getAll('search').join(','),
-    } satisfies PackagesSearchQueryParams;
-    // FIXME: should also set the browser search query params to the returned parsedParams
-    return PackagesSearchQueryParamsSchema.parse(params);
+    });
   }, [currentParams]);
 
-  // TODO: Replace with Tanstack Query or SWR for better data fetching and caching.
-  const [results, setResults] = useState<null | PackageSearchResponse>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<null | string>(null);
+  const {data, error, isPending, isPlaceholderData} = useQuery({
+    placeholderData: keepPreviousData,
+    queryFn: async ({signal}) => {
+      const query = new URLSearchParams({
+        arch: parsedParams.arch ?? '',
+        current_page: String(parsedParams.current_page),
+        page_size: String(parsedParams.page_size),
+        repo: parsedParams.repo,
+        search: parsedParams.search,
+      }).toString();
+      const response = await fetch(`/api/search?${query}`, {signal});
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch search results: ${response.statusText}`
+        );
+      }
+      return response.json() as Promise<PackageSearchResponse>;
+    },
+    queryKey: ['search', parsedParams],
+  });
 
   const setSearchParams = useCallback(
     (searchParams: PackagesSearchQueryParams) => {
@@ -46,45 +60,10 @@ export default function PackageSearch() {
       if (searchParams.current_page && searchParams.current_page > 1)
         query.append('current_page', String(searchParams.current_page));
 
-      push(`${pathname}?${query.toString()}`);
+      window.history.pushState(null, '', `${pathname}?${query.toString()}`);
     },
-    [pathname, push]
+    [pathname]
   );
-
-  const handleSearch = useCallback(
-    async (searchParams: PackagesSearchQueryParams) => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const searchParamsString = new URLSearchParams({
-          arch: searchParams.arch ?? '',
-          current_page: String(searchParams.current_page),
-          repo: searchParams.repo,
-          search: searchParams.search,
-        });
-        const response = await fetch(`/api/search?${searchParamsString}`);
-        if (!response.ok) {
-          throw new Error(
-            `HTTP error! status: ${response.status}, ${response.statusText}`
-          );
-        }
-        const responseData = await response.json();
-        setResults(responseData);
-      } catch (err) {
-        console.error(err);
-        setError('Failed to fetch packages. Please try again later.');
-        setResults(null);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
-
-  useEffect(() => {
-    handleSearch(parsedParams);
-  }, [parsedParams, handleSearch]);
 
   const onFormSubmit = (searchParams: PackagesSearchQueryParams) => {
     // Reset to first page on new search to avoid out-of-bounds issue
@@ -96,8 +75,7 @@ export default function PackageSearch() {
     <div className="space-y-8">
       <PackageSearchForm
         initialParams={parsedParams}
-        isLoading={isLoading}
-        // FIXME: Bug where have to force re-render to update dropdown.
+        isLoading={isPending || isPlaceholderData}
         key={parsedParams.search + parsedParams.repo + parsedParams.arch}
         onSubmit={onFormSubmit}
       />
@@ -106,19 +84,18 @@ export default function PackageSearch() {
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
+          <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
 
-      {results && (
+      {data && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Found {results.total_packages.toLocaleString()} packages. Page{' '}
-            {parsedParams.current_page} of{' '}
-            {results.total_pages.toLocaleString()}.
+            Found {data.total_packages.toLocaleString()} packages. Page{' '}
+            {parsedParams.current_page} of {data.total_pages.toLocaleString()}.
           </p>
 
-          {results.packages.length > 0 ? (
+          {data.packages.length > 0 ? (
             <>
               <PackageTable
                 onArchitectureClick={arch => {
@@ -135,11 +112,11 @@ export default function PackageSearch() {
                     repo: repo === parsedParams.repo ? '' : repo,
                   });
                 }}
-                packages={results.packages}
+                packages={data.packages}
               />
               <div className="flex items-center justify-end space-x-2">
                 <Button
-                  disabled={isLoading || parsedParams.current_page <= 1}
+                  disabled={isPlaceholderData || parsedParams.current_page <= 1}
                   onClick={() =>
                     setSearchParams({
                       ...parsedParams,
@@ -153,8 +130,8 @@ export default function PackageSearch() {
                 </Button>
                 <Button
                   disabled={
-                    isLoading ||
-                    parsedParams.current_page >= results.total_pages
+                    isPlaceholderData ||
+                    parsedParams.current_page >= data.total_pages
                   }
                   onClick={() =>
                     setSearchParams({

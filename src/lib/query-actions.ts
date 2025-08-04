@@ -20,7 +20,9 @@ export async function fetchSearchResults(
   const query = buildSearchQuery(params);
   const response = await fetch(`/api/search?${query}`, {signal});
   if (!response.ok) {
-    throw new Error(`Failed to fetch search results: ${response.statusText}`);
+    throw new Error(
+      `Failed to fetch search results. ${response.statusText}`.trim()
+    );
   }
   return PackageSearchResponseSchema.parse(await response.json());
 }

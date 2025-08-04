@@ -41,11 +41,11 @@ export function convertURLSearchParamsToObject(
  */
 export function getDownloadMirrorUrl(pkg: PackageDetails): string {
   const baseUrl = 'https://cdn77.cachyos.org/repo';
-  const arch = pkg.pkg_arch === 'any' ? 'x86_64' : pkg.pkg_arch;
+  const dir = getRepoDir(pkg.repo_name);
   const repo = pkg.repo_name;
   const pkgName = `${encodeURIComponent(pkg.pkg_name)}-${encodeURIComponent(pkg.pkg_version)}-${pkg.pkg_arch}`;
 
-  return `${baseUrl}/${arch}/${repo}/${pkgName}.pkg.tar.zst`;
+  return `${baseUrl}/${dir}/${repo}/${pkgName}.pkg.tar.zst`;
 }
 
 /**
@@ -75,4 +75,14 @@ export function getPkgverWithoutBuildnum(pkgver: string): string {
   // `dashPos` is the index of the last dash in `pkgver`.
   // `dotPos` is the index of the first dot in `pkgrel`.
   return pkgver.substring(0, dashPos + dotPos + 1);
+}
+
+function getRepoDir(repoName: string): string {
+  if (repoName.endsWith('v4') || repoName.endsWith('znver4')) {
+    return 'x86_64_v4';
+  }
+  if (repoName.endsWith('v3')) {
+    return 'x86_64_v3';
+  }
+  return 'x86_64';
 }

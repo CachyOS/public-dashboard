@@ -120,51 +120,59 @@ function makePkg(overrides: Partial<PackageDetails>): PackageDetails {
 }
 
 describe('getDownloadMirrorUrl', () => {
-  test('returns correct URL for x86_64 arch', () => {
-    const pkg = makePkg({
+  test('returns correct URL for different architectures', () => {
+    const x86_64Pkg = makePkg({
       pkg_arch: PackageArch.x86_64,
       pkg_name: 'foo',
       pkg_version: '2.3.4-1',
       repo_name: 'cachyos',
     });
-    expect(getDownloadMirrorUrl(pkg)).toBe(
+    expect(getDownloadMirrorUrl(x86_64Pkg)).toBe(
       'https://cdn77.cachyos.org/repo/x86_64/cachyos/foo-2.3.4-1-x86_64.pkg.tar.zst'
     );
-  });
 
-  test('returns correct URL for "any" arch (should use x86_64 in URL)', () => {
-    const pkg = makePkg({
+    const anyArchPkg = makePkg({
       pkg_arch: PackageArch.Any,
       pkg_name: 'bar',
       pkg_version: '1.0.0-2',
       repo_name: 'cachyos',
     });
-    expect(getDownloadMirrorUrl(pkg)).toBe(
+    expect(getDownloadMirrorUrl(anyArchPkg)).toBe(
       'https://cdn77.cachyos.org/repo/x86_64/cachyos/bar-1.0.0-2-any.pkg.tar.zst'
     );
   });
 
-  test('returns correct URL for custom repo and arch', () => {
-    const pkg = makePkg({
+  test('returns correct URL for architecture-specific repos', () => {
+    const v3Pkg = makePkg({
       pkg_arch: PackageArch.x86_64_v3,
-      pkg_name: 'baz',
-      pkg_version: '3.2.1-5',
-      repo_name: 'cachyos-core-v3',
+      pkg_name: 'v3pkg',
+      pkg_version: '2.0.0-2',
+      repo_name: 'cachyos-v3',
     });
-    expect(getDownloadMirrorUrl(pkg)).toBe(
-      'https://cdn77.cachyos.org/repo/x86_64_v3/cachyos-core-v3/baz-3.2.1-5-x86_64_v3.pkg.tar.zst'
+    expect(getDownloadMirrorUrl(v3Pkg)).toBe(
+      'https://cdn77.cachyos.org/repo/x86_64_v3/cachyos-v3/v3pkg-2.0.0-2-x86_64_v3.pkg.tar.zst'
+    );
+
+    const v4Pkg = makePkg({
+      pkg_arch: PackageArch.x86_64_v4,
+      pkg_name: 'znver4pkg',
+      pkg_version: '0.1.0-1',
+      repo_name: 'cachyos-znver4',
+    });
+    expect(getDownloadMirrorUrl(v4Pkg)).toBe(
+      'https://cdn77.cachyos.org/repo/x86_64_v4/cachyos-znver4/znver4pkg-0.1.0-1-x86_64_v4.pkg.tar.zst'
     );
   });
 
-  test('encodes special characters in pkg_name and pkg_version', () => {
+  test('encodes special characters in package name and version', () => {
     const pkg = makePkg({
       pkg_arch: PackageArch.x86_64,
-      pkg_name: 'foo bar',
-      pkg_version: '1.0.0-beta+1',
+      pkg_name: 'foo/bar@baz',
+      pkg_version: '1.0.0:beta+1',
       repo_name: 'cachyos',
     });
     expect(getDownloadMirrorUrl(pkg)).toBe(
-      'https://cdn77.cachyos.org/repo/x86_64/cachyos/foo%20bar-1.0.0-beta%2B1-x86_64.pkg.tar.zst'
+      'https://cdn77.cachyos.org/repo/x86_64/cachyos/foo%2Fbar%40baz-1.0.0%3Abeta%2B1-x86_64.pkg.tar.zst'
     );
   });
 });

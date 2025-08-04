@@ -1,6 +1,8 @@
 import {type ClassValue, clsx} from 'clsx';
 import {twMerge} from 'tailwind-merge';
 
+import {PackageDetails} from './types';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -29,6 +31,21 @@ export function convertURLSearchParamsToObject(
     result[key] = allValues.length > 1 ? allValues : allValues[0];
   }
   return result;
+}
+
+/**
+ * Returns the download mirror URL for CachyOS packages.
+ *
+ * @returns The download mirror URL as a string.
+ * @example https://cdn77.cachyos.org/repo/x86_64/cachyos/64gram-desktop-1%3A1.1.58-2-x86_64.pkg.tar.zst
+ */
+export function getDownloadMirrorUrl(pkg: PackageDetails): string {
+  const baseUrl = 'https://cdn77.cachyos.org/repo';
+  const arch = pkg.pkg_arch === 'any' ? 'x86_64' : pkg.pkg_arch;
+  const repo = pkg.repo_name;
+  const pkgName = `${encodeURI(pkg.pkg_name)}-${encodeURI(pkg.pkg_version)}-${pkg.pkg_arch}`;
+
+  return `${baseUrl}/${arch}/${repo}/${pkgName}.pkg.tar.zst`;
 }
 
 /**

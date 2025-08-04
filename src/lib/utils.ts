@@ -1,6 +1,8 @@
 import {type ClassValue, clsx} from 'clsx';
 import {twMerge} from 'tailwind-merge';
 
+import {PackageDetails} from './types';
+
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
@@ -32,6 +34,21 @@ export function convertURLSearchParamsToObject(
 }
 
 /**
+ * Returns the download mirror URL for CachyOS packages.
+ *
+ * @returns The download mirror URL as a string.
+ * @example https://cdn77.cachyos.org/repo/x86_64/cachyos/64gram-desktop-1%3A1.1.58-2-x86_64.pkg.tar.zst
+ */
+export function getDownloadMirrorUrl(pkg: PackageDetails): string {
+  const baseUrl = 'https://cdn77.cachyos.org/repo';
+  const dir = getRepoDir(pkg.repo_name);
+  const repo = pkg.repo_name;
+  const pkgName = `${encodeURIComponent(pkg.pkg_name)}-${encodeURIComponent(pkg.pkg_version)}-${pkg.pkg_arch}`;
+
+  return `${baseUrl}/${dir}/${repo}/${pkgName}.pkg.tar.zst`;
+}
+
+/**
  * Extracts the package version without the build number suffix.
  *
  * @param pkgver The full package version string (e.g., "1.0.0-1.2", "20230101-1", "1.2.3-1").
@@ -58,4 +75,14 @@ export function getPkgverWithoutBuildnum(pkgver: string): string {
   // `dashPos` is the index of the last dash in `pkgver`.
   // `dotPos` is the index of the first dot in `pkgrel`.
   return pkgver.substring(0, dashPos + dotPos + 1);
+}
+
+function getRepoDir(repoName: string): string {
+  if (repoName.endsWith('v4') || repoName.endsWith('znver4')) {
+    return 'x86_64_v4';
+  }
+  if (repoName.endsWith('v3')) {
+    return 'x86_64_v3';
+  }
+  return 'x86_64';
 }

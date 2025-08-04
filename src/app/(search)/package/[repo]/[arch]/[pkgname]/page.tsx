@@ -28,7 +28,7 @@ export async function generateMetadata({
   const {arch, pkgname, repo} = await params;
 
   return {
-    title: `${pkgname} - ${repo} (${arch})`,
+    title: `${decodeURIComponent(pkgname)} - ${decodeURIComponent(repo)} (${decodeURIComponent(arch)})`,
   };
 }
 

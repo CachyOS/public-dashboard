@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import {cachyosPaths} from '@/lib/cachy';
 import {BriefPackageList, PackageDetails} from '@/lib/types';
-import {getPkgverWithoutBuildnum} from '@/lib/utils';
+import {getDownloadMirrorUrl, getPkgverWithoutBuildnum} from '@/lib/utils';
 
 type PackageDetailsComponentProps = {
   pkg: PackageDetails;
@@ -104,6 +104,15 @@ export default function PackageDetailsComponent({
             </DetailRow>
             <DetailRow label="Installed Size">
               {pkg.pkg_isize ? formatBytes(pkg.pkg_isize) : 'unknown'}
+            </DetailRow>
+            <DetailRow label="Download Mirror">
+              <a
+                className="text-primary hover:underline"
+                href={getDownloadMirrorUrl(pkg)}
+                target="_blank"
+              >
+                {getDownloadMirrorUrl(pkg)}
+              </a>
             </DetailRow>
             <DetailRow label="SHA256 Sum">
               <span className="font-mono text-sm break-all">

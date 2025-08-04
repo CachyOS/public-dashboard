@@ -164,7 +164,7 @@ describe('getDownloadMirrorUrl', () => {
       repo_name: 'cachyos',
     });
     expect(getDownloadMirrorUrl(pkg)).toBe(
-      'https://cdn77.cachyos.org/repo/x86_64/cachyos/foo%20bar-1.0.0-beta+1-x86_64.pkg.tar.zst'
+      'https://cdn77.cachyos.org/repo/x86_64/cachyos/foo%20bar-1.0.0-beta%2B1-x86_64.pkg.tar.zst'
     );
   });
 });

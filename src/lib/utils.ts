@@ -43,7 +43,7 @@ export function getDownloadMirrorUrl(pkg: PackageDetails): string {
   const baseUrl = 'https://cdn77.cachyos.org/repo';
   const arch = pkg.pkg_arch === 'any' ? 'x86_64' : pkg.pkg_arch;
   const repo = pkg.repo_name;
-  const pkgName = `${encodeURI(pkg.pkg_name)}-${encodeURI(pkg.pkg_version)}-${pkg.pkg_arch}`;
+  const pkgName = `${encodeURIComponent(pkg.pkg_name)}-${encodeURIComponent(pkg.pkg_version)}-${pkg.pkg_arch}`;
 
   return `${baseUrl}/${arch}/${repo}/${pkgName}.pkg.tar.zst`;
 }

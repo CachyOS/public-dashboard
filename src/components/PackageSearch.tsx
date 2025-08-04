@@ -62,6 +62,16 @@ export default function PackageSearch() {
     setSearchParams(searchParams);
   };
 
+  const onFormReset = () => {
+    setSearchParams({
+      arch: '',
+      current_page: 1,
+      page_size: 15,
+      repo: '',
+      search: '',
+    });
+  };
+
   const prefetch = (page: number) => {
     queryClient.prefetchQuery({
       queryFn: searchQueryFn({...parsedParams, current_page: page}),
@@ -76,6 +86,7 @@ export default function PackageSearch() {
         initialParams={parsedParams}
         isLoading={isPending || isPlaceholderData}
         key={parsedParams.search + parsedParams.repo + parsedParams.arch}
+        onReset={onFormReset}
         onSubmit={onFormSubmit}
       />
 

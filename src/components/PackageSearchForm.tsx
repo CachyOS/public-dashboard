@@ -18,12 +18,14 @@ import {PackageArch, PackageRepo, PackagesSearchQueryParams} from '@/lib/types';
 interface PackageSearchFormProps {
   initialParams: PackagesSearchQueryParams;
   isLoading: boolean;
+  onReset: () => void;
   onSubmit: (params: PackagesSearchQueryParams) => void;
 }
 
 export default function PackageSearchForm({
   initialParams,
   isLoading,
+  onReset,
   onSubmit,
 }: PackageSearchFormProps) {
   const [params, setParams] =
@@ -61,11 +63,16 @@ export default function PackageSearchForm({
     onSubmit(params);
   };
 
+  const handleReset = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    onReset();
+  };
+
   const repoValues = params.repo ? params.repo.split(',').filter(Boolean) : [];
   const archValues = params.arch ? params.arch.split(',').filter(Boolean) : [];
 
   return (
-    <form className="space-y-4" onSubmit={handleSubmit}>
+    <form className="space-y-5" onReset={handleReset} onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="search">Package Name/Description</Label>
@@ -135,16 +142,22 @@ export default function PackageSearchForm({
           </DropdownMenu>
         </div>
       </div>
-      <Button disabled={isLoading} type="submit">
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Searching...
-          </>
-        ) : (
-          'Search'
-        )}
-      </Button>
+      <div className="flex space-x-4">
+        <Button className="min-w-24" disabled={isLoading} type="submit">
+          {isLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Searching...
+            </>
+          ) : (
+            'Search'
+          )}
+        </Button>
+
+        <Button type="reset" variant="ghost">
+          Reset
+        </Button>
+      </div>
     </form>
   );
 }

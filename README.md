@@ -14,18 +14,20 @@ The web dashboard for the CachyOS repositories provides a user-friendly interfac
 
 ### Prerequisites
 
-*   [Node.js](https://nodejs.org/) (v20 or later)
-*   [Bun](https://bun.sh/) (v1.2 or later)
+- [Node.js](https://nodejs.org/) (v20 or later)
+- [Bun](https://bun.sh/) (v1.2 or later)
 
 ### Installation
 
 1.  Clone the repository:
+
     ```bash
     git clone https://github.com/cachyos/public-dashboard.git
     cd public-dashboard
     ```
 
 2.  Install the dependencies:
+
     ```bash
     bun --bun install
     ```

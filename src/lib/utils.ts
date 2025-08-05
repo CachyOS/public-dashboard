@@ -86,3 +86,5 @@ function getRepoDir(repoName: string): string {
   }
   return 'x86_64';
 }
+
+export const INTL_LOCALE = new Intl.Locale('en-IE');

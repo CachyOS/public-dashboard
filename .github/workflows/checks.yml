@@ -3,15 +3,15 @@ name: Dashboard Checks
 on:
   push:
     paths-ignore:
-    - '.github/ISSUE_TEMPLATE/**'
-    - '*.md'
-    - '*.sh'
-    - 'LICENSE'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '*.md'
+      - '*.sh'
+      - 'LICENSE'
     branches:
-    - develop
+      - develop
   pull_request:
     branches:
-    - develop
+      - develop
 
 concurrency:
   group: dashboard-checks-${{ github.ref }}

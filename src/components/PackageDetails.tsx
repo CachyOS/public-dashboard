@@ -12,7 +12,11 @@ import {
 } from '@/components/ui/card';
 import {cachyosPaths} from '@/lib/cachy';
 import {BriefPackageList, PackageDetails} from '@/lib/types';
-import {getDownloadMirrorUrl, getPkgverWithoutBuildnum} from '@/lib/utils';
+import {
+  getDownloadMirrorUrl,
+  getPkgverWithoutBuildnum,
+  INTL_LOCALE,
+} from '@/lib/utils';
 
 type PackageDetailsComponentProps = {
   pkg: PackageDetails;
@@ -90,7 +94,9 @@ export default function PackageDetailsComponent({
                   dateTime={new Date(pkg.pkg_builddate * 1000).toISOString()}
                   suppressHydrationWarning
                 >
-                  {new Date(pkg.pkg_builddate * 1000).toLocaleString()}
+                  {new Date(pkg.pkg_builddate * 1000).toLocaleString(
+                    INTL_LOCALE
+                  )}
                 </time>
               ) : (
                 'unknown'

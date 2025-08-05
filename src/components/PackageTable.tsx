@@ -7,6 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {BriefPackageList} from '@/lib/types';
+import {INTL_LOCALE} from '@/lib/utils';
 
 import {HoverPrefetchLink} from './HoverPrefetchLink';
 
@@ -62,7 +63,9 @@ export default function PackageTable({
                   dateTime={new Date(pkg.pkg_builddate * 1000).toISOString()}
                   suppressHydrationWarning
                 >
-                  {new Date(pkg.pkg_builddate * 1000).toLocaleDateString()}
+                  {new Date(pkg.pkg_builddate * 1000).toLocaleDateString(
+                    INTL_LOCALE
+                  )}
                 </time>
               </TableCell>
             </TableRow>

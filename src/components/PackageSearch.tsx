@@ -19,6 +19,7 @@ import {
   PackagesSearchQueryParams,
   PackagesSearchQueryParamsSchema,
 } from '@/lib/types';
+import {INTL_LOCALE} from '@/lib/utils';
 
 export default function PackageSearch() {
   const pathname = usePathname();
@@ -101,8 +102,9 @@ export default function PackageSearch() {
       {data && (
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Found {data.total_packages.toLocaleString()} packages. Page{' '}
-            {parsedParams.current_page} of {data.total_pages.toLocaleString()}.
+            Found {data.total_packages.toLocaleString(INTL_LOCALE)} packages.
+            Page {parsedParams.current_page} of{' '}
+            {data.total_pages.toLocaleString(INTL_LOCALE)}.
           </p>
 
           {data.packages.length > 0 ? (

@@ -46,18 +46,18 @@ export default function PackageTable({
       },
       header: 'Package Name',
       meta: {
-        headerClassName: 'sm:min-w-[300px]',
+        headerClassName: 'md:min-w-[300px]',
       },
     }),
     columnHelper.accessor('pkg_version', {
       header: 'Version',
       meta: {
-        headerClassName: 'sm:w-[300px]',
+        headerClassName: 'md:w-[300px]',
       },
     }),
     columnHelper.accessor('repo_name', {
       cell: ({getValue}) => {
-        const repoName = getValue() as string;
+        const repoName = getValue();
         return (
           <button
             className="cursor-pointer text-primary hover:underline"
@@ -69,12 +69,12 @@ export default function PackageTable({
       },
       header: 'Repository',
       meta: {
-        headerClassName: 'sm:w-[300px]',
+        headerClassName: 'md:w-[300px]',
       },
     }),
     columnHelper.accessor('pkg_arch', {
       cell: ({getValue}) => {
-        const arch = getValue() as string;
+        const arch = getValue();
         return (
           <button
             className="cursor-pointer text-primary hover:underline"
@@ -86,12 +86,12 @@ export default function PackageTable({
       },
       header: 'Architecture',
       meta: {
-        headerClassName: 'sm:w-[200px]',
+        headerClassName: 'md:w-[200px]',
       },
     }),
     columnHelper.accessor('pkg_builddate', {
       cell: ({getValue}) => {
-        const buildDate = getValue() as number;
+        const buildDate = getValue();
         const date = new Date(buildDate * 1000);
         return (
           <time dateTime={date.toISOString()} suppressHydrationWarning>
@@ -101,7 +101,7 @@ export default function PackageTable({
       },
       header: 'Last Updated',
       meta: {
-        headerClassName: 'sm:w-[200px]',
+        headerClassName: 'md:w-[200px]',
       },
     }),
   ];

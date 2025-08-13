@@ -103,7 +103,7 @@ export default function PackageSearch() {
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Found {data.total_packages.toLocaleString(INTL_LOCALE)} packages.
-            Page {parsedParams.current_page} of{' '}
+            Page {parsedParams.current_page.toLocaleString(INTL_LOCALE)} of{' '}
             {data.total_pages.toLocaleString(INTL_LOCALE)}.
           </p>
 

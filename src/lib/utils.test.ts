@@ -5,6 +5,7 @@ import {
   convertURLSearchParamsToObject,
   getDownloadMirrorUrl,
   getPkgverWithoutBuildnum,
+  pagination,
 } from './utils';
 
 describe('convertURLSearchParamsToObject', () => {
@@ -174,5 +175,142 @@ describe('getDownloadMirrorUrl', () => {
     expect(getDownloadMirrorUrl(pkg)).toBe(
       'https://cdn77.cachyos.org/repo/x86_64/cachyos/foo%2Fbar%40baz-1.0.0%3Abeta%2B1-x86_64.pkg.tar.zst'
     );
+  });
+});
+
+describe('pagination', () => {
+  test('should handle edge cases', () => {
+    // Single page
+    expect(pagination(1, 1)).toEqual([1]);
+
+    // Two pages
+    expect(pagination(1, 2)).toEqual([1, 2]);
+    expect(pagination(2, 2)).toEqual([1, 2]);
+
+    // Three pages
+    expect(pagination(1, 3)).toEqual([1, 2, 3]);
+    expect(pagination(2, 3)).toEqual([1, 2, 3]);
+    expect(pagination(3, 3)).toEqual([1, 2, 3]);
+  });
+
+  test('should show all pages when total pages is small', () => {
+    // With default siblingCount=2, we show all pages if totalPages <= 7
+    expect(pagination(1, 7)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(pagination(4, 7)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(pagination(7, 7)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+  });
+
+  test('should show right ellipsis only (beginning pages)', () => {
+    // Case 1: No left ellipsis, but right ellipsis
+    expect(pagination(1, 10)).toEqual([1, 2, 3, 4, 5, 6, 7, '…', 10]);
+    expect(pagination(2, 10)).toEqual([1, 2, 3, 4, 5, 6, 7, '…', 10]);
+    expect(pagination(3, 10)).toEqual([1, 2, 3, 4, 5, 6, 7, '…', 10]);
+    expect(pagination(4, 10)).toEqual([1, 2, 3, 4, 5, 6, 7, '…', 10]);
+    expect(pagination(5, 10)).toEqual([1, 2, 3, 4, 5, 6, 7, '…', 10]);
+  });
+
+  test('should show left ellipsis only (ending pages)', () => {
+    // Case 2: Left ellipsis, but no right ellipsis
+    expect(pagination(10, 10)).toEqual([1, '…', 4, 5, 6, 7, 8, 9, 10]);
+    expect(pagination(9, 10)).toEqual([1, '…', 4, 5, 6, 7, 8, 9, 10]);
+    expect(pagination(8, 10)).toEqual([1, '…', 4, 5, 6, 7, 8, 9, 10]);
+    expect(pagination(7, 10)).toEqual([1, '…', 4, 5, 6, 7, 8, 9, 10]);
+    expect(pagination(6, 10)).toEqual([1, '…', 4, 5, 6, 7, 8, 9, 10]);
+  });
+
+  test('should show both ellipses (middle pages)', () => {
+    // Case 3: Both left and right ellipsis
+    expect(pagination(6, 11)).toEqual([1, '…', 4, 5, 6, 7, 8, '…', 11]);
+    expect(pagination(6, 15)).toEqual([1, '…', 4, 5, 6, 7, 8, '…', 15]);
+    expect(pagination(8, 20)).toEqual([1, '…', 6, 7, 8, 9, 10, '…', 20]);
+  });
+
+  test('should handle custom siblingCount', () => {
+    // siblingCount = 1
+    expect(pagination(5, 10, 1)).toEqual([1, '…', 4, 5, 6, '…', 10]);
+    expect(pagination(1, 10, 1)).toEqual([1, 2, 3, 4, 5, '…', 10]);
+    expect(pagination(10, 10, 1)).toEqual([1, '…', 6, 7, 8, 9, 10]);
+
+    // siblingCount = 3
+    expect(pagination(7, 15, 3)).toEqual([
+      1,
+      '…',
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      '…',
+      15,
+    ]);
+    expect(pagination(1, 15, 3)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, '…', 15]);
+    expect(pagination(15, 15, 3)).toEqual([
+      1,
+      '…',
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+    ]);
+  });
+
+  test('should handle boundary transitions correctly', () => {
+    // Test the transition points where ellipsis appear/disappear
+    expect(pagination(5, 11)).toEqual([1, 2, 3, 4, 5, 6, 7, '…', 11]);
+    expect(pagination(6, 11)).toEqual([1, '…', 4, 5, 6, 7, 8, '…', 11]);
+
+    expect(pagination(6, 11)).toEqual([1, '…', 4, 5, 6, 7, 8, '…', 11]);
+    expect(pagination(7, 11)).toEqual([1, '…', 5, 6, 7, 8, 9, 10, 11]);
+  });
+
+  test('should maintain consistent item count with ellipses', () => {
+    // With default siblingCount=2, target is 2*2+5=9 items when both ellipses are present
+    const result = pagination(10, 20);
+    expect(result).toEqual([1, '…', 8, 9, 10, 11, 12, '…', 20]);
+    expect(result).toHaveLength(9);
+
+    // With siblingCount=1, target is 1*2+5=7 items
+    const result2 = pagination(10, 20, 1);
+    expect(result2).toEqual([1, '…', 9, 10, 11, '…', 20]);
+    expect(result2).toHaveLength(7);
+  });
+
+  test('should handle large page numbers', () => {
+    expect(pagination(500, 1000)).toEqual([
+      1,
+      '…',
+      498,
+      499,
+      500,
+      501,
+      502,
+      '…',
+      1000,
+    ]);
+    expect(pagination(1, 1000)).toEqual([1, 2, 3, 4, 5, 6, 7, '…', 1000]);
+    expect(pagination(1000, 1000)).toEqual([
+      1,
+      '…',
+      994,
+      995,
+      996,
+      997,
+      998,
+      999,
+      1000,
+    ]);
+  });
+
+  test('should handle zero siblingCount', () => {
+    expect(pagination(5, 10, 0)).toEqual([1, '…', 5, '…', 10]);
+    expect(pagination(1, 10, 0)).toEqual([1, 2, 3, '…', 10]);
+    expect(pagination(10, 10, 0)).toEqual([1, '…', 8, 9, 10]);
   });
 });

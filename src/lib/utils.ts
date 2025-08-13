@@ -89,66 +89,77 @@ function getRepoDir(repoName: string): string {
 
 export const INTL_LOCALE = new Intl.Locale('en-IE');
 
+export const ELLIPSIS = '…';
+
 /**
  * Generates pagination items for a given current page and total pages.
  *
  * @param currentPage The current page number.
  * @param totalPages The total number of pages.
- * @param siblingCount The number of sibling pages to show on each side of the current page (default: 1).
+ * @param siblingCount The number of sibling pages to show on each side of the current page
  * @returns An array of page numbers and ellipsis strings for pagination.
- *
- * @example
- * pagination(1, 10) // [1, 2, 3, 4, '…', 10]
- * pagination(5, 10) // [1, '…', 4, 5, 6, '…', 10]
- * pagination(5, 10, 2) // [1, '…', 3, 4, 5, 6, 7, '…', 10]
- * pagination(8, 10, 2) // [1, '…', 6, 7, 8, 9, 10]
  */
 export function pagination(
   currentPage: number,
   totalPages: number,
   siblingCount: number = 2
-): (number | string)[] {
-  // Calculate the range of pages to show around the current page
-  const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
+): (number | typeof ELLIPSIS)[] {
+  const FIRST_PAGE = 1;
+  const OFFSET = 1;
+  const FIXED_PAGINATION_ELEMENTS = 5; // first, last, current, left ellipsis, right ellipsis
+
+  if (totalPages <= 0) return [];
+  currentPage = Math.max(FIRST_PAGE, Math.min(currentPage, totalPages));
+
+  const totalVisiblePages = siblingCount * 2 + FIXED_PAGINATION_ELEMENTS;
+  if (totalPages <= totalVisiblePages) {
+    return range(FIRST_PAGE, totalPages);
+  }
+
+  const result: (number | typeof ELLIPSIS)[] = [];
+
+  const leftSiblingIndex = Math.max(currentPage - siblingCount, FIRST_PAGE);
   const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
 
-  // Determine if we should show ellipsis
-  // We show left ellipsis if there's a gap between 1 and the left sibling
-  const shouldShowLeftEllipsis = leftSiblingIndex > 2;
-  // We show right ellipsis if there's a gap between the right sibling and the last page
-  const shouldShowRightEllipsis = rightSiblingIndex < totalPages - 2;
+  const leftEllipsisIndex = leftSiblingIndex - OFFSET;
+  const rightEllipsisIndex = rightSiblingIndex + OFFSET;
 
-  const firstPageIndex = 1;
-  const lastPageIndex = totalPages;
+  const hasLeftEllipsis = leftEllipsisIndex > 2;
+  const hasRightEllipsis = rightEllipsisIndex < totalPages - OFFSET;
 
-  // Case 1: No left ellipsis, but right ellipsis
-  if (!shouldShowLeftEllipsis && shouldShowRightEllipsis) {
-    const leftItemCount = 2 + siblingCount * 2; // Current page + siblings on both sides + first page
-    const leftRange = range(1, Math.min(leftItemCount, totalPages - 1));
+  result.push(FIRST_PAGE);
 
-    return [...leftRange, '…', totalPages];
+  if (hasLeftEllipsis) {
+    result.push(ELLIPSIS);
   }
 
-  // Case 2: Left ellipsis, but no right ellipsis
-  if (shouldShowLeftEllipsis && !shouldShowRightEllipsis) {
-    const rightItemCount = 2 + siblingCount * 2; // Current page + siblings on both sides + last page
-    const rightRange = range(
-      Math.max(totalPages - rightItemCount + 1, 2),
-      totalPages
-    );
+  let left = FIRST_PAGE + OFFSET;
+  let right = totalPages - OFFSET;
 
-    return [firstPageIndex, '…', ...rightRange];
+  if (hasLeftEllipsis && hasRightEllipsis) {
+    left = leftSiblingIndex;
+    right = rightSiblingIndex;
+  }
+  if (!hasLeftEllipsis && hasRightEllipsis) {
+    const numbersToShow = totalVisiblePages - 2; // ellipsis, last
+    right = Math.max(numbersToShow, rightSiblingIndex);
+  }
+  if (hasLeftEllipsis && !hasRightEllipsis) {
+    const numbersToShow = totalVisiblePages - OFFSET - 2; // first, ellipsis
+    left = Math.min(totalPages - numbersToShow, leftSiblingIndex);
   }
 
-  // Case 3: Both left and right ellipsis
-  if (shouldShowLeftEllipsis && shouldShowRightEllipsis) {
-    const middleRange = range(leftSiblingIndex, rightSiblingIndex);
-
-    return [firstPageIndex, '…', ...middleRange, '…', lastPageIndex];
+  for (let i = left; i <= right; i++) {
+    result.push(i);
   }
 
-  // Case 4: No ellipsis needed, show all pages
-  return range(1, totalPages);
+  if (hasRightEllipsis) {
+    result.push(ELLIPSIS);
+  }
+
+  result.push(totalPages);
+
+  return result;
 }
 
 /**
@@ -157,11 +168,11 @@ export function pagination(
  * @param start The starting number.
  * @param end The ending number.
  * @returns An array of numbers from `start` to `end`.
- *
- * @example
- * range(1, 5) // [1, 2, 3, 4, 5]
- * range(3, 7) // [3, 4, 5, 6, 7]
  */
 export function range(start: number, end: number): number[] {
-  return Array.from({length: end - start + 1}, (_, i) => i + start);
+  const INCLUSIVE_OFFSET = 1;
+  return Array.from(
+    {length: end - start + INCLUSIVE_OFFSET},
+    (_, i) => i + start
+  );
 }

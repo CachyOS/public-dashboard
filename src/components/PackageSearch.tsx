@@ -5,7 +5,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import {AlertCircle} from 'lucide-react';
+import {AlertCircle, ChevronLeft, ChevronRight} from 'lucide-react';
 import {usePathname, useSearchParams} from 'next/navigation';
 import {useCallback, useMemo} from 'react';
 
@@ -19,7 +19,7 @@ import {
   PackagesSearchQueryParams,
   PackagesSearchQueryParamsSchema,
 } from '@/lib/types';
-import {INTL_LOCALE, pagination} from '@/lib/utils';
+import {ELLIPSIS, INTL_LOCALE, pagination} from '@/lib/utils';
 
 export default function PackageSearch() {
   const pathname = usePathname();
@@ -181,19 +181,20 @@ function PackageTablePagination({
         size="sm"
         variant="ghost"
       >
-        Previous
+        <span className="sr-only">Go to previous page</span>
+        <ChevronLeft />
       </Button>
       {pages.map((page, index) => {
-        if (typeof page === 'string') {
+        if (page === ELLIPSIS) {
           return (
-            <Button disabled key={page + index} size="sm" variant="ghost">
+            <Button disabled key={index} size="sm" variant="ghost">
               {page}
             </Button>
           );
         }
         return (
           <Button
-            key={page}
+            key={index}
             onClick={() => onClick(page)}
             onFocus={() => onPrefetch?.(page)}
             onMouseEnter={() => onPrefetch?.(page)}
@@ -212,7 +213,8 @@ function PackageTablePagination({
         size="sm"
         variant="ghost"
       >
-        Next
+        <span className="sr-only">Go to next page</span>
+        <ChevronRight />
       </Button>
     </div>
   );

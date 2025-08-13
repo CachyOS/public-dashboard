@@ -181,19 +181,26 @@ function PackageTablePagination({
         size="sm"
         variant="ghost"
       >
-        <span className="sr-only">Go to previous page</span>
         <ChevronLeft />
+        <span className="sm:sr-only">Previous</span>
       </Button>
       {pages.map((page, index) => {
         if (page === ELLIPSIS) {
           return (
-            <Button disabled key={index} size="sm" variant="ghost">
+            <Button
+              className="hidden sm:block"
+              disabled
+              key={index}
+              size="sm"
+              variant="ghost"
+            >
               {page}
             </Button>
           );
         }
         return (
           <Button
+            className="hidden sm:block"
             key={index}
             onClick={() => onClick(page)}
             onFocus={() => onPrefetch?.(page)}
@@ -213,7 +220,7 @@ function PackageTablePagination({
         size="sm"
         variant="ghost"
       >
-        <span className="sr-only">Go to next page</span>
+        <span className="sm:sr-only">Next</span>
         <ChevronRight />
       </Button>
     </div>

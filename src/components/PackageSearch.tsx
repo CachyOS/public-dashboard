@@ -179,27 +179,26 @@ function PackageTablePagination({
         onFocus={() => onPrefetch?.(currentPage - 1)}
         onMouseEnter={() => onPrefetch?.(currentPage - 1)}
         size="sm"
-        variant="outline"
+        variant="ghost"
       >
         Previous
       </Button>
       {pages.map((page, index) => {
         if (typeof page === 'string') {
           return (
-            <span className="text-sm text-muted-foreground" key={page + index}>
+            <Button disabled key={page + index} size="sm" variant="ghost">
               {page}
-            </span>
+            </Button>
           );
         }
         return (
           <Button
-            disabled={page === currentPage}
             key={page}
             onClick={() => onClick(page)}
             onFocus={() => onPrefetch?.(page)}
             onMouseEnter={() => onPrefetch?.(page)}
             size="sm"
-            variant={page === currentPage ? 'default' : 'outline'}
+            variant={page === currentPage ? 'default' : 'ghost'}
           >
             {page}
           </Button>
@@ -211,7 +210,7 @@ function PackageTablePagination({
         onFocus={() => onPrefetch?.(currentPage + 1)}
         onMouseEnter={() => onPrefetch?.(currentPage + 1)}
         size="sm"
-        variant="outline"
+        variant="ghost"
       >
         Next
       </Button>

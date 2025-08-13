@@ -88,3 +88,80 @@ function getRepoDir(repoName: string): string {
 }
 
 export const INTL_LOCALE = new Intl.Locale('en-IE');
+
+/**
+ * Generates pagination items for a given current page and total pages.
+ *
+ * @param currentPage The current page number.
+ * @param totalPages The total number of pages.
+ * @param siblingCount The number of sibling pages to show on each side of the current page (default: 1).
+ * @returns An array of page numbers and ellipsis strings for pagination.
+ *
+ * @example
+ * pagination(1, 10) // [1, 2, 3, 4, '…', 10]
+ * pagination(5, 10) // [1, '…', 4, 5, 6, '…', 10]
+ * pagination(5, 10, 2) // [1, '…', 3, 4, 5, 6, 7, '…', 10]
+ * pagination(8, 10, 2) // [1, '…', 6, 7, 8, 9, 10]
+ */
+export function pagination(
+  currentPage: number,
+  totalPages: number,
+  siblingCount: number = 2
+): (number | string)[] {
+  // Calculate the range of pages to show around the current page
+  const leftSiblingIndex = Math.max(currentPage - siblingCount, 1);
+  const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
+
+  // Determine if we should show ellipsis
+  // We show left ellipsis if there's a gap between 1 and the left sibling
+  const shouldShowLeftEllipsis = leftSiblingIndex > 2;
+  // We show right ellipsis if there's a gap between the right sibling and the last page
+  const shouldShowRightEllipsis = rightSiblingIndex < totalPages - 2;
+
+  const firstPageIndex = 1;
+  const lastPageIndex = totalPages;
+
+  // Case 1: No left ellipsis, but right ellipsis
+  if (!shouldShowLeftEllipsis && shouldShowRightEllipsis) {
+    const leftItemCount = 2 + siblingCount * 2; // Current page + siblings on both sides + first page
+    const leftRange = range(1, Math.min(leftItemCount, totalPages - 1));
+
+    return [...leftRange, '…', totalPages];
+  }
+
+  // Case 2: Left ellipsis, but no right ellipsis
+  if (shouldShowLeftEllipsis && !shouldShowRightEllipsis) {
+    const rightItemCount = 2 + siblingCount * 2; // Current page + siblings on both sides + last page
+    const rightRange = range(
+      Math.max(totalPages - rightItemCount + 1, 2),
+      totalPages
+    );
+
+    return [firstPageIndex, '…', ...rightRange];
+  }
+
+  // Case 3: Both left and right ellipsis
+  if (shouldShowLeftEllipsis && shouldShowRightEllipsis) {
+    const middleRange = range(leftSiblingIndex, rightSiblingIndex);
+
+    return [firstPageIndex, '…', ...middleRange, '…', lastPageIndex];
+  }
+
+  // Case 4: No ellipsis needed, show all pages
+  return range(1, totalPages);
+}
+
+/**
+ * Generates an array of numbers from `start` to `end`, inclusive.
+ *
+ * @param start The starting number.
+ * @param end The ending number.
+ * @returns An array of numbers from `start` to `end`.
+ *
+ * @example
+ * range(1, 5) // [1, 2, 3, 4, 5]
+ * range(3, 7) // [3, 4, 5, 6, 7]
+ */
+export function range(start: number, end: number): number[] {
+  return Array.from({length: end - start + 1}, (_, i) => i + start);
+}

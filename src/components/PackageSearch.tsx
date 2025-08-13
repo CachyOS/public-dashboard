@@ -19,7 +19,7 @@ import {
   PackagesSearchQueryParams,
   PackagesSearchQueryParamsSchema,
 } from '@/lib/types';
-import {INTL_LOCALE} from '@/lib/utils';
+import {INTL_LOCALE, pagination} from '@/lib/utils';
 
 export default function PackageSearch() {
   const pathname = usePathname();
@@ -126,41 +126,27 @@ export default function PackageSearch() {
                 }}
                 packages={data.packages}
               />
-              <div className="flex items-center justify-end space-x-2">
-                <Button
-                  disabled={isPlaceholderData || parsedParams.current_page <= 1}
-                  onClick={() =>
+              <PackageTablePagination
+                currentPage={parsedParams.current_page}
+                onClick={(page: number) => {
+                  if (
+                    page !== parsedParams.current_page &&
+                    page > 0 &&
+                    page <= data.total_pages
+                  ) {
                     setSearchParams({
                       ...parsedParams,
-                      current_page: parsedParams.current_page - 1,
-                    })
+                      current_page: page,
+                    });
                   }
-                  onFocus={() => prefetch(parsedParams.current_page - 1)}
-                  onMouseEnter={() => prefetch(parsedParams.current_page - 1)}
-                  size="sm"
-                  variant="outline"
-                >
-                  Previous
-                </Button>
-                <Button
-                  disabled={
-                    isPlaceholderData ||
-                    parsedParams.current_page >= data.total_pages
+                }}
+                onPrefetch={(page: number) => {
+                  if (page > 0 && page <= data.total_pages) {
+                    prefetch(page);
                   }
-                  onClick={() =>
-                    setSearchParams({
-                      ...parsedParams,
-                      current_page: parsedParams.current_page + 1,
-                    })
-                  }
-                  onFocus={() => prefetch(parsedParams.current_page + 1)}
-                  onMouseEnter={() => prefetch(parsedParams.current_page + 1)}
-                  size="sm"
-                  variant="outline"
-                >
-                  Next
-                </Button>
-              </div>
+                }}
+                totalPages={data.total_pages}
+              />
             </>
           ) : (
             <p className="text-center text-muted-foreground">
@@ -169,6 +155,66 @@ export default function PackageSearch() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function PackageTablePagination({
+  currentPage,
+  onClick,
+  onPrefetch,
+  totalPages,
+}: {
+  currentPage: number;
+  onClick: (page: number) => void;
+  onPrefetch?: (page: number) => void;
+  totalPages: number;
+}) {
+  const pages = pagination(currentPage, totalPages);
+  return (
+    <div className="flex items-center justify-end space-x-2">
+      <Button
+        disabled={currentPage <= 1}
+        onClick={() => onClick(currentPage - 1)}
+        onFocus={() => onPrefetch?.(currentPage - 1)}
+        onMouseEnter={() => onPrefetch?.(currentPage - 1)}
+        size="sm"
+        variant="outline"
+      >
+        Previous
+      </Button>
+      {pages.map((page, index) => {
+        if (typeof page === 'string') {
+          return (
+            <span className="text-sm text-muted-foreground" key={page + index}>
+              {page}
+            </span>
+          );
+        }
+        return (
+          <Button
+            disabled={page === currentPage}
+            key={page}
+            onClick={() => onClick(page)}
+            onFocus={() => onPrefetch?.(page)}
+            onMouseEnter={() => onPrefetch?.(page)}
+            size="sm"
+            variant={page === currentPage ? 'default' : 'outline'}
+          >
+            {page}
+          </Button>
+        );
+      })}
+      <Button
+        disabled={currentPage >= totalPages}
+        onClick={() => onClick(currentPage + 1)}
+        onFocus={() => onPrefetch?.(currentPage + 1)}
+        onMouseEnter={() => onPrefetch?.(currentPage + 1)}
+        size="sm"
+        variant="outline"
+      >
+        Next
+      </Button>
     </div>
   );
 }

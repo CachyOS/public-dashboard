@@ -5,7 +5,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import {AlertCircle} from 'lucide-react';
+import {AlertCircle, ChevronLeft, ChevronRight} from 'lucide-react';
 import {usePathname, useSearchParams} from 'next/navigation';
 import {useCallback, useMemo} from 'react';
 
@@ -19,7 +19,7 @@ import {
   PackagesSearchQueryParams,
   PackagesSearchQueryParamsSchema,
 } from '@/lib/types';
-import {INTL_LOCALE} from '@/lib/utils';
+import {ELLIPSIS, INTL_LOCALE, pagination} from '@/lib/utils';
 
 export default function PackageSearch() {
   const pathname = usePathname();
@@ -103,7 +103,7 @@ export default function PackageSearch() {
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
             Found {data.total_packages.toLocaleString(INTL_LOCALE)} packages.
-            Page {parsedParams.current_page} of{' '}
+            Page {parsedParams.current_page.toLocaleString(INTL_LOCALE)} of{' '}
             {data.total_pages.toLocaleString(INTL_LOCALE)}.
           </p>
 
@@ -126,41 +126,27 @@ export default function PackageSearch() {
                 }}
                 packages={data.packages}
               />
-              <div className="flex items-center justify-end space-x-2">
-                <Button
-                  disabled={isPlaceholderData || parsedParams.current_page <= 1}
-                  onClick={() =>
+              <PackageTablePagination
+                currentPage={parsedParams.current_page}
+                onClick={(page: number) => {
+                  if (
+                    page !== parsedParams.current_page &&
+                    page > 0 &&
+                    page <= data.total_pages
+                  ) {
                     setSearchParams({
                       ...parsedParams,
-                      current_page: parsedParams.current_page - 1,
-                    })
+                      current_page: page,
+                    });
                   }
-                  onFocus={() => prefetch(parsedParams.current_page - 1)}
-                  onMouseEnter={() => prefetch(parsedParams.current_page - 1)}
-                  size="sm"
-                  variant="outline"
-                >
-                  Previous
-                </Button>
-                <Button
-                  disabled={
-                    isPlaceholderData ||
-                    parsedParams.current_page >= data.total_pages
+                }}
+                onPrefetch={(page: number) => {
+                  if (page > 0 && page <= data.total_pages) {
+                    prefetch(page);
                   }
-                  onClick={() =>
-                    setSearchParams({
-                      ...parsedParams,
-                      current_page: parsedParams.current_page + 1,
-                    })
-                  }
-                  onFocus={() => prefetch(parsedParams.current_page + 1)}
-                  onMouseEnter={() => prefetch(parsedParams.current_page + 1)}
-                  size="sm"
-                  variant="outline"
-                >
-                  Next
-                </Button>
-              </div>
+                }}
+                totalPages={data.total_pages}
+              />
             </>
           ) : (
             <p className="text-center text-muted-foreground">
@@ -169,6 +155,74 @@ export default function PackageSearch() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function PackageTablePagination({
+  currentPage,
+  onClick,
+  onPrefetch,
+  totalPages,
+}: {
+  currentPage: number;
+  onClick: (page: number) => void;
+  onPrefetch?: (page: number) => void;
+  totalPages: number;
+}) {
+  const pages = pagination(currentPage, totalPages);
+  return (
+    <div className="flex items-center justify-end space-x-2">
+      <Button
+        disabled={currentPage <= 1}
+        onClick={() => onClick(currentPage - 1)}
+        onFocus={() => onPrefetch?.(currentPage - 1)}
+        onMouseEnter={() => onPrefetch?.(currentPage - 1)}
+        size="sm"
+        variant="ghost"
+      >
+        <ChevronLeft />
+        <span className="sm:sr-only">Previous</span>
+      </Button>
+      {pages.map((page, index) => {
+        if (page === ELLIPSIS) {
+          return (
+            <Button
+              className="hidden sm:block"
+              disabled
+              key={index}
+              size="sm"
+              variant="ghost"
+            >
+              {page}
+            </Button>
+          );
+        }
+        return (
+          <Button
+            className="hidden sm:block"
+            key={index}
+            onClick={() => onClick(page)}
+            onFocus={() => onPrefetch?.(page)}
+            onMouseEnter={() => onPrefetch?.(page)}
+            size="sm"
+            variant={page === currentPage ? 'default' : 'ghost'}
+          >
+            {page}
+          </Button>
+        );
+      })}
+      <Button
+        disabled={currentPage >= totalPages}
+        onClick={() => onClick(currentPage + 1)}
+        onFocus={() => onPrefetch?.(currentPage + 1)}
+        onMouseEnter={() => onPrefetch?.(currentPage + 1)}
+        size="sm"
+        variant="ghost"
+      >
+        <span className="sm:sr-only">Next</span>
+        <ChevronRight />
+      </Button>
     </div>
   );
 }

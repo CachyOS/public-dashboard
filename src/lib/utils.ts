@@ -88,3 +88,91 @@ function getRepoDir(repoName: string): string {
 }
 
 export const INTL_LOCALE = new Intl.Locale('en-IE');
+
+export const ELLIPSIS = '…';
+
+/**
+ * Generates pagination items for a given current page and total pages.
+ *
+ * @param currentPage The current page number.
+ * @param totalPages The total number of pages.
+ * @param siblingCount The number of sibling pages to show on each side of the current page
+ * @returns An array of page numbers and ellipsis strings for pagination.
+ */
+export function pagination(
+  currentPage: number,
+  totalPages: number,
+  siblingCount: number = 2
+): (number | typeof ELLIPSIS)[] {
+  const FIRST_PAGE = 1;
+  const OFFSET = 1;
+  const FIXED_PAGINATION_ELEMENTS = 5; // first, last, current, left ellipsis, right ellipsis
+
+  if (totalPages <= 0) return [];
+  currentPage = Math.max(FIRST_PAGE, Math.min(currentPage, totalPages));
+
+  const totalVisiblePages = siblingCount * 2 + FIXED_PAGINATION_ELEMENTS;
+  if (totalPages <= totalVisiblePages) {
+    return range(FIRST_PAGE, totalPages);
+  }
+
+  const result: (number | typeof ELLIPSIS)[] = [];
+
+  const leftSiblingIndex = Math.max(currentPage - siblingCount, FIRST_PAGE);
+  const rightSiblingIndex = Math.min(currentPage + siblingCount, totalPages);
+
+  const leftEllipsisIndex = leftSiblingIndex - OFFSET;
+  const rightEllipsisIndex = rightSiblingIndex + OFFSET;
+
+  const hasLeftEllipsis = leftEllipsisIndex > 2;
+  const hasRightEllipsis = rightEllipsisIndex < totalPages - OFFSET;
+
+  result.push(FIRST_PAGE);
+
+  if (hasLeftEllipsis) {
+    result.push(ELLIPSIS);
+  }
+
+  let left = FIRST_PAGE + OFFSET;
+  let right = totalPages - OFFSET;
+
+  if (hasLeftEllipsis && hasRightEllipsis) {
+    left = leftSiblingIndex;
+    right = rightSiblingIndex;
+  }
+  if (!hasLeftEllipsis && hasRightEllipsis) {
+    const numbersToShow = totalVisiblePages - 2; // ellipsis, last
+    right = Math.max(numbersToShow, rightSiblingIndex);
+  }
+  if (hasLeftEllipsis && !hasRightEllipsis) {
+    const numbersToShow = totalVisiblePages - OFFSET - 2; // first, ellipsis
+    left = Math.min(totalPages - numbersToShow, leftSiblingIndex);
+  }
+
+  for (let i = left; i <= right; i++) {
+    result.push(i);
+  }
+
+  if (hasRightEllipsis) {
+    result.push(ELLIPSIS);
+  }
+
+  result.push(totalPages);
+
+  return result;
+}
+
+/**
+ * Generates an array of numbers from `start` to `end`, inclusive.
+ *
+ * @param start The starting number.
+ * @param end The ending number.
+ * @returns An array of numbers from `start` to `end`.
+ */
+export function range(start: number, end: number): number[] {
+  const INCLUSIVE_OFFSET = 1;
+  return Array.from(
+    {length: end - start + INCLUSIVE_OFFSET},
+    (_, i) => i + start
+  );
+}

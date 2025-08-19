@@ -15,7 +15,7 @@ RUN bun --bun install
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ARG NEXT_PUBLIC_APP_VERSION
+ARG NEXT_PUBLIC_APP_VERSION=production
 RUN bun --bun run build
 
 # Production

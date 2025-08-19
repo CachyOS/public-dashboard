@@ -7,8 +7,10 @@ import {
 } from '@tanstack/react-query';
 import {AlertCircle, ChevronLeft, ChevronRight} from 'lucide-react';
 import {usePathname, useSearchParams} from 'next/navigation';
-import {useCallback, useMemo} from 'react';
+import {useCallback, useEffect, useMemo} from 'react';
+import {useSessionStorage} from 'usehooks-ts';
 
+import {SEARCH_BACK_PATH} from '@/components/BackLink';
 import PackageSearchForm from '@/components/PackageSearchForm';
 import PackageTable from '@/components/PackageTable';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
@@ -25,6 +27,7 @@ export default function PackageSearch() {
   const pathname = usePathname();
   const currentParams = useSearchParams();
   const queryClient = useQueryClient();
+  const [, setGoBackPath] = useSessionStorage(SEARCH_BACK_PATH, '/');
 
   const parsedParams = useMemo<PackagesSearchQueryParams>(() => {
     return PackagesSearchQueryParamsSchema.parse({
@@ -52,10 +55,14 @@ export default function PackageSearch() {
       if (searchParams.current_page && searchParams.current_page > 1)
         query.append('current_page', String(searchParams.current_page));
 
-      window.history.pushState(null, '', `${pathname}?${query.toString()}`);
+      window.history.pushState(null, '', `${pathname}?${query}`);
     },
     [pathname]
   );
+
+  useEffect(() => {
+    setGoBackPath(`/${window.location.search}`);
+  }, [setGoBackPath, pathname, currentParams]);
 
   const onFormSubmit = (searchParams: PackagesSearchQueryParams) => {
     // Reset to first page on new search to avoid out-of-bounds issue

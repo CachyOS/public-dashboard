@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-import BackButton from '@/components/BackButton';
+import {BackLink} from '@/components/BackLink';
 import SplitPackagesList from '@/components/SplitPackagesList';
 import {Badge} from '@/components/ui/badge';
 import {
@@ -31,7 +31,7 @@ export default function PackageDetailsComponent({
   return (
     <>
       <div className="mb-4">
-        <BackButton />
+        <BackLink />
       </div>
 
       <Card>

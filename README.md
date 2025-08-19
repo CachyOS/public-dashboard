@@ -65,6 +65,8 @@ To build the Docker image, run the following command from the root directory:
 docker build -t public-repo-dashboard .
 ```
 
+An optional `--build-arg NEXT_PUBLIC_APP_VERSION=$(git rev-parse --short HEAD)` can be used to include the current Git commit in the dashboard's `<meta>` tag during the build.
+
 ### Run the Docker Container
 
 To run the Docker container, use the following command:

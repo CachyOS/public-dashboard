@@ -18,6 +18,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  other: {
+    version: process.env.NEXT_PUBLIC_APP_VERSION || 'deveopment',
+  },
   title: {
     default: 'CachyOS',
     template: 'CachyOS | %s ',

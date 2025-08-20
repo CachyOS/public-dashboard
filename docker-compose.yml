@@ -1,6 +1,9 @@
 services:
   public-repo-dashboard:
-    build: .
+    build:
+      context: .
+      args:
+        - NEXT_PUBLIC_APP_VERSION=latest
     container_name: public-repo-dashboard
     environment:
       # This should match the API service URL.

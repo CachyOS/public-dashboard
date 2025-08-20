@@ -1,9 +1,9 @@
 # Base image
-FROM oven/bun:1.2-slim as base
+FROM oven/bun:1.2-slim AS base
 WORKDIR /app
 
 # Dependencies
-FROM base as deps
+FROM base AS deps
 
 WORKDIR /app
 
@@ -12,9 +12,10 @@ COPY package.json bun.lock ./
 RUN bun --bun install
 
 # Build
-FROM base as build
+FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ARG NEXT_PUBLIC_APP_VERSION=production
 RUN bun --bun run build
 
 # Production

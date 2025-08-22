@@ -10,10 +10,15 @@ export function BackLink() {
   const [backPath] = useSessionStorage(SEARCH_BACK_PATH, '/', {
     initializeWithValue: false,
   });
+  const [pathname, query] = backPath.split('?');
+
   return (
     <Link
       className="inline-flex items-center text-sm text-primary hover:underline"
-      href={backPath}
+      href={{
+        pathname,
+        query,
+      }}
     >
       <ArrowLeft className="w-4 h-4 mr-2" />
       Back to Search

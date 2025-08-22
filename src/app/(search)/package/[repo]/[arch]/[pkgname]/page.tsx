@@ -10,21 +10,12 @@ import {
   PackageArch,
   PackageDetails,
   PackageDetailsPathParamsSchema,
-  PackageRepo,
   SplitPackagesQueryParamsSchema,
 } from '@/lib/types';
 
-type PackageDetailsPageProps = {
-  arch: PackageArch;
-  pkgname: string;
-  repo: PackageRepo;
-};
-
 export async function generateMetadata({
   params,
-}: {
-  params: Promise<PackageDetailsPageProps>;
-}): Promise<Metadata> {
+}: PageProps<'/package/[repo]/[arch]/[pkgname]'>): Promise<Metadata> {
   const {arch, pkgname, repo} = await params;
 
   return {
@@ -34,9 +25,7 @@ export async function generateMetadata({
 
 export default async function PackageDetailsPage({
   params,
-}: {
-  params: Promise<PackageDetailsPageProps>;
-}) {
+}: PageProps<'/package/[repo]/[arch]/[pkgname]'>) {
   const validation = PackageDetailsPathParamsSchema.safeParse(await params);
   if (!validation.success) {
     notFound();

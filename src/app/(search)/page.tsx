@@ -20,11 +20,7 @@ export const metadata: Metadata = {
   title: 'Package Search',
 };
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{[key: string]: string | string[] | undefined}>;
-}) {
+export default async function Home({searchParams}: PageProps<'/'>) {
   const params = parseSearchParams(await searchParams);
 
   const queryClient = getQueryClient();
@@ -62,9 +58,9 @@ export default async function Home({
   );
 }
 
-function parseSearchParams(searchParams: {
-  [key: string]: string | string[] | undefined;
-}) {
+function parseSearchParams(
+  searchParams: Awaited<PageProps<'/'>['searchParams']>
+) {
   return PackagesSearchQueryParamsSchema.parse({
     arch: searchParams.arch ?? '',
     current_page: Number(searchParams.current_page) || 1,

@@ -1,7 +1,6 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
-  typedRoutes: true,
   compiler: {
     // if NODE_ENV is production, remove console.log
     removeConsole:
@@ -16,6 +15,7 @@ const nextConfig: NextConfig = {
   },
   output: 'standalone',
   transpilePackages: ['geist'],
+  typedRoutes: true,
 };
 
 export default nextConfig;

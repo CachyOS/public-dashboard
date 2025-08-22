@@ -29,8 +29,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install
+        run: bun --bun install --frozen-lockfile
+
+      - name: Check Types
+        run: bun --bun run check
+
       - name: Build
-        run: bun --bun install --frozen-lockfile && bun --bun run build
+        run: bun --bun run build
 
       - name: Run unit tests
         run: bun --bun test

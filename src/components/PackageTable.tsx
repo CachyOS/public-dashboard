@@ -5,6 +5,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 
+import {HoverPrefetchLink} from '@/components/HoverPrefetchLink';
 import {
   Table,
   TableBody,
@@ -15,8 +16,6 @@ import {
 } from '@/components/ui/table';
 import {BriefPackage, BriefPackageList} from '@/lib/types';
 import {INTL_LOCALE} from '@/lib/utils';
-
-import {HoverPrefetchLink} from './HoverPrefetchLink';
 
 interface PackageSearchResultsTableProps {
   onArchitectureClick?: (arch: string) => void;

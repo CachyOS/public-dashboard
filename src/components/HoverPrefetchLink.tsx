@@ -1,11 +1,9 @@
 'use client';
 
-import Link from 'next/link';
-import {ComponentPropsWithoutRef, useState} from 'react';
+import Link, {LinkProps} from 'next/link';
+import {useState} from 'react';
 
-export function HoverPrefetchLink(
-  props: ComponentPropsWithoutRef<typeof Link>
-) {
+export function HoverPrefetchLink<R extends string>(props: LinkProps<R>) {
   const [active, setActive] = useState(false);
 
   return (

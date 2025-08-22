@@ -26,7 +26,7 @@ type PackageDetailsComponentProps = {
 export default function PackageDetailsComponent({
   pkg,
   pkgSplits,
-}: Readonly<PackageDetailsComponentProps>) {
+}: PackageDetailsComponentProps) {
   const sourceUrl = getSourceUrl(pkg);
   return (
     <>
@@ -126,19 +126,19 @@ export default function PackageDetailsComponent({
               </span>
             </DetailRow>
             <DetailRow label="Dependencies">
-              <BadgeList items={pkg.pkg_depends} />
+              <BadgeLinkList items={pkg.pkg_depends} />
             </DetailRow>
             <DetailRow label="Optional Deps">
-              <BadgeList items={pkg.pkg_optdepends} />
+              <BadgeLinkList items={pkg.pkg_optdepends} />
             </DetailRow>
             <DetailRow label="Provides">
-              <BadgeList items={pkg.pkg_provides} />
+              <BadgeLinkList items={pkg.pkg_provides} />
             </DetailRow>
             <DetailRow label="Conflicts With">
-              <BadgeList items={pkg.pkg_conflicts} />
+              <BadgeLinkList items={pkg.pkg_conflicts} />
             </DetailRow>
             <DetailRow label="Replaces">
-              <BadgeList items={pkg.pkg_replaces} />
+              <BadgeLinkList items={pkg.pkg_replaces} />
             </DetailRow>
             <DetailRow label="Package Files">
               {pkg.pkg_files && pkg.pkg_files.length > 0 ? (
@@ -158,8 +158,30 @@ export default function PackageDetailsComponent({
   );
 }
 
-// Helper component for rendering a list of strings as Badges
-function BadgeList({items}: {items: null | string[] | undefined}) {
+function BadgeLinkList({items}: {items: string[]}) {
+  if (!items?.length) {
+    return <span className="text-muted-foreground">N/A</span>;
+  }
+
+  const getSearch = (item: string) => {
+    const token = [': ', '.so', '='].find(t => item.includes(t));
+    return token ? item.split(token)[0].trim() : item;
+  };
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {items.map(item => (
+        <Badge asChild key={item} variant="secondary">
+          <Link href={{pathname: '/', query: {search: getSearch(item)}}}>
+            {item}
+          </Link>
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
+function BadgeList({items}: {items: string[]}) {
   if (!items || items.length === 0) {
     return <span className="text-muted-foreground">N/A</span>;
   }
@@ -174,7 +196,6 @@ function BadgeList({items}: {items: null | string[] | undefined}) {
   );
 }
 
-// Helper component for displaying a key-value pair row
 function DetailRow({
   children,
   label,
@@ -182,7 +203,6 @@ function DetailRow({
   children: React.ReactNode;
   label: string;
 }) {
-  // ignore if there's no data
   if (!children) return null;
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-2 py-3 border-b last:border-b-0">
@@ -192,7 +212,6 @@ function DetailRow({
   );
 }
 
-// Helper function to format file sizes into human-readable strings
 function formatBytes(bytes: number, decimals = 2): string {
   if (!+bytes) return '0 Bytes';
   const k = 1024;

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 
 import {BackLink} from '@/components/BackLink';
+import {CopyButton} from '@/components/CopyButton';
 import SplitPackagesList from '@/components/SplitPackagesList';
 import {Badge} from '@/components/ui/badge';
 import {
@@ -142,7 +143,11 @@ export default function PackageDetailsComponent({
             </DetailRow>
             <DetailRow label="Package Files">
               {pkg.pkg_files && pkg.pkg_files.length > 0 ? (
-                <div className="h-64 overflow-y-auto rounded-md border bg-muted p-2 font-mono text-xs">
+                <div className="relative h-64 overflow-y-auto rounded-md border bg-muted p-2 font-mono text-xs">
+                  <CopyButton
+                    className="absolute top-1 right-1"
+                    text={pkg.pkg_files.join('\n')}
+                  />
                   {pkg.pkg_files.map(file => (
                     <div key={file}>{file}</div>
                   ))}

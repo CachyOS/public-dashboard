@@ -33,12 +33,7 @@ export default function RootLayout({children}: LayoutProps<'/'>) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange
-          enableSystem
-        >
+        <ThemeProvider attribute="class" disableTransitionOnChange>
           <QueryProvider>{children}</QueryProvider>
         </ThemeProvider>
       </body>

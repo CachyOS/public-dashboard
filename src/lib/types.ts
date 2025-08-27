@@ -1,5 +1,7 @@
 import {z} from 'zod';
 
+export const PAGE_SIZE = [15, 30, 50, 100] as const;
+
 export enum PackageArch {
   Any = 'any',
   x86_64 = 'x86_64',

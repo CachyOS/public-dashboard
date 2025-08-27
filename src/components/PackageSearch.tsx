@@ -5,7 +5,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import {AlertCircle, ChevronLeft, ChevronRight} from 'lucide-react';
+import {AlertCircle} from 'lucide-react';
 import {usePathname, useSearchParams} from 'next/navigation';
 import {useCallback, useEffect, useMemo} from 'react';
 import {useSessionStorage} from 'usehooks-ts';
@@ -13,15 +13,16 @@ import {useSessionStorage} from 'usehooks-ts';
 import {SEARCH_BACK_PATH} from '@/components/BackLink';
 import PackageSearchForm from '@/components/PackageSearchForm';
 import PackageTable from '@/components/PackageTable';
+import {PackageTablePagination} from '@/components/PackageTablePagination';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
-import {Button} from '@/components/ui/button';
 import {searchQueryFn} from '@/lib/query-actions';
 import {STALE_TIME} from '@/lib/query-client';
 import {
   PackagesSearchQueryParams,
   PackagesSearchQueryParamsSchema,
+  PAGE_SIZE,
 } from '@/lib/types';
-import {ELLIPSIS, INTL_LOCALE, pagination} from '@/lib/utils';
+import {INTL_LOCALE} from '@/lib/utils';
 
 export default function PackageSearch() {
   const pathname = usePathname();
@@ -33,7 +34,7 @@ export default function PackageSearch() {
     return PackagesSearchQueryParamsSchema.parse({
       arch: currentParams.get('arch') ?? '',
       current_page: Number(currentParams.get('current_page')) || 1,
-      page_size: 15,
+      page_size: Number(currentParams.get('page_size')) || PAGE_SIZE[0],
       repo: currentParams.getAll('repo').join(','),
       search: currentParams.getAll('search').join(','),
     });
@@ -54,6 +55,8 @@ export default function PackageSearch() {
       if (searchParams.arch) query.append('arch', searchParams.arch);
       if (searchParams.current_page && searchParams.current_page > 1)
         query.append('current_page', String(searchParams.current_page));
+      if (searchParams.page_size && searchParams.page_size !== PAGE_SIZE[0])
+        query.append('page_size', String(searchParams.page_size));
 
       window.history.pushState(null, '', `${pathname}?${query}`);
     },
@@ -65,7 +68,6 @@ export default function PackageSearch() {
   }, [setGoBackPath, pathname, currentParams]);
 
   const onFormSubmit = (searchParams: PackagesSearchQueryParams) => {
-    // Reset to first page on new search to avoid out-of-bounds issue
     searchParams.current_page = 1;
     setSearchParams(searchParams);
   };
@@ -74,7 +76,7 @@ export default function PackageSearch() {
     setSearchParams({
       arch: '',
       current_page: 1,
-      page_size: 15,
+      page_size: PAGE_SIZE[0],
       repo: '',
       search: '',
     });
@@ -147,11 +149,19 @@ export default function PackageSearch() {
                     });
                   }
                 }}
+                onPageSizeChange={pageSize => {
+                  setSearchParams({
+                    ...parsedParams,
+                    current_page: 1,
+                    page_size: Number(pageSize),
+                  });
+                }}
                 onPrefetch={(page: number) => {
                   if (page > 0 && page <= data.total_pages) {
                     prefetch(page);
                   }
                 }}
+                pageSize={parsedParams.page_size}
                 totalPages={data.total_pages}
               />
             </>
@@ -162,74 +172,6 @@ export default function PackageSearch() {
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function PackageTablePagination({
-  currentPage,
-  onClick,
-  onPrefetch,
-  totalPages,
-}: {
-  currentPage: number;
-  onClick: (page: number) => void;
-  onPrefetch?: (page: number) => void;
-  totalPages: number;
-}) {
-  const pages = pagination(currentPage, totalPages);
-  return (
-    <div className="flex items-center justify-end space-x-2">
-      <Button
-        disabled={currentPage <= 1}
-        onClick={() => onClick(currentPage - 1)}
-        onFocus={() => onPrefetch?.(currentPage - 1)}
-        onMouseEnter={() => onPrefetch?.(currentPage - 1)}
-        size="sm"
-        variant="ghost"
-      >
-        <ChevronLeft />
-        <span className="sm:sr-only">Previous</span>
-      </Button>
-      {pages.map((page, index) => {
-        if (page === ELLIPSIS) {
-          return (
-            <Button
-              className="hidden sm:block"
-              disabled
-              key={index}
-              size="sm"
-              variant="ghost"
-            >
-              {page}
-            </Button>
-          );
-        }
-        return (
-          <Button
-            className="hidden sm:block"
-            key={index}
-            onClick={() => onClick(page)}
-            onFocus={() => onPrefetch?.(page)}
-            onMouseEnter={() => onPrefetch?.(page)}
-            size="sm"
-            variant={page === currentPage ? 'default' : 'ghost'}
-          >
-            {page}
-          </Button>
-        );
-      })}
-      <Button
-        disabled={currentPage >= totalPages}
-        onClick={() => onClick(currentPage + 1)}
-        onFocus={() => onPrefetch?.(currentPage + 1)}
-        onMouseEnter={() => onPrefetch?.(currentPage + 1)}
-        size="sm"
-        variant="ghost"
-      >
-        <span className="sm:sr-only">Next</span>
-        <ChevronRight />
-      </Button>
     </div>
   );
 }

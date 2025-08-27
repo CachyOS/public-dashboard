@@ -10,9 +10,6 @@ const nextConfig: NextConfig = {
           }
         : false,
   },
-  experimental: {
-    useCache: true,
-  },
   output: 'standalone',
   transpilePackages: ['geist'],
   typedRoutes: true,

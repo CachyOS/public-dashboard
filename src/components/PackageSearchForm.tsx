@@ -106,6 +106,7 @@ export default function PackageSearchForm({
                   checked={repoValues.includes(repo)}
                   key={repo}
                   onCheckedChange={() => handleSelectionChange('repo', repo)}
+                  onSelect={e => e.preventDefault()}
                 >
                   {repo}
                 </DropdownMenuCheckboxItem>
@@ -134,6 +135,7 @@ export default function PackageSearchForm({
                   checked={archValues.includes(arch)}
                   key={arch}
                   onCheckedChange={() => handleSelectionChange('arch', arch)}
+                  onSelect={e => e.preventDefault()}
                 >
                   {arch}
                 </DropdownMenuCheckboxItem>

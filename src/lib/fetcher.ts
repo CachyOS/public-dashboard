@@ -5,8 +5,10 @@ import {z} from 'zod';
 import {FetcherError} from '@/lib/errors';
 import {ErrorResponseSchema} from '@/lib/types';
 
-const EndpointURL =
-  process.env.PUBLIC_ENDPOINT_URL ?? 'http://localhost:5862/api';
+export const EndpointURL = z
+  .httpUrl()
+  .default('http://localhost:5862/api')
+  .parse(process.env.PUBLIC_ENDPOINT_URL);
 
 export type ResponseType = 'json';
 

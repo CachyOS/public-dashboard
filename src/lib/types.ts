@@ -186,12 +186,11 @@ export const PackagesSearchQueryParamsSchema = z.strictObject({
     .catch(1),
   /**
    * The number of packages to return per page.
-   * @default 15
+   * @default First value in PAGE_SIZE constant
    */
   page_size: z
-    .number('Page size must be a positive integer')
-    .positive()
-    .catch(15),
+    .union(PAGE_SIZE.map(size => z.literal(size)))
+    .catch(PAGE_SIZE[0]),
   /**
    * A comma-separated list of repository names to filter by.
    * @example "my-repo-1,my-repo-2"

@@ -69,7 +69,10 @@ export default function PackageSearch() {
 
   const onFormSubmit = (searchParams: PackagesSearchQueryParams) => {
     searchParams.current_page = 1;
-    setSearchParams(searchParams);
+    setSearchParams({
+      ...searchParams,
+      search: searchParams.search.trim(),
+    });
   };
 
   const onFormReset = () => {

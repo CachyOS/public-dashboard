@@ -156,7 +156,7 @@ export default function PackageSearch() {
                   setSearchParams({
                     ...parsedParams,
                     current_page: 1,
-                    page_size: Number(pageSize),
+                    page_size: Number(pageSize) as (typeof PAGE_SIZE)[number],
                   });
                 }}
                 onPrefetch={(page: number) => {

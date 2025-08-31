@@ -1,20 +1,20 @@
 import type {Metadata} from 'next';
 
-import {Geist, Geist_Mono} from 'next/font/google';
+import {Inter, JetBrains_Mono} from 'next/font/google';
 
 import {QueryProvider} from '@/components/query-provider';
 import {ThemeProvider} from '@/components/theme-provider';
 
 import './globals.css';
 
-const geistSans = Geist({
+const interSans = Inter({
   subsets: ['latin'],
-  variable: '--font-geist-sans',
+  variable: '--font-inter-sans',
 });
 
-const geistMono = Geist_Mono({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  variable: '--font-geist-mono',
+  variable: '--font-jetbrains-mono',
 });
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function RootLayout({children}: LayoutProps<'/'>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${interSans.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <ThemeProvider attribute="class" disableTransitionOnChange>
           <QueryProvider>{children}</QueryProvider>

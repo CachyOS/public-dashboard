@@ -67,7 +67,10 @@ export default function PackageSearch() {
   const onFormSubmit = (searchParams: PackagesSearchQueryParams) => {
     // Reset to first page on new search to avoid out-of-bounds issue
     searchParams.current_page = 1;
-    setSearchParams(searchParams);
+    setSearchParams({
+      ...searchParams,
+      search: searchParams.search.trim(),
+    });
   };
 
   const onFormReset = () => {

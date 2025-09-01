@@ -1,7 +1,10 @@
 import {dehydrate, HydrationBoundary} from '@tanstack/react-query';
 import {Metadata} from 'next';
+import Image from 'next/image';
+import Link from 'next/link';
 import {Suspense} from 'react';
 
+import icon from '@/app/icon.svg';
 import PackageSearch from '@/components/PackageSearch';
 import PackageSearchSkeleton from '@/components/PackageSearchSkeleton';
 import {ThemeToggle} from '@/components/theme-toggle';
@@ -36,11 +39,16 @@ export default async function Home({searchParams}: PageProps<'/'>) {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-start">
-              <div>
-                <CardTitle>CachyOS Package Repository Search</CardTitle>
-                <CardDescription>
-                  Find packages across all CachyOS repositories.
-                </CardDescription>
+              <div className="flex items-center space-x-4">
+                <Link href="/">
+                  <Image alt="CachyOS Logo" className="h-12 w-12" src={icon} />
+                </Link>
+                <div className="space-y-1 mt-0.5">
+                  <CardTitle>CachyOS Package Repository Search</CardTitle>
+                  <CardDescription>
+                    Find packages across all CachyOS repositories.
+                  </CardDescription>
+                </div>
               </div>
               <ThemeToggle />
             </div>

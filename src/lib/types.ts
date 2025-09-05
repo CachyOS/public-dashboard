@@ -151,6 +151,11 @@ export type PackageDetailsResponse = z.infer<
  */
 export const PackageSearchResponseSchema = z.strictObject({
   /**
+   * An optional array of packages that exactly match the search criteria.
+   * This field may be omitted or null if there are no exact matches.
+   */
+  exact_match: BriefPackageListSchema.optional().default([]),
+  /**
    * An array of packages matching the search criteria for the current page.
    */
   packages: BriefPackageListSchema,

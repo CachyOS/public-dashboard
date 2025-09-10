@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {cachyosPaths} from '@/lib/cachy';
+import {fetchPkgbuilds, PkgbuildMap} from '@/lib/github';
 import {BriefPackageList, PackageDetails} from '@/lib/types';
 import {
   getDownloadMirrorUrl,
@@ -24,11 +24,11 @@ type PackageDetailsComponentProps = {
   pkgSplits: BriefPackageList;
 };
 
-export default function PackageDetailsComponent({
+export default async function PackageDetailsComponent({
   pkg,
   pkgSplits,
 }: PackageDetailsComponentProps) {
-  const sourceUrl = getSourceUrl(pkg);
+  const sourceUrl = await getSourceUrl(pkg);
   return (
     <>
       <div className="mb-4">
@@ -226,14 +226,21 @@ function formatBytes(bytes: number, decimals = 2): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
 }
 
-function getSourceUrl(pkg: PackageDetails): null | string {
+async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
   const isRebuilded = ['-core-', '-extra-'].some(needle =>
     pkg.repo_name.includes(needle)
   );
 
-  const cachyosPath = cachyosPaths[pkg.pkg_name as keyof typeof cachyosPaths];
-  if (!isRebuilded && cachyosPath) {
-    return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${cachyosPath}`;
+  let cachyosPaths: PkgbuildMap = {};
+  try {
+    cachyosPaths = await fetchPkgbuilds();
+  } catch (error) {
+    console.error('Failed to fetch CachyOS PKGBUILDS:', error);
+  }
+
+  const pkgbuildPath = cachyosPaths[pkg.pkg_name];
+  if (!isRebuilded && pkgbuildPath) {
+    return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${pkgbuildPath}`;
   }
 
   if (!isRebuilded || !pkg.pkg_base) {

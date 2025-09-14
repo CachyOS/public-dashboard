@@ -50,7 +50,7 @@ bun --bun run build
 This will create an optimized build in the `.next` directory. To run the production server, use:
 
 ```bash
-bun run start
+bun ./next/standalone/server.js
 ```
 
 ## Building and Running with Docker

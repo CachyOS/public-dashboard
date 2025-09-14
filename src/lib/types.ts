@@ -93,7 +93,7 @@ export const PackageDetailsSchema = z.strictObject({
   pkg_csize: z.number('CSIZE must be an positive integer').nonnegative(),
   pkg_depends: z.array(z.string()),
   pkg_desc: z.string(),
-  pkg_files: z.array(z.string()).optional().default([]),
+  pkg_files: z.array(z.string()),
   pkg_groups: z.array(z.string()),
   pkg_isize: z.number('ISIZE must be an positive integer').nonnegative(),
   pkg_license: z.array(z.string()),
@@ -144,11 +144,6 @@ export const PackageDetailsResponseSchema = z.strictObject({
 });
 export type PackageDetailsResponse = z.infer<
   typeof PackageDetailsResponseSchema
->;
-
-export const PackageDetailFilesResponseSchema = z.array(z.string());
-export type PackageDetailFilesResponse = z.infer<
-  typeof PackageDetailFilesResponseSchema
 >;
 
 /**

@@ -1,4 +1,4 @@
-import {NextRequest} from 'next/server';
+import {NextRequest, NextResponse} from 'next/server';
 
 import {searchPackages} from '@/lib/actions';
 import {PackagesSearchQueryParamsSchema, PAGE_SIZE} from '@/lib/types';
@@ -9,10 +9,10 @@ export async function GET(req: NextRequest) {
   const packages = await searchPackages(params);
 
   if (!packages) {
-    return new Response('No results found', {status: 404});
+    return NextResponse.json({error: 'Packages not found'}, {status: 404});
   }
 
-  return Response.json(packages);
+  return NextResponse.json(packages);
 }
 
 function parseUrlSearchParams(searchParams: URLSearchParams) {

@@ -81,7 +81,7 @@ async function fetchPackageFiles({
   signal?: AbortSignal;
 }): Promise<string[]> {
   const res = await fetch(
-    `/api/search/package/${encodeURIComponent(repo)}/${encodeURIComponent(
+    `/api/package/${encodeURIComponent(repo)}/${encodeURIComponent(
       arch
     )}/${encodeURIComponent(pkgname)}/files`,
     {signal}

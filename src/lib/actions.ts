@@ -4,6 +4,8 @@ import {headers} from 'next/headers';
 
 import fetcher from '@/lib/fetcher';
 import {
+  PackageDetailFilesResponse,
+  PackageDetailFilesResponseSchema,
   PackageDetailsPathParams,
   PackageDetailsResponse,
   PackageDetailsResponseSchema,
@@ -30,6 +32,25 @@ export async function getPackageDetails(
 
   const clientHeaders = await headers();
   return fetcher(path, clientHeaders, PackageDetailsResponseSchema, {
+    method: 'GET',
+  });
+}
+
+/**
+ * Retrieves the list of files for a specific package.
+ *
+ * @param params - The path parameters identifying the package by repo, arch, and name.
+ * @returns A promise that resolves to an array of package file names.
+ */
+export async function getPackageFiles(
+  params: PackageDetailsPathParams
+): Promise<PackageDetailFilesResponse> {
+  const {arch, pkgname, repo} = params;
+
+  const path = `/v1/package/${repo}/${arch}/${pkgname}/files`;
+
+  const clientHeaders = await headers();
+  return fetcher(path, clientHeaders, PackageDetailFilesResponseSchema, {
     method: 'GET',
   });
 }

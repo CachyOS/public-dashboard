@@ -3,7 +3,11 @@ import {notFound} from 'next/navigation';
 
 import PackageDetailsComponent from '@/components/PackageDetails';
 import SplitPackageDetails from '@/components/SplitPackageDetails';
-import {getPackageDetails, getSplitPackages} from '@/lib/actions';
+import {
+  getPackageDetails,
+  getPackageFiles,
+  getSplitPackages,
+} from '@/lib/actions';
 import {FetcherError} from '@/lib/errors';
 import {
   BriefPackage,
@@ -73,7 +77,11 @@ async function getPackageDetailsOrSplits({
   repo: string;
 }) {
   try {
-    const packageResponse = await getPackageDetails({arch, pkgname, repo});
+    const [packageResponse, filesResponse] = await Promise.all([
+      getPackageDetails({arch, pkgname, repo}),
+      getPackageFiles({arch, pkgname, repo}),
+    ]);
+    packageResponse.package.pkg_files = filesResponse;
     return {package: packageResponse.package};
   } catch (error) {
     if (error instanceof FetcherError && error.status === 404) {

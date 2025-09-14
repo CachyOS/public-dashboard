@@ -247,6 +247,9 @@ async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
     return null;
   }
 
-  const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version);
+  const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version).replace(
+    ':',
+    '-'
+  );
   return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`;
 }

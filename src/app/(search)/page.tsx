@@ -34,35 +34,33 @@ export default async function Home({searchParams}: PageProps<'/'>) {
   });
 
   return (
-    <div className="font-[family-name:var(--font-geist-sans)]">
-      <main className="container mx-auto p-4 md:p-8">
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <div className="flex items-center space-x-4">
-                <Link href="/">
-                  <Image alt="CachyOS Logo" className="h-12 w-12" src={icon} />
-                </Link>
-                <div className="space-y-1 mt-0.5">
-                  <CardTitle>CachyOS Package Repository Search</CardTitle>
-                  <CardDescription>
-                    Find packages across all CachyOS repositories.
-                  </CardDescription>
-                </div>
+    <main className="container mx-auto p-4 md:p-8">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-start">
+            <div className="flex items-center space-x-4">
+              <Link href="/">
+                <Image alt="CachyOS Logo" className="h-12 w-12" src={icon} />
+              </Link>
+              <div className="space-y-1 mt-0.5">
+                <CardTitle>CachyOS Package Repository Search</CardTitle>
+                <CardDescription>
+                  Find packages across all CachyOS repositories.
+                </CardDescription>
               </div>
-              <ThemeToggle />
             </div>
-          </CardHeader>
-          <CardContent>
-            <HydrationBoundary state={dehydrate(queryClient)}>
-              <Suspense fallback={<PackageSearchSkeleton />}>
-                <PackageSearch />
-              </Suspense>
-            </HydrationBoundary>
-          </CardContent>
-        </Card>
-      </main>
-    </div>
+            <ThemeToggle />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <HydrationBoundary state={dehydrate(queryClient)}>
+            <Suspense fallback={<PackageSearchSkeleton />}>
+              <PackageSearch />
+            </Suspense>
+          </HydrationBoundary>
+        </CardContent>
+      </Card>
+    </main>
   );
 }
 

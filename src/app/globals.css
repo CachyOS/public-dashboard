@@ -3,25 +3,6 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Wiki palette */
-:root {
-  /* Accent palette */
-  --color-accent-200: #82dccc;
-  --color-accent-600: #007d6f;
-  --color-accent-900: #003c34;
-  --color-accent-950: #002b25;
-
-  /* Gray palette */
-  --color-gray-100: #f2f6ff;
-  --color-gray-200: #e6eeff;
-  --color-gray-300: #b8c2d7;
-  --color-gray-400: #798bb2;
-  --color-gray-500: #47577b;
-  --color-gray-700: #283758;
-  --color-gray-800: #182545;
-  --color-gray-900: #111826;
-}
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -64,6 +45,22 @@
 }
 
 :root {
+  /* Accent palette */
+  --color-accent-200: #82dccc;
+  --color-accent-600: #007d6f;
+  --color-accent-900: #003c34;
+  --color-accent-950: #002b25;
+
+  /* Gray palette */
+  --color-gray-100: #f2f6ff;
+  --color-gray-200: #e6eeff;
+  --color-gray-300: #b8c2d7;
+  --color-gray-400: #798bb2;
+  --color-gray-500: #47577b;
+  --color-gray-700: #283758;
+  --color-gray-800: #182545;
+  --color-gray-900: #111826;
+
   --radius: 0.625rem;
 
   /* Surfaces and text */

@@ -15,7 +15,6 @@ const nextConfig: NextConfig = {
         : false,
   },
   output: 'standalone',
-  transpilePackages: ['geist'],
   typedRoutes: true,
 };
 

@@ -64,7 +64,7 @@
   --radius: 0.625rem;
 
   /* Surfaces and text */
-  --background: #ffffff;
+  --background: var(--color-gray-100);
   --foreground: var(--color-gray-900);
 
   --card: #ffffff;

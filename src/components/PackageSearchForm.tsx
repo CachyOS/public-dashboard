@@ -90,7 +90,7 @@ export default function PackageSearchForm({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                className="w-full justify-start font-normal"
+                className="bg-transparent w-full justify-start font-normal"
                 variant="outline"
               >
                 <div className="truncate">
@@ -119,7 +119,7 @@ export default function PackageSearchForm({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                className="w-full justify-start font-normal"
+                className="bg-transparent w-full justify-start font-normal"
                 variant="outline"
               >
                 <div className="truncate">

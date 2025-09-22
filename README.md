@@ -53,6 +53,8 @@ This will create an optimized build in the `.next` directory. To run the product
 bun ./next/standalone/server.js
 ```
 
+PS: Check https://nextjs.org/docs/app/api-reference/config/next-config-js/output#automatically-copying-traced-files for any additional steps such as copying static files.
+
 ## Building and Running with Docker
 
 You can also build and run the web dashboard using Docker.

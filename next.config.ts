@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
           }
         : false,
   },
+  experimental: {
+    reactCompiler: true,
+  },
   output: 'standalone',
   typedRoutes: true,
 };

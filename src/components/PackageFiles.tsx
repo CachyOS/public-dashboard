@@ -6,6 +6,7 @@ import {useState} from 'react';
 import {CopyButton} from '@/components/CopyButton';
 import {Button} from '@/components/ui/button';
 import {PackageDetailFilesResponseSchema, PackageRepo} from '@/lib/types';
+import {cn} from '@/lib/utils';
 
 type PackageFilesProps = {
   arch: string;
@@ -77,7 +78,14 @@ export function PackageFiles({arch, pkgname, repo}: PackageFilesProps) {
     <div className="relative h-64 overflow-y-auto rounded-md border bg-muted p-2 font-mono text-xs">
       <CopyButton className="absolute top-1 right-1" text={files.join('\n')} />
       {files.map(f => (
-        <div key={f}>{f}</div>
+        <div
+          className={cn({
+            'text-muted-foreground': f.endsWith('/'),
+          })}
+          key={f}
+        >
+          {f}
+        </div>
       ))}
     </div>
   );

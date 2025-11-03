@@ -26,6 +26,8 @@ export enum PackageRepo {
   CACHYOS_V3 = 'cachyos-v3',
   CACHYOS_V4 = 'cachyos-v4',
   CACHYOS_ZNVER4 = 'cachyos-znver4',
+  CORE = 'core',
+  EXTRA = 'extra',
 }
 
 export const packageRepoValues = Object.values(PackageRepo);

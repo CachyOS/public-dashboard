@@ -5,7 +5,7 @@ import {useState} from 'react';
 
 import {CopyButton} from '@/components/CopyButton';
 import {Button} from '@/components/ui/button';
-import {PackageDetailFilesResponseSchema} from '@/lib/types';
+import {PackageDetailFilesResponseSchema, PackageRepo} from '@/lib/types';
 
 type PackageFilesProps = {
   arch: string;
@@ -14,6 +14,9 @@ type PackageFilesProps = {
 };
 
 export function PackageFiles({arch, pkgname, repo}: PackageFilesProps) {
+  const isArchlinux = [PackageRepo.CORE, PackageRepo.EXTRA].includes(
+    repo as PackageRepo
+  );
   const [requested, setRequested] = useState(false);
 
   const query = useQuery({
@@ -29,6 +32,17 @@ export function PackageFiles({arch, pkgname, repo}: PackageFilesProps) {
       query.refetch();
     }
   };
+
+  if (isArchlinux) {
+    return (
+      <a
+        className="text-primary hover:underline"
+        href={`https://archlinux.org/packages/${repo}/${arch}/${pkgname}/`}
+      >
+        View package files on Arch Linux website
+      </a>
+    );
+  }
 
   if (!requested) {
     return (

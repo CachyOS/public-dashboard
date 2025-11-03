@@ -1,7 +1,7 @@
 import {type ClassValue, clsx} from 'clsx';
 import {twMerge} from 'tailwind-merge';
 
-import {PackageDetails} from './types';
+import {PackageDetails, PackageRepo} from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -34,18 +34,27 @@ export function convertURLSearchParamsToObject(
 }
 
 /**
- * Returns the download mirror URL for CachyOS packages.
+ * Returns the download mirror URL for CachyOS or Arch Linux packages.
  *
  * @returns The download mirror URL as a string.
  * @example https://cdn77.cachyos.org/repo/x86_64/cachyos/64gram-desktop-1%3A1.1.58-2-x86_64.pkg.tar.zst
+ * @example https://archlinux.cachyos.org/repo/extra/os/x86_64/cargo-rdme-1.5.0-1-x86_64.pkg.tar.zst
  */
 export function getDownloadMirrorUrl(pkg: PackageDetails): string {
-  const baseUrl = 'https://cdn77.cachyos.org/repo';
-  const dir = getRepoDir(pkg.repo_name);
-  const repo = pkg.repo_name;
-  const pkgName = `${encodeURIComponent(pkg.pkg_name)}-${encodeURIComponent(pkg.pkg_version)}-${pkg.pkg_arch}`;
+  const {pkg_arch, pkg_name, pkg_version, repo_name} = pkg;
+  const arch = getArch(repo_name);
+  const encodedName = encodeURIComponent(pkg_name);
+  const encodedVersion = encodeURIComponent(pkg_version);
+  const pkgFile = `${encodedName}-${encodedVersion}-${pkg_arch}.pkg.tar.zst`;
 
-  return `${baseUrl}/${dir}/${repo}/${pkgName}.pkg.tar.zst`;
+  const isArchlinux = [PackageRepo.CORE, PackageRepo.EXTRA].includes(
+    repo_name as PackageRepo
+  );
+  if (isArchlinux) {
+    return `https://archlinux.cachyos.org/repo/${repo_name}/os/${arch}/${pkgFile}`;
+  } else {
+    return `https://cdn77.cachyos.org/repo/${arch}/${repo_name}/${pkgFile}`;
+  }
 }
 
 /**
@@ -77,7 +86,7 @@ export function getPkgverWithoutBuildnum(pkgver: string): string {
   return pkgver.substring(0, dashPos + dotPos + 1);
 }
 
-function getRepoDir(repoName: string): string {
+function getArch(repoName: string): string {
   if (repoName.endsWith('v4') || repoName.endsWith('znver4')) {
     return 'x86_64_v4';
   }

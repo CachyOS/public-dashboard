@@ -38,7 +38,7 @@ export function PackageFiles({arch, pkgname, repo}: PackageFilesProps) {
     return (
       <a
         className="text-primary hover:underline"
-        href={`https://archlinux.org/packages/${repo}/${arch}/${pkgname}/`}
+        href={`https://archlinux.org/packages/${repo}/${arch}/${pkgname}/files`}
       >
         View package files on Arch Linux website
       </a>

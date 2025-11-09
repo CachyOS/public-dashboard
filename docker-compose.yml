@@ -21,7 +21,7 @@ services:
     entrypoint: |
       sh -c '
         apk add --no-cache supercronic
-        echo "0 0 0 * * * * find /app/.next/cache/fetch-cache -type f -atime 1 -delete" > /etc/crontab
+        echo "0 0 0 * * * * find /app/.next/cache/fetch-cache -type f -atime +1 -delete" > /etc/crontab
         supercronic -debug /etc/crontab
       '
 

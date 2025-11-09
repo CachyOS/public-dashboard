@@ -19,6 +19,8 @@ import {
   INTL_LOCALE,
 } from '@/lib/utils';
 
+import {HoverPrefetchLink} from './HoverPrefetchLink';
+
 type PackageDetailsComponentProps = {
   pkg: PackageDetails;
   pkgSplits: BriefPackageList;
@@ -169,9 +171,11 @@ function BadgeLinkList({items}: {items: string[]}) {
     <div className="flex flex-wrap gap-1">
       {items.map(item => (
         <Badge asChild key={item} variant="secondary">
-          <Link href={{pathname: '/', query: {search: getSearch(item)}}}>
+          <HoverPrefetchLink
+            href={{pathname: '/', query: {search: getSearch(item)}}}
+          >
             {item}
-          </Link>
+          </HoverPrefetchLink>
         </Badge>
       ))}
     </div>

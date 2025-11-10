@@ -1,6 +1,7 @@
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
+  cacheComponents: true,
   // Reimport built-in cache to disable size limit: https://stackoverflow.com/a/79229889
   cacheHandler:
     require.resolve('next/dist/server/lib/incremental-cache/file-system-cache.js'),

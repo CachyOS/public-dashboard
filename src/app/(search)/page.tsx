@@ -23,16 +23,7 @@ export const metadata: Metadata = {
   title: 'Package Search',
 };
 
-export default async function Home({searchParams}: PageProps<'/'>) {
-  const params = parseSearchParams(await searchParams);
-
-  const queryClient = getQueryClient();
-
-  await queryClient.prefetchQuery({
-    queryFn: () => searchPackages(params),
-    queryKey: ['search', params],
-  });
-
+export default async function Home({params, searchParams}: PageProps<'/'>) {
   return (
     <main className="container mx-auto p-4 md:p-8">
       <Card>
@@ -53,11 +44,9 @@ export default async function Home({searchParams}: PageProps<'/'>) {
           </div>
         </CardHeader>
         <CardContent>
-          <HydrationBoundary state={dehydrate(queryClient)}>
-            <Suspense fallback={<PackageSearchSkeleton />}>
-              <PackageSearch />
-            </Suspense>
-          </HydrationBoundary>
+          <Suspense fallback={<PackageSearchSkeleton />}>
+            <SearchPage params={params} searchParams={searchParams} />
+          </Suspense>
         </CardContent>
       </Card>
     </main>
@@ -78,4 +67,21 @@ function parseSearchParams(
       ? searchParams.search.join(',')
       : (searchParams.search ?? ''),
   });
+}
+
+async function SearchPage({searchParams}: PageProps<'/'>) {
+  const parsedParams = parseSearchParams(await searchParams);
+
+  const queryClient = getQueryClient();
+
+  await queryClient.prefetchQuery({
+    queryFn: () => searchPackages(parsedParams),
+    queryKey: ['search', parsedParams],
+  });
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <PackageSearch />
+    </HydrationBoundary>
+  );
 }

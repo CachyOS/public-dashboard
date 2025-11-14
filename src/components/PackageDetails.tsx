@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {fetchPkgbuilds, PkgbuildMap} from '@/lib/github';
-import {BriefPackageList, PackageDetails} from '@/lib/types';
+import {BriefPackageList, PackageDetails, PackageRepo} from '@/lib/types';
 import {
   getDownloadMirrorUrl,
   getPkgverWithoutBuildnum,
@@ -223,7 +223,7 @@ function formatBytes(bytes: number, decimals = 2): string {
 }
 
 async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
-  const isRebuilded = ['-core-', '-extra-'].some(needle =>
+  const isRebuilded = [PackageRepo.CORE, PackageRepo.EXTRA].some(needle =>
     pkg.repo_name.includes(needle)
   );
 

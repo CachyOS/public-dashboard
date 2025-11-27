@@ -7,7 +7,7 @@ services:
     container_name: public-repo-dashboard
     environment:
       # This should match the API service URL.
-      - PUBLIC_ENDPOINT_URL=https://dashboard.cachyos.org/api
+      - NEXT_PUBLIC_ENDPOINT_URL=https://dashboard.cachyos.org/api
     ports:
       - 3000:3000
     restart: on-failure

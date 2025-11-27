@@ -3,6 +3,8 @@ import {
   PackagesSearchQueryParams,
 } from '@/lib/types';
 
+import {EndpointURL} from './fetcher';
+
 export function buildSearchQuery(params: PackagesSearchQueryParams) {
   return new URLSearchParams({
     arch: params.arch ?? '',
@@ -34,10 +36,9 @@ export async function getSuggestions({
   query: string;
   signal?: AbortSignal;
 }): Promise<[string, string[]]> {
-  const response = await fetch(
-    `https://dashboard.cachyos.org/api/v1/packages/suggest/${query}`,
-    {signal}
-  );
+  const response = await fetch(`${EndpointURL}/v1/packages/suggest/${query}`, {
+    signal,
+  });
   if (!response.ok) {
     console.error(
       `Failed to fetch suggestions. ${response.status} ${response.statusText}`.trim()

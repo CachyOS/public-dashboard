@@ -8,7 +8,7 @@ import {ErrorResponseSchema} from '@/lib/types';
 export const EndpointURL = z
   .httpUrl()
   .default('http://localhost:5862/api')
-  .parse(process.env.PUBLIC_ENDPOINT_URL);
+  .parse(process.env.NEXT_PUBLIC_ENDPOINT_URL);
 
 export type ResponseType = 'json';
 

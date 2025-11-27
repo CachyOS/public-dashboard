@@ -5,7 +5,7 @@ import {Loader2} from 'lucide-react';
 import {useCallback, useRef, useState} from 'react';
 import {useDebounceValue} from 'usehooks-ts';
 
-import {Autocomplete} from '@/components/ui/autocomplete';
+import {Autocomplete} from '@/components/Autocomplete';
 import {Button} from '@/components/ui/button';
 import {
   DropdownMenu,

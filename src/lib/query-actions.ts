@@ -27,6 +27,26 @@ export async function fetchSearchResults(
   return PackageSearchResponseSchema.parse(await response.json());
 }
 
+export async function getSuggestions({
+  query,
+  signal,
+}: {
+  query: string;
+  signal?: AbortSignal;
+}): Promise<[string, string[]]> {
+  const response = await fetch(
+    `https://dashboard.cachyos.org/api/v1/packages/suggest/${query}`,
+    {signal}
+  );
+  if (!response.ok) {
+    console.error(
+      `Failed to fetch suggestions. ${response.status} ${response.statusText}`.trim()
+    );
+    return [query, []];
+  }
+  return await response.json();
+}
+
 export function searchQueryFn(params: PackagesSearchQueryParams) {
   return ({signal}: {signal?: AbortSignal}) =>
     fetchSearchResults(params, signal);

@@ -1,8 +1,11 @@
 'use client';
 
+import {keepPreviousData, useQuery} from '@tanstack/react-query';
 import {Loader2} from 'lucide-react';
 import {useCallback, useRef, useState} from 'react';
+import {useDebounceValue} from 'usehooks-ts';
 
+import {Autocomplete} from '@/components/Autocomplete';
 import {Button} from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -10,9 +13,9 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {Input} from '@/components/ui/input';
 import {Label} from '@/components/ui/label';
 import {useGenericShortcutListener} from '@/hooks/use-keyboard-shortcut-listener';
+import {getSuggestions} from '@/lib/query-actions';
 import {PackageArch, PackageRepo, PackagesSearchQueryParams} from '@/lib/types';
 
 interface PackageSearchFormProps {
@@ -30,6 +33,15 @@ export default function PackageSearchForm({
 }: PackageSearchFormProps) {
   const [params, setParams] =
     useState<PackagesSearchQueryParams>(initialParams);
+
+  const [searchSuggest] = useDebounceValue(params.search, 300);
+  const {data: [, options] = [searchSuggest, []]} = useQuery({
+    enabled: searchSuggest.length > 0,
+    placeholderData: keepPreviousData,
+    queryFn: ({queryKey: [, query], signal}) => getSuggestions({query, signal}),
+    queryKey: ['suggestions', searchSuggest],
+    staleTime: 60 * 1000,
+  });
 
   const primarySearchFilterInputRef = useRef<HTMLInputElement>(null);
   const primarySearchFilterShortcutCallback = useCallback(() => {
@@ -76,10 +88,12 @@ export default function PackageSearchForm({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="space-y-2">
           <Label htmlFor="search">Package Name/Description</Label>
-          <Input
+          <Autocomplete
+            aria-label="Search input"
             id="search"
             name="search"
             onChange={onInputChange}
+            options={options}
             placeholder="e.g., openssl"
             ref={primarySearchFilterInputRef}
             value={params.search}

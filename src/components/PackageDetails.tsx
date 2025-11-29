@@ -13,12 +13,9 @@ import {
 } from '@/components/ui/card';
 import {fetchPkgbuilds, PkgbuildMap} from '@/lib/github';
 import {BriefPackageList, PackageDetails, PackageRepo} from '@/lib/types';
-import {
-  getDownloadMirrorUrl,
-  getPkgverWithoutBuildnum,
-  INTL_LOCALE,
-} from '@/lib/utils';
+import {getDownloadMirrorUrl, getPkgverWithoutBuildnum} from '@/lib/utils';
 
+import {DateTime} from './DateTime';
 import {HoverPrefetchLink} from './HoverPrefetchLink';
 
 type PackageDetailsComponentProps = {
@@ -93,14 +90,10 @@ export default async function PackageDetailsComponent({
             </DetailRow>
             <DetailRow label="Build Date">
               {pkg.pkg_builddate ? (
-                <time
-                  dateTime={new Date(pkg.pkg_builddate * 1000).toISOString()}
-                  suppressHydrationWarning
-                >
-                  {new Date(pkg.pkg_builddate * 1000).toLocaleString(
-                    INTL_LOCALE
-                  )}
-                </time>
+                <DateTime
+                  timestamp={pkg.pkg_builddate * 1000}
+                  type="datetime"
+                />
               ) : (
                 'unknown'
               )}

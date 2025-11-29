@@ -17,7 +17,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {BriefPackage, BriefPackageList} from '@/lib/types';
-import {INTL_LOCALE} from '@/lib/utils';
+
+import {DateTime} from './DateTime';
 
 interface PackageSearchResultsTableProps {
   onArchitectureClick?: (arch: string) => void;
@@ -91,15 +92,9 @@ export default function PackageTable({
       },
     }),
     columnHelper.accessor('pkg_builddate', {
-      cell: ({getValue}) => {
-        const buildDate = getValue();
-        const date = new Date(buildDate * 1000);
-        return (
-          <time dateTime={date.toISOString()} suppressHydrationWarning>
-            {date.toLocaleDateString(INTL_LOCALE)}
-          </time>
-        );
-      },
+      cell: ({getValue}) => (
+        <DateTime timestamp={getValue() * 1000} type="date" />
+      ),
       header: 'Last Updated',
       meta: {
         headerClassName: 'md:w-[200px]',

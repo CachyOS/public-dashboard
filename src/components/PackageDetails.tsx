@@ -11,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {AurPkgNameSet, fetchAurPkgNames} from '@/lib/archlinux';
 import {fetchPkgbuilds, PkgbuildMap} from '@/lib/github';
 import {BriefPackageList, PackageDetails, PackageRepo} from '@/lib/types';
 import {getDownloadMirrorUrl, getPkgverWithoutBuildnum} from '@/lib/utils';
@@ -216,11 +217,12 @@ function formatBytes(bytes: number, decimals = 2): string {
 }
 
 async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
-  const isRebuilt = [PackageRepo.CORE, PackageRepo.EXTRA].some(needle =>
+  const isArch = [PackageRepo.CORE, PackageRepo.EXTRA].some(needle =>
     pkg.repo_name.includes(needle)
   );
+  const isAur = pkg.repo_name === PackageRepo.CACHYOS;
 
-  if (isRebuilt) {
+  if (isArch) {
     if (!pkg.pkg_base) {
       return null;
     }
@@ -229,6 +231,15 @@ async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
       '-'
     );
     return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${archPkgVersion}`;
+  } else if (isAur) {
+    try {
+      const aurPkgNames: AurPkgNameSet = await fetchAurPkgNames();
+      if (aurPkgNames.has(pkg.pkg_name)) {
+        return `https://aur.archlinux.org/cgit/aur.git/tree/?h=${pkg.pkg_name}`;
+      }
+    } catch (error) {
+      console.error('Failed to fetch AUR PKGNAMES:', error);
+    }
   } else {
     try {
       const cachyosPaths: PkgbuildMap = await fetchPkgbuilds();
@@ -240,7 +251,6 @@ async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
     } catch (error) {
       console.error('Failed to fetch CachyOS PKGBUILDS:', error);
     }
-
-    return null;
   }
+  return null;
 }

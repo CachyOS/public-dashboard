@@ -216,29 +216,31 @@ function formatBytes(bytes: number, decimals = 2): string {
 }
 
 async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
-  const isRebuilded = [PackageRepo.CORE, PackageRepo.EXTRA].some(needle =>
+  const isRebuilt = [PackageRepo.CORE, PackageRepo.EXTRA].some(needle =>
     pkg.repo_name.includes(needle)
   );
 
-  let cachyosPaths: PkgbuildMap = {};
-  try {
-    cachyosPaths = await fetchPkgbuilds();
-  } catch (error) {
-    console.error('Failed to fetch CachyOS PKGBUILDS:', error);
-  }
+  if (isRebuilt) {
+    if (!pkg.pkg_base) {
+      return null;
+    }
+    const archPkgVersion = getPkgverWithoutBuildnum(pkg.pkg_version).replace(
+      ':',
+      '-'
+    );
+    return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${archPkgVersion}`;
+  } else {
+    try {
+      const cachyosPaths: PkgbuildMap = await fetchPkgbuilds();
+      const pkgbuildPath = cachyosPaths[pkg.pkg_name];
 
-  const pkgbuildPath = cachyosPaths[pkg.pkg_name];
-  if (!isRebuilded && pkgbuildPath) {
-    return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${pkgbuildPath}`;
-  }
+      if (pkgbuildPath) {
+        return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${pkgbuildPath}`;
+      }
+    } catch (error) {
+      console.error('Failed to fetch CachyOS PKGBUILDS:', error);
+    }
 
-  if (!isRebuilded || !pkg.pkg_base) {
     return null;
   }
-
-  const arch_pkgversion = getPkgverWithoutBuildnum(pkg.pkg_version).replace(
-    ':',
-    '-'
-  );
-  return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${arch_pkgversion}`;
 }

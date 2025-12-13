@@ -220,8 +220,6 @@ async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
   const isArch = [PackageRepo.CORE, PackageRepo.EXTRA].some(needle =>
     pkg.repo_name.includes(needle)
   );
-  const isAur = pkg.repo_name === PackageRepo.CACHYOS;
-
   if (isArch) {
     if (!pkg.pkg_base) {
       return null;
@@ -231,26 +229,26 @@ async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
       '-'
     );
     return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${archPkgVersion}`;
-  } else if (isAur) {
-    try {
-      const aurPkgNames: AurPkgNameSet = await fetchAurPkgNames();
-      if (aurPkgNames.has(pkg.pkg_name)) {
-        return `https://aur.archlinux.org/cgit/aur.git/tree/?h=${pkg.pkg_name}`;
-      }
-    } catch (error) {
-      console.error('Failed to fetch AUR PKGNAMES:', error);
-    }
-  } else {
-    try {
-      const cachyosPaths: PkgbuildMap = await fetchPkgbuilds();
-      const pkgbuildPath = cachyosPaths[pkg.pkg_name];
-
-      if (pkgbuildPath) {
-        return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${pkgbuildPath}`;
-      }
-    } catch (error) {
-      console.error('Failed to fetch CachyOS PKGBUILDS:', error);
-    }
   }
+
+  try {
+    const aurPkgNames: AurPkgNameSet = await fetchAurPkgNames();
+    if (aurPkgNames.has(pkg.pkg_name)) {
+      return `https://aur.archlinux.org/cgit/aur.git/tree/?h=${pkg.pkg_name}`;
+    }
+  } catch (error) {
+    console.error('Failed to fetch AUR PKGNAMES:', error);
+  }
+
+  try {
+    const cachyosPaths: PkgbuildMap = await fetchPkgbuilds();
+    const pkgbuildPath = cachyosPaths[pkg.pkg_name];
+    if (pkgbuildPath) {
+      return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${pkgbuildPath}`;
+    }
+  } catch (error) {
+    console.error('Failed to fetch CachyOS PKGBUILDS:', error);
+  }
+
   return null;
 }

@@ -1,7 +1,9 @@
 import {Metadata} from 'next';
 import {notFound} from 'next/navigation';
+import {Suspense} from 'react';
 
 import PackageDetailsComponent from '@/components/PackageDetails';
+import PackageDetailsSkeleton from '@/components/PackageDetailsSkeleton';
 import SplitPackageDetails from '@/components/SplitPackageDetails';
 import {getPackageDetails, getSplitPackages} from '@/lib/actions';
 import {FetcherError} from '@/lib/errors';
@@ -25,41 +27,12 @@ export async function generateMetadata({
 
 export default async function PackageDetailsPage({
   params,
+  searchParams,
 }: PageProps<'/package/[repo]/[arch]/[pkgname]'>) {
-  const validation = PackageDetailsPathParamsSchema.safeParse(await params);
-  if (!validation.success) {
-    notFound();
-  }
-  let {arch, pkgname, repo} = validation.data;
-  arch = decodeURIComponent(arch) as PackageArch;
-  pkgname = decodeURIComponent(pkgname);
-  repo = decodeURIComponent(repo);
-
-  const packageResponse = await getPackageDetailsOrSplits({
-    arch,
-    pkgname,
-    repo,
-  });
-
-  if (packageResponse.splits) {
-    return (
-      <main className="container mx-auto p-4 md:p-8">
-        <SplitPackageDetails
-          arch={arch}
-          packages={packageResponse.splits}
-          pkgname={pkgname}
-        />
-      </main>
-    );
-  }
-
-  const pkg = packageResponse.package;
-  const pkgSplits = await getSplitPackagesForBase(pkg, repo);
-
   return (
-    <main className="container mx-auto p-4 md:p-8">
-      <PackageDetailsComponent pkg={pkg} pkgSplits={pkgSplits} />
-    </main>
+    <Suspense fallback={<PackageDetailsSkeleton />}>
+      <PackageDetailsPageContent params={params} searchParams={searchParams} />
+    </Suspense>
   );
 }
 
@@ -135,4 +108,44 @@ async function handleSplitPackageFallback(
     console.error(`Failed to fetch split packages for ${pkgname}:`, error);
     notFound();
   }
+}
+
+async function PackageDetailsPageContent({
+  params,
+}: PageProps<'/package/[repo]/[arch]/[pkgname]'>) {
+  const validation = PackageDetailsPathParamsSchema.safeParse(await params);
+  if (!validation.success) {
+    notFound();
+  }
+  let {arch, pkgname, repo} = validation.data;
+  arch = decodeURIComponent(arch) as PackageArch;
+  pkgname = decodeURIComponent(pkgname);
+  repo = decodeURIComponent(repo);
+
+  const packageResponse = await getPackageDetailsOrSplits({
+    arch,
+    pkgname,
+    repo,
+  });
+
+  if (packageResponse.splits) {
+    return (
+      <main className="container mx-auto p-4 md:p-8">
+        <SplitPackageDetails
+          arch={arch}
+          packages={packageResponse.splits}
+          pkgname={pkgname}
+        />
+      </main>
+    );
+  }
+
+  const pkg = packageResponse.package;
+  const pkgSplits = await getSplitPackagesForBase(pkg, repo);
+
+  return (
+    <main className="container mx-auto p-4 md:p-8">
+      <PackageDetailsComponent pkg={pkg} pkgSplits={pkgSplits} />
+    </main>
+  );
 }

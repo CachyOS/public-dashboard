@@ -231,6 +231,31 @@ async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
     return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${archPkgVersion}`;
   }
 
+  const repos = ['linux-cachyos', 'CachyOS-PKGBUILDS'];
+  for (const repo of repos) {
+    try {
+      const cachyosPaths: PkgbuildMap = await fetchPkgbuilds({
+        repo,
+      });
+
+      let pkgbuildPath: string | undefined;
+      if (repo === 'linux-cachyos') {
+        pkgbuildPath = Object.entries(cachyosPaths)
+          .filter(([repoPkg]) => pkg.pkg_name.startsWith(repoPkg))
+          .map(([, path]) => path)
+          .at(0);
+      } else {
+        pkgbuildPath = cachyosPaths[pkg.pkg_name];
+      }
+
+      if (pkgbuildPath) {
+        return `https://github.com/CachyOS/${repo}/tree/master/${pkgbuildPath}`;
+      }
+    } catch (error) {
+      console.error(`Failed to fetch ${repo}:`, error);
+    }
+  }
+
   try {
     const aurPkgNames: AurPkgNameSet = await fetchAurPkgNames();
     if (aurPkgNames.has(pkg.pkg_name)) {
@@ -238,16 +263,6 @@ async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
     }
   } catch (error) {
     console.error('Failed to fetch AUR PKGNAMES:', error);
-  }
-
-  try {
-    const cachyosPaths: PkgbuildMap = await fetchPkgbuilds();
-    const pkgbuildPath = cachyosPaths[pkg.pkg_name];
-    if (pkgbuildPath) {
-      return `https://github.com/CachyOS/CachyOS-PKGBUILDS/tree/master/${pkgbuildPath}`;
-    }
-  } catch (error) {
-    console.error('Failed to fetch CachyOS PKGBUILDS:', error);
   }
 
   return null;

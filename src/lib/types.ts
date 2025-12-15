@@ -103,7 +103,7 @@ export const PackageDetailsSchema = z.strictObject({
   pkg_name: z.string(),
   pkg_optdepends: z.array(z.string()),
   pkg_packager: z.string(),
-  pkg_pgpsig: z.string(),
+  pkg_pgpsig: z.string().nullable(),
   pkg_provides: z.array(z.string()),
   pkg_replaces: z.array(z.string()),
   pkg_sha256sum: z.string(),

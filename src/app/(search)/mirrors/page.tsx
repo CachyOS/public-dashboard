@@ -174,7 +174,10 @@ async function MirrorslistPage() {
       if (syncedChecks === 0) overallStatus = 'out-of-sync';
     }
 
-    const lags = validChecks.map(c => c.syncLagSeconds).filter(l => l !== null);
+    const lags = validChecks
+      .map(c => c.syncLagSeconds)
+      .filter(l => l !== null)
+      .filter(l => l > 0);
 
     const averageLag =
       lags.length > 0 ? lags.reduce((a, b) => a + b, 0) / lags.length : null;

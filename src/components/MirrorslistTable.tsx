@@ -186,15 +186,13 @@ export default function MirrorslistTable({
         </div>
       </div>
       <Collapsible className="space-y-2">
-        <div className="flex items-center justify-between">
-          <CollapsibleTrigger asChild>
-            <Button className="w-9 p-0" size="sm" variant="outline">
-              <h2 className="text-lg font-semibold">Builder Latest Status</h2>
-              <ChevronsUpDown className="h-4 w-4" />
-              <span className="sr-only">Toggle Baselines</span>
-            </Button>
-          </CollapsibleTrigger>
-        </div>
+        <CollapsibleTrigger asChild>
+          <Button className="p-0" size="sm" variant="outline">
+            <p className="text-lg font-semibold">Builder Latest Status</p>
+            <ChevronsUpDown className="h-4 w-4" />
+            <span className="sr-only">Toggle</span>
+          </Button>
+        </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="rounded-md border">
             <BaselinesTable baselines={baselines} />

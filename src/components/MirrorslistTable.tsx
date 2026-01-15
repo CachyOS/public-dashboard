@@ -139,6 +139,74 @@ export default function MirrorslistTable({
 
   return (
     <div className="rounded-md border space-y-4 p-4">
+      <div className="space-y-2">
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {mirrorsTable.getHeaderGroups().map(headerGroup => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map(header => (
+                    <TableHead
+                      className={header.column.columnDef.meta?.headerClassName}
+                      key={header.id}
+                    >
+                      <div className="flex items-center gap-2">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </div>
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {mirrorsTable.getRowModel().rows?.length ? (
+                mirrorsTable.getRowModel().rows.map(row => (
+                  <Fragment key={row.id}>
+                    <TableRow
+                      className="cursor-pointer hover:bg-muted/50"
+                      data-state={row.getIsSelected() && 'selected'}
+                      onClick={row.getToggleExpandedHandler()}
+                    >
+                      {row.getVisibleCells().map(cell => (
+                        <TableCell
+                          className={cell.column.columnDef.meta?.cellClassName}
+                          key={cell.id}
+                        >
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                    {row.getIsExpanded() && (
+                      <TableRow className="bg-muted/10 hover:bg-muted/10">
+                        <TableCell colSpan={mirrorColumns.length}>
+                          <RepoChecksTable checks={row.original.checks} />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    className="h-24 text-center"
+                    colSpan={mirrorColumns.length}
+                  >
+                    No mirrors found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
       <Collapsible className="space-y-2">
         <div className="flex items-center justify-between">
           <CollapsibleTrigger asChild>
@@ -210,82 +278,13 @@ export default function MirrorslistTable({
           </div>
         </CollapsibleContent>
       </Collapsible>
-
-      <hr />
-
-      <div className="space-y-2">
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              {mirrorsTable.getHeaderGroups().map(headerGroup => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map(header => (
-                    <TableHead
-                      className={header.column.columnDef.meta?.headerClassName}
-                      key={header.id}
-                    >
-                      <div className="flex items-center gap-2">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </div>
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {mirrorsTable.getRowModel().rows?.length ? (
-                mirrorsTable.getRowModel().rows.map(row => (
-                  <Fragment key={row.id}>
-                    <TableRow
-                      className="cursor-pointer hover:bg-muted/50"
-                      data-state={row.getIsSelected() && 'selected'}
-                      onClick={row.getToggleExpandedHandler()}
-                    >
-                      {row.getVisibleCells().map(cell => (
-                        <TableCell
-                          className={cell.column.columnDef.meta?.cellClassName}
-                          key={cell.id}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                    {row.getIsExpanded() && (
-                      <TableRow className="bg-muted/10 hover:bg-muted/10">
-                        <TableCell colSpan={mirrorColumns.length}>
-                          <RepoChecksTable checks={row.original.checks} />
-                        </TableCell>
-                      </TableRow>
-                    )}
-                  </Fragment>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    className="h-24 text-center"
-                    colSpan={mirrorColumns.length}
-                  >
-                    No mirrors found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
     </div>
   );
 }
 
 function RepoChecksTable({checks}: {checks: RepoCheck[]}) {
+  'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
+
   const columns = [
     checkColumnHelper.accessor('path', {
       header: 'Repo Path',

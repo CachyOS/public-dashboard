@@ -20,7 +20,7 @@ export type Mirror = {
 export type MirrorStatus = 'error' | 'healthy' | 'out-of-sync' | 'partial';
 
 export type RepoCheck = {
-  lastUpdated: number | null;
+  lastUpdated: null | number;
   path: string;
   status: RepoStatus;
   syncLagSeconds: null | number;

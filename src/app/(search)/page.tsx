@@ -1,4 +1,5 @@
 import {dehydrate, HydrationBoundary} from '@tanstack/react-query';
+import {ServerIcon} from 'lucide-react';
 import {Metadata} from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -12,6 +13,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -48,6 +50,15 @@ export default async function Home({params, searchParams}: PageProps<'/'>) {
             <SearchPage params={params} searchParams={searchParams} />
           </Suspense>
         </CardContent>
+        <CardFooter>
+          <Link
+            className="inline-flex items-center text-base text-primary hover:underline"
+            href="/mirrors"
+          >
+            <ServerIcon className="w-4 h-4 mr-2" />
+            Mirrors
+          </Link>
+        </CardFooter>
       </Card>
     </main>
   );

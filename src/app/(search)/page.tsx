@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   title: 'Package Search',
 };
 
-export default async function Home({params, searchParams}: PageProps<'/'>) {
+export default function Home({params, searchParams}: PageProps<'/'>) {
   return (
     <main className="container mx-auto p-2 sm:p-4 md:p-8">
       <Card>

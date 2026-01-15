@@ -185,3 +185,34 @@ export function range(start: number, end: number): number[] {
     (_, i) => i + start
   );
 }
+
+export function readableDuration(seconds: number): string {
+  if (seconds === 0) return '0 seconds';
+
+  const units: {unit: string; value: number}[] = [
+    {unit: 'day', value: 86400},
+    {unit: 'hour', value: 3600},
+    {unit: 'minute', value: 60},
+    {unit: 'second', value: 1},
+  ];
+
+  const parts: string[] = [];
+  const listFormatter = new Intl.ListFormat(INTL_LOCALE, {
+    style: 'long',
+    type: 'conjunction',
+  });
+
+  let remaining = seconds;
+
+  for (const {unit, value} of units) {
+    if (remaining >= value) {
+      const quantity = Math.floor(remaining / value);
+      remaining %= value;
+
+      const suffix = quantity > 1 ? 's' : '';
+      parts.push(`${quantity} ${unit}${suffix}`);
+    }
+  }
+
+  return listFormatter.format(parts);
+}

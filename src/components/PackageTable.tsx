@@ -33,6 +33,8 @@ export default function PackageTable({
   onRepositoryClick,
   packages,
 }: PackageSearchResultsTableProps) {
+  'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
+
   const columns = [
     columnHelper.accessor('pkg_name', {
       cell: ({row}) => {

@@ -9,6 +9,25 @@ export enum PackageArch {
   x86_64_v4 = 'x86_64_v4',
 }
 
+export type Mirror = {
+  averageLagSeconds: null | number;
+  checks: RepoCheck[];
+  name: string;
+  overallStatus: MirrorStatus;
+  url: string;
+};
+
+export type MirrorStatus = 'error' | 'healthy' | 'out-of-sync' | 'partial';
+
+export type RepoCheck = {
+  lastUpdated: number | null;
+  path: string;
+  status: RepoStatus;
+  syncLagSeconds: null | number;
+};
+
+export type RepoStatus = 'error' | 'out-of-sync' | 'synced';
+
 export const packageArchValues = Object.values(PackageArch);
 export const PackageArchSchema = z.enum(
   PackageArch,

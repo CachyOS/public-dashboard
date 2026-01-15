@@ -295,7 +295,7 @@ function RepoChecksTable({checks}: {checks: RepoCheck[]}) {
     checkColumnHelper.accessor('lastUpdated', {
       cell: ({getValue}) => {
         const date = getValue();
-        return date ? <DateTime timestamp={date} /> : 'N/A';
+        return date ? <DateTime timestamp={date} /> : '-';
       },
       header: 'Last Updated',
     }),

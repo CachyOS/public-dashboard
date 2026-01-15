@@ -1,5 +1,3 @@
-import {cacheLife} from 'next/cache';
-
 import {fetchMirrorlist} from './github';
 import {Mirror, RepoCheck, RepoStatus} from './types';
 
@@ -41,9 +39,6 @@ export async function fetchRepoTimestamp(
 }
 
 export async function getMirrorsData() {
-  'use cache';
-  cacheLife('minutes');
-
   const mirrorsList = await fetchMirrorlist();
 
   const baselineController = new AbortController();

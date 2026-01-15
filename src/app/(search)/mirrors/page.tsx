@@ -17,6 +17,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import {fetchMirrorlist} from '@/lib/github';
+import {fetchRepoTimestamp} from '@/lib/mirrors';
 import {Mirror, RepoCheck, RepoStatus} from '@/lib/types';
 
 export const metadata: Metadata = {
@@ -79,28 +80,8 @@ const REPO_PATHS = [
   'x86_64_v4/cachyos-extra-znver4',
 ] as const;
 
-async function fetchRepoTimestamp(
-  baseUrl: string,
-  repoPath: string,
-  signal: AbortSignal
-): Promise<null | number> {
-  try {
-    const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-    const fullUrl = `${base}${repoPath}/lastupdate`;
-
-    const res = await fetch(fullUrl, {next: {revalidate: 60}, signal});
-    if (!res.ok) return null;
-
-    const text = await res.text();
-    const timestamp = Number.parseInt(text.trim(), 10);
-    return Number.isNaN(timestamp) ? null : timestamp / 1000;
-  } catch {
-    return null;
-  }
-}
-
 async function MirrorslistPage() {
-  const mirrorsList = await fetchMirrorlist().catch(() => [] as string[]);
+  const mirrorsList = await fetchMirrorlist();
 
   const baselineController = new AbortController();
   const baselineTimeout = setTimeout(

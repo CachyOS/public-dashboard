@@ -302,10 +302,12 @@ function RepoChecksTable({checks}: {checks: RepoCheck[]}) {
       header: 'Last Updated',
     }),
     checkColumnHelper.accessor('syncLagSeconds', {
-      cell: ({getValue}) =>
-        getValue() === null
+      cell: ({getValue}) => {
+        const duration = getValue();
+        return duration === null || duration === 0
           ? 'N/A'
-          : readableDuration((getValue() ?? 0) / 1000),
+          : readableDuration(duration / 1000);
+      },
       header: 'Lag',
     }),
     checkColumnHelper.accessor('status', {

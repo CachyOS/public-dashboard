@@ -69,7 +69,7 @@ export default function MirrorslistTable({
       cell: ({getValue}) => (
         <span>
           {getValue() === null
-            ? 'N/A'
+            ? '-'
             : readableDuration((getValue() ?? 0) / 1000)}
         </span>
       ),
@@ -305,7 +305,7 @@ function RepoChecksTable({checks}: {checks: RepoCheck[]}) {
       cell: ({getValue}) => {
         const duration = getValue();
         return duration === null || duration === 0
-          ? 'N/A'
+          ? '-'
           : readableDuration(duration / 1000);
       },
       header: 'Lag',

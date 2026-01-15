@@ -48,22 +48,6 @@ export default function MirrorslistTable({
 }: MirrorslistTableProps) {
   'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
 
-  const baselineColumns = [
-    baselineColumnHelper.accessor('path', {
-      header: 'Path',
-      meta: {
-        headerClassName: 'md:min-w-[400px]',
-      },
-    }),
-    baselineColumnHelper.accessor('timestamp', {
-      cell: ({getValue}) => <DateTime timestamp={getValue() ?? 0} />,
-      header: 'Last Updated',
-      meta: {
-        headerClassName: 'md:min-w-[300px]',
-      },
-    }),
-  ];
-
   const mirrorColumns = [
     mirrorColumnHelper.accessor('name', {
       cell: ({getValue, row}) => (
@@ -123,12 +107,6 @@ export default function MirrorslistTable({
   ];
 
   // eslint-disable-next-line react-hooks/incompatible-library
-  const baselinesTable = useReactTable({
-    columns: baselineColumns,
-    data: baselines,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
   const mirrorsTable = useReactTable({
     columns: mirrorColumns,
     data: mirrors,
@@ -138,7 +116,7 @@ export default function MirrorslistTable({
   });
 
   return (
-    <div className="rounded-md border space-y-4 p-4">
+    <div className="space-y-4">
       <div className="space-y-2">
         <div className="rounded-md border">
           <Table>
@@ -219,66 +197,93 @@ export default function MirrorslistTable({
         </div>
         <CollapsibleContent>
           <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                {baselinesTable.getHeaderGroups().map(headerGroup => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map(header => (
-                      <TableHead
-                        className={
-                          header.column.columnDef.meta?.headerClassName
-                        }
-                        key={header.id}
-                      >
-                        <div className="flex items-center gap-2">
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </div>
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {baselinesTable.getRowModel().rows?.length ? (
-                  baselinesTable.getRowModel().rows.map(row => (
-                    <TableRow
-                      data-state={row.getIsSelected() && 'selected'}
-                      key={row.id}
-                    >
-                      {row.getVisibleCells().map(cell => (
-                        <TableCell
-                          className={cell.column.columnDef.meta?.cellClassName}
-                          key={cell.id}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      className="h-24 text-center"
-                      colSpan={baselineColumns.length}
-                    >
-                      No baselines found.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+            <BaselinesTable baselines={baselines} />
           </div>
         </CollapsibleContent>
       </Collapsible>
     </div>
+  );
+}
+
+function BaselinesTable({
+  baselines,
+}: {
+  baselines: {path: string; timestamp: null | number}[];
+}) {
+  'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
+
+  const columns = [
+    baselineColumnHelper.accessor('path', {
+      header: 'Path',
+      meta: {
+        headerClassName: 'md:min-w-[400px]',
+      },
+    }),
+    baselineColumnHelper.accessor('timestamp', {
+      cell: ({getValue}) => <DateTime timestamp={getValue() ?? 0} />,
+      header: 'Last Updated',
+      meta: {
+        headerClassName: 'md:min-w-[300px]',
+      },
+    }),
+  ];
+
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const table = useReactTable({
+    columns,
+    data: baselines,
+    getCoreRowModel: getCoreRowModel(),
+  });
+
+  return (
+    <Table>
+      <TableHeader>
+        {table.getHeaderGroups().map(headerGroup => (
+          <TableRow key={headerGroup.id}>
+            {headerGroup.headers.map(header => (
+              <TableHead
+                className={header.column.columnDef.meta?.headerClassName}
+                key={header.id}
+              >
+                <div className="flex items-center gap-2">
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(
+                        header.column.columnDef.header,
+                        header.getContext()
+                      )}
+                </div>
+              </TableHead>
+            ))}
+          </TableRow>
+        ))}
+      </TableHeader>
+      <TableBody>
+        {table.getRowModel().rows?.length ? (
+          table.getRowModel().rows.map(row => (
+            <TableRow
+              data-state={row.getIsSelected() && 'selected'}
+              key={row.id}
+            >
+              {row.getVisibleCells().map(cell => (
+                <TableCell
+                  className={cell.column.columnDef.meta?.cellClassName}
+                  key={cell.id}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))
+        ) : (
+          <TableRow>
+            <TableCell className="h-24 text-center" colSpan={columns.length}>
+              No baselines found.
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
   );
 }
 

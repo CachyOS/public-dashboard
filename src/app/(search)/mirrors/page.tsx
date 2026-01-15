@@ -5,8 +5,8 @@ import Link from 'next/link';
 import {Suspense} from 'react';
 
 import icon from '@/app/icon.svg';
+import MirrorslistSkeleton from '@/components/MirrorslistSkeleton';
 import MirrorslistTable from '@/components/MirrorslistTable';
-import PackageSearchSkeleton from '@/components/PackageSearchSkeleton';
 import {ThemeToggle} from '@/components/theme-toggle';
 import {
   Card,
@@ -44,7 +44,7 @@ export default function Mirrors() {
           </div>
         </CardHeader>
         <CardContent>
-          <Suspense fallback={<PackageSearchSkeleton />}>
+          <Suspense fallback={<MirrorslistSkeleton />}>
             <MirrorslistPage />
           </Suspense>
         </CardContent>
@@ -174,9 +174,7 @@ async function MirrorslistPage() {
       if (syncedChecks === 0) overallStatus = 'out-of-sync';
     }
 
-    const lags = validChecks
-      .map(c => c.syncLagSeconds)
-      .filter((l): l is number => l !== null);
+    const lags = validChecks.map(c => c.syncLagSeconds).filter(l => l !== null);
 
     const averageLag =
       lags.length > 0 ? lags.reduce((a, b) => a + b, 0) / lags.length : null;

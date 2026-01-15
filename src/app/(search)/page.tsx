@@ -25,12 +25,12 @@ export const metadata: Metadata = {
 
 export default async function Home({params, searchParams}: PageProps<'/'>) {
   return (
-    <main className="container mx-auto p-4 md:p-8">
+    <main className="container mx-auto p-2 sm:p-4 md:p-8">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-start">
-            <div className="flex items-center space-x-4">
-              <Link href="/">
+            <div className="flex items-start sm:items-center space-x-4">
+              <Link className="shrink-0" href="/">
                 <Image alt="CachyOS Logo" className="h-12 w-12" src={icon} />
               </Link>
               <div className="space-y-1 mt-0.5">

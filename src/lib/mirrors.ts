@@ -2,7 +2,7 @@ import {fetchMirrorlist} from './github';
 import {Mirror, RepoCheck, RepoStatus} from './types';
 
 const PRIMARY_MIRROR_URL = 'https://build.cachyos.org/repo';
-const FETCH_TIMEOUT_MS = 10000;
+const FETCH_TIMEOUT_MS = 6000;
 const SYNC_TOLERANCE_SECONDS = 3600;
 
 const REPO_PATHS = [
@@ -20,14 +20,16 @@ const REPO_PATHS = [
 
 export async function fetchRepoTimestamp(
   baseUrl: string,
-  repoPath: string,
-  signal: AbortSignal
+  repoPath: string
 ): Promise<null | number> {
   try {
     const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
     const fullUrl = `${base}${repoPath}/lastupdate`;
 
-    const res = await fetch(fullUrl, {next: {revalidate: 60}, signal});
+    const res = await fetch(fullUrl, {
+      next: {revalidate: 60},
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
     if (!res.ok) return null;
 
     const text = await res.text();
@@ -41,37 +43,18 @@ export async function fetchRepoTimestamp(
 export async function getMirrorsData() {
   const mirrorsList = await fetchMirrorlist();
 
-  const baselineController = new AbortController();
-  const baselineTimeout = setTimeout(
-    () => baselineController.abort(),
-    FETCH_TIMEOUT_MS
-  );
-
   const baselinePromises = REPO_PATHS.map(async path => ({
     path,
-    timestamp: await fetchRepoTimestamp(
-      PRIMARY_MIRROR_URL,
-      path,
-      baselineController.signal
-    ),
+    timestamp: await fetchRepoTimestamp(PRIMARY_MIRROR_URL, path),
   }));
 
   const baselines = await Promise.all(baselinePromises);
-  clearTimeout(baselineTimeout);
-
   const baselineMap = new Map(baselines.map(b => [b.path, b.timestamp]));
 
   const mirrorChecks = mirrorsList.map(async mirrorUrl => {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-
     const checks = await Promise.all(
       REPO_PATHS.map(async path => {
-        const timestamp = await fetchRepoTimestamp(
-          mirrorUrl,
-          path,
-          controller.signal
-        );
+        const timestamp = await fetchRepoTimestamp(mirrorUrl, path);
         const baseline = baselineMap.get(path);
 
         let status: RepoStatus = 'error';
@@ -94,8 +77,6 @@ export async function getMirrorsData() {
         } satisfies RepoCheck;
       })
     );
-
-    clearTimeout(timeout);
 
     const validChecks = checks.filter(c => c.status !== 'error');
     const totalChecks = checks.length;

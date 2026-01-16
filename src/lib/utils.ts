@@ -186,6 +186,7 @@ export function range(start: number, end: number): number[] {
   );
 }
 
+// TODO: Use https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DurationFormat when available
 export function readableDuration(seconds: number): string {
   if (seconds === 0) return '0 seconds';
 
@@ -197,11 +198,6 @@ export function readableDuration(seconds: number): string {
   ];
 
   const parts: string[] = [];
-  const listFormatter = new Intl.ListFormat(INTL_LOCALE, {
-    style: 'long',
-    type: 'conjunction',
-  });
-
   let remaining = seconds;
 
   for (const {unit, value} of units) {
@@ -214,5 +210,5 @@ export function readableDuration(seconds: number): string {
     }
   }
 
-  return listFormatter.format(parts);
+  return parts.join(', ');
 }

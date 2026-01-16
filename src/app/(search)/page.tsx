@@ -13,7 +13,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -42,7 +41,17 @@ export default function Home({params, searchParams}: PageProps<'/'>) {
                 </CardDescription>
               </div>
             </div>
-            <ThemeToggle />
+
+            <div className="flex items-center justify-between space-x-1 sm:space-x-4">
+              <Link
+                className="inline-flex items-center text-base text-primary hover:underline"
+                href="/mirrors"
+              >
+                <ServerIcon className="w-5 h-5 sm:mr-2" />
+                <span className="sr-only sm:not-sr-only">Mirrors</span>
+              </Link>
+              <ThemeToggle />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -50,15 +59,6 @@ export default function Home({params, searchParams}: PageProps<'/'>) {
             <SearchPage params={params} searchParams={searchParams} />
           </Suspense>
         </CardContent>
-        <CardFooter>
-          <Link
-            className="inline-flex items-center text-base text-primary hover:underline"
-            href="/mirrors"
-          >
-            <ServerIcon className="w-4 h-4 mr-2" />
-            Mirrors
-          </Link>
-        </CardFooter>
       </Card>
     </main>
   );

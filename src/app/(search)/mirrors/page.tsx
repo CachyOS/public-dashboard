@@ -12,7 +12,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -39,7 +38,17 @@ export default function Mirrors() {
                 </CardDescription>
               </div>
             </div>
-            <ThemeToggle />
+
+            <div className="flex items-center justify-between space-x-1 sm:space-x-4">
+              <Link
+                className="inline-flex items-center text-base text-primary hover:underline"
+                href="/"
+              >
+                <Package className="w-5 h-5 sm:mr-2" />
+                <span className="sr-only sm:not-sr-only">Packages</span>
+              </Link>
+              <ThemeToggle />
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -47,15 +56,6 @@ export default function Mirrors() {
             <MirrorslistPage />
           </Suspense>
         </CardContent>
-        <CardFooter>
-          <Link
-            className="inline-flex items-center text-base text-primary hover:underline"
-            href="/"
-          >
-            <Package className="w-4 h-4 mr-2" />
-            Packages
-          </Link>
-        </CardFooter>
       </Card>
     </main>
   );

@@ -27,7 +27,7 @@ export async function fetchRepoTimestamp(
     const fullUrl = `${base}${repoPath}/lastupdate`;
 
     const res = await fetch(fullUrl, {
-      next: {revalidate: 60},
+      next: {revalidate: 300},
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) return null;

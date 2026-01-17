@@ -1,3 +1,5 @@
+import {cacheLife} from 'next/cache';
+
 import {fetchMirrorlist} from './github';
 import {Mirror, RepoCheck, RepoStatus} from './types';
 
@@ -18,29 +20,10 @@ const REPO_PATHS = [
   'x86_64_v4/cachyos-extra-znver4',
 ] as const;
 
-export async function fetchRepoTimestamp(
-  baseUrl: string,
-  repoPath: string
-): Promise<null | number> {
-  try {
-    const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-    const fullUrl = `${base}${repoPath}/lastupdate`;
-
-    const res = await fetch(fullUrl, {
-      next: {revalidate: 300},
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
-    });
-    if (!res.ok) return null;
-
-    const text = await res.text();
-    const timestamp = Number.parseInt(text.trim(), 10);
-    return Number.isNaN(timestamp) ? null : timestamp / 1000;
-  } catch {
-    return null;
-  }
-}
-
 export async function getMirrorsData() {
+  'use cache';
+  cacheLife('minutes');
+
   const mirrorsList = await fetchMirrorlist();
 
   const baselinePromises = REPO_PATHS.map(async path => ({
@@ -52,31 +35,31 @@ export async function getMirrorsData() {
   const baselineMap = new Map(baselines.map(b => [b.path, b.timestamp]));
 
   const mirrorChecks = mirrorsList.map(async mirrorUrl => {
-    const checks = await Promise.all(
-      REPO_PATHS.map(async path => {
-        const timestamp = await fetchRepoTimestamp(mirrorUrl, path);
-        const baseline = baselineMap.get(path);
+    const checks: RepoCheck[] = [];
+    // Sequential to avoid overwhelming mirrors
+    for (const path of REPO_PATHS) {
+      const timestamp = await fetchRepoTimestamp(mirrorUrl, path);
+      const baseline = baselineMap.get(path);
 
-        let status: RepoStatus = 'error';
-        let lag: null | number = null;
+      let status: RepoStatus = 'error';
+      let lag: null | number = null;
 
-        if (timestamp !== null) {
-          if (baseline) {
-            lag = baseline - timestamp;
-            status = lag <= SYNC_TOLERANCE_SECONDS ? 'synced' : 'out-of-sync';
-          } else {
-            status = 'synced';
-          }
+      if (timestamp !== null) {
+        if (baseline) {
+          lag = baseline - timestamp;
+          status = lag <= SYNC_TOLERANCE_SECONDS ? 'synced' : 'out-of-sync';
+        } else {
+          status = 'synced';
         }
+      }
 
-        return {
-          lastUpdated: timestamp,
-          path,
-          status,
-          syncLagSeconds: lag,
-        } satisfies RepoCheck;
-      })
-    );
+      checks.push({
+        lastUpdated: timestamp,
+        path,
+        status,
+        syncLagSeconds: lag,
+      });
+    }
 
     const validChecks = checks.filter(c => c.status !== 'error');
     const totalChecks = checks.length;
@@ -96,7 +79,7 @@ export async function getMirrorsData() {
 
     const lags = validChecks
       .map(c => c.syncLagSeconds)
-      .filter(l => l !== null)
+      .filter((l): l is number => l !== null)
       .filter(l => l > 0);
 
     const averageLag =
@@ -132,4 +115,26 @@ export async function getMirrorsData() {
   });
 
   return {baselines, mirrors};
+}
+
+async function fetchRepoTimestamp(
+  baseUrl: string,
+  repoPath: string
+): Promise<null | number> {
+  const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+  const fullUrl = `${base}${repoPath}/lastupdate`;
+
+  try {
+    const res = await fetch(fullUrl, {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (!res.ok) return null;
+
+    const text = await res.text();
+    const timestamp = Number.parseInt(text.trim(), 10);
+    return Number.isNaN(timestamp) ? null : timestamp / 1000;
+  } catch (err) {
+    console.debug(`Failed to fetch ${fullUrl}:`, err);
+    return null;
+  }
 }

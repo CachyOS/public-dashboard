@@ -2,6 +2,7 @@ import {Package} from 'lucide-react';
 import {Metadata} from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import {connection} from 'next/server';
 import {Suspense} from 'react';
 
 import icon from '@/app/icon.svg';
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
   title: 'Mirrors List',
 };
 
-export default function Mirrors() {
+export default async function Mirrors() {
   return (
     <main className="container mx-auto p-2 sm:p-4 md:p-8">
       <Card>
@@ -62,6 +63,7 @@ export default function Mirrors() {
 }
 
 async function MirrorslistPage() {
+  await connection();
   const {baselines, mirrors} = await getMirrorsData();
   return <MirrorslistTable baselines={baselines} mirrors={mirrors} />;
 }

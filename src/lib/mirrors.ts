@@ -111,7 +111,12 @@ export async function getMirrorsData() {
           return 1;
       }
     };
-    return score(a.overallStatus) - score(b.overallStatus);
+    const statusDiff = score(a.overallStatus) - score(b.overallStatus);
+    if (statusDiff !== 0) return statusDiff;
+    if (a.averageLagSeconds === null && b.averageLagSeconds === null) return 0;
+    if (a.averageLagSeconds === null) return 1;
+    if (b.averageLagSeconds === null) return -1;
+    return a.averageLagSeconds - b.averageLagSeconds;
   });
 
   return {baselines, mirrors};

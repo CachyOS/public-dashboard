@@ -18,11 +18,63 @@ const GitTreeResponseSchema = z.object({
 
 export type GitTreeResponse = z.infer<typeof GitTreeResponseSchema>;
 
+const GitContentItemSchema = z.object({
+  content: z.string(),
+});
+
 /**
  * Maps package names to their relative PKGBUILD paths.
  * @example { "linux-cachyos": "linux-cachyos", "linux-api-headers": "toolchain/linux-api-headers" }
  */
 export type PkgbuildMap = Record<string, string>;
+
+export async function fetchMirrorlist(
+  params: {
+    owner?: string;
+    path?: string;
+    repo?: string;
+    token?: string;
+  } = {}
+): Promise<Array<string>> {
+  const {
+    owner = 'CachyOS',
+    path = 'cachyos-mirrorlist/cachyos-mirrorlist',
+    repo = 'CachyOS-PKGBUILDS',
+    token = process.env.GITHUB_TOKEN,
+  } = params;
+
+  const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(
+    repo
+  )}/contents/${encodeURIComponent(path)}`;
+
+  const res = await fetch(url, {
+    headers: getHeaders(token),
+    next: {revalidate: 3600},
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(
+      `GitHub API error ${res.status}: ${text || res.statusText}`
+    );
+  }
+
+  const json = await res.json();
+  const data = GitContentItemSchema.parse(json);
+
+  const mirrors = atob(data.content)
+    .split('\n')
+    .filter(line => line.trim().startsWith('Server'))
+    .map(line =>
+      line
+        .trim()
+        .replace(/Server\s*=\s*/, '')
+        .replace(/\$arch\/\$repo/, '')
+        .trim()
+    );
+
+  return mirrors;
+}
 
 export async function fetchPkgbuilds(
   params: {
@@ -44,12 +96,7 @@ export async function fetchPkgbuilds(
   )}/git/trees/${encodeURIComponent(ref)}?recursive=1`;
 
   const res = await fetch(url, {
-    headers: {
-      Accept: 'application/vnd.github+json',
-      'User-Agent': 'CachyOS/public-dashboard',
-      'X-GitHub-Api-Version': '2022-11-28',
-      ...(token ? {Authorization: `Bearer ${token}`} : {}),
-    },
+    headers: getHeaders(token),
     next: {revalidate: 3600},
   });
 
@@ -70,4 +117,13 @@ export async function fetchPkgbuilds(
       acc[path.split('/').pop() ?? ''] = path;
       return acc;
     }, {} as PkgbuildMap);
+}
+
+function getHeaders(token?: string) {
+  return {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'CachyOS/public-dashboard',
+    'X-GitHub-Api-Version': '2022-11-28',
+    ...(token ? {Authorization: `Bearer ${token}`} : {}),
+  };
 }

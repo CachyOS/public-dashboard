@@ -185,3 +185,30 @@ export function range(start: number, end: number): number[] {
     (_, i) => i + start
   );
 }
+
+// TODO: Use https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DurationFormat when available
+export function readableDuration(seconds: number): string {
+  if (seconds === 0) return '0 seconds';
+
+  const units: {unit: string; value: number}[] = [
+    {unit: 'day', value: 86400},
+    {unit: 'hour', value: 3600},
+    {unit: 'minute', value: 60},
+    {unit: 'second', value: 1},
+  ];
+
+  const parts: string[] = [];
+  let remaining = seconds;
+
+  for (const {unit, value} of units) {
+    if (remaining >= value) {
+      const quantity = Math.floor(remaining / value);
+      remaining %= value;
+
+      const suffix = quantity > 1 ? 's' : '';
+      parts.push(`${quantity} ${unit}${suffix}`);
+    }
+  }
+
+  return parts.join(', ');
+}

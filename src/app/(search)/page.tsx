@@ -1,4 +1,5 @@
 import {dehydrate, HydrationBoundary} from '@tanstack/react-query';
+import {ServerIcon} from 'lucide-react';
 import {Metadata} from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -23,14 +24,14 @@ export const metadata: Metadata = {
   title: 'Package Search',
 };
 
-export default async function Home({params, searchParams}: PageProps<'/'>) {
+export default function Home({params, searchParams}: PageProps<'/'>) {
   return (
-    <main className="container mx-auto p-4 md:p-8">
+    <main className="container mx-auto p-2 sm:p-4 md:p-8">
       <Card>
         <CardHeader>
           <div className="flex justify-between items-start">
-            <div className="flex items-center space-x-4">
-              <Link href="/">
+            <div className="flex items-start sm:items-center space-x-4">
+              <Link className="shrink-0" href="/">
                 <Image alt="CachyOS Logo" className="h-12 w-12" src={icon} />
               </Link>
               <div className="space-y-1 mt-0.5">
@@ -40,7 +41,17 @@ export default async function Home({params, searchParams}: PageProps<'/'>) {
                 </CardDescription>
               </div>
             </div>
-            <ThemeToggle />
+
+            <div className="flex items-center justify-between space-x-1 sm:space-x-4">
+              <Link
+                className="inline-flex items-center text-base text-primary hover:underline"
+                href="/mirrors"
+              >
+                <ServerIcon className="w-5 h-5 sm:mr-2" />
+                <span className="sr-only sm:not-sr-only">Mirrors</span>
+              </Link>
+              <ThemeToggle />
+            </div>
           </div>
         </CardHeader>
         <CardContent>

@@ -7,7 +7,7 @@ import {
   getExpandedRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-import {ChevronDown, ChevronRight, ChevronsUpDown} from 'lucide-react';
+import {ChevronDown, ChevronRight, ChevronsUpDown, Info} from 'lucide-react';
 import {Fragment} from 'react';
 
 import {Button} from '@/components/ui/button';
@@ -188,6 +188,22 @@ export default function MirrorslistTable({
               )}
             </TableBody>
           </Table>
+        </div>
+      </div>
+
+      <div className="flex items-start gap-3 rounded-md border bg-muted/50 p-4 text-sm text-muted-foreground">
+        <Info className="mt-0.5 h-4 w-4 shrink-0" />
+        <div className="space-y-1">
+          <p className="font-medium text-foreground">
+            Understanding Mirror Lag
+          </p>
+          <p>
+            Lag represents the time difference between the builder and a mirror.
+            A delay doesn&apos;t always indicate a failure, as mirrors sync on
+            different schedules. If you notice high lag, please check back
+            later. This tool is designed to assist in diagnosing mirror
+            connectivity.
+          </p>
         </div>
       </div>
       <Collapsible className="space-y-2">

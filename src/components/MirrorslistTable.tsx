@@ -191,12 +191,10 @@ export default function MirrorslistTable({
         </div>
       </div>
 
-      <div className="flex items-start gap-3 rounded-md border bg-muted/50 p-4 text-sm text-muted-foreground">
-        <Info className="mt-0.5 h-4 w-4 shrink-0" />
+      <div className="flex items-start gap-3 rounded-md border bg-secondary/50 p-4 text-sm text-foreground">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <div className="space-y-1">
-          <p className="font-medium text-foreground">
-            Understanding Mirror Lag
-          </p>
+          <p className="font-medium">Understanding Mirror Lag</p>
           <p>
             Lag represents the time difference between the builder and a mirror.
             A delay doesn&apos;t always indicate a failure, as mirrors sync on

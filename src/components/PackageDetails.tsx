@@ -92,6 +92,7 @@ export default async function PackageDetailsComponent({
             <DetailRow label="Build Date">
               {pkg.pkg_builddate ? (
                 <DateTime
+                  options={{dateStyle: 'medium', timeStyle: 'short'}}
                   timestamp={pkg.pkg_builddate * 1000}
                   type="datetime"
                 />

@@ -94,11 +94,16 @@ export default function MirrorslistTable({
       },
     }),
     mirrorColumnHelper.accessor('overallStatus', {
-      cell: ({getValue}) => (
-        <Badge variant={getValue() !== 'healthy' ? 'destructive' : 'default'}>
-          {getValue().replace(/-/g, ' ').toUpperCase()}
-        </Badge>
-      ),
+      cell: ({getValue}) => {
+        const status = getValue();
+        const variant =
+          status === 'healthy'
+            ? 'default'
+            : status === 'error'
+              ? 'destructive'
+              : 'secondary';
+        return <Badge variant={variant}>{getValue().toUpperCase()}</Badge>;
+      },
       header: 'Status',
       meta: {
         headerClassName: 'md:w-[200px]',
@@ -309,11 +314,16 @@ function RepoChecksTable({checks}: {checks: RepoCheck[]}) {
       header: 'Lag',
     }),
     checkColumnHelper.accessor('status', {
-      cell: ({getValue}) => (
-        <Badge variant={getValue() === 'synced' ? 'secondary' : 'destructive'}>
-          {getValue().toUpperCase()}
-        </Badge>
-      ),
+      cell: ({getValue}) => {
+        const status = getValue();
+        const variant =
+          status === 'synced'
+            ? 'default'
+            : status === 'error'
+              ? 'destructive'
+              : 'secondary';
+        return <Badge variant={variant}>{getValue().toUpperCase()}</Badge>;
+      },
       header: 'Status',
     }),
   ];

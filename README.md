@@ -68,6 +68,7 @@ PS: Check https://nextjs.org/docs/app/api-reference/config/next-config-js/output
 - `REDIS_MASTER_NAME`: Redis master name (default: `shard_master0`).
 - `REDIS_PASSWORD`: Redis password (default: `1234`).
 - `REDIS_SENTINEL_PASSWORD`: Sentinel password (default: `1234`).
+- `REDIS_KEY_PREFIX`: Prefix for Redis keys (default: `nextjs:`).
 - `NEXT_PRIVATE_DEBUG_CACHE`: (Optional) Enables verbose cache logging.
 
 NB: If `CACHE` is not set to `redis`, only in-memory caching will be used.

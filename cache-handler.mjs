@@ -1,5 +1,4 @@
 import {CacheHandler} from '@fortedigital/nextjs-cache-handler';
-import createCompositeHandler from '@fortedigital/nextjs-cache-handler/composite';
 import {ioredisAdapter} from '@fortedigital/nextjs-cache-handler/helpers/ioredisAdapter';
 import createLruHandler from '@fortedigital/nextjs-cache-handler/local-lru';
 import createRedisHandler from '@fortedigital/nextjs-cache-handler/redis-strings';
@@ -7,33 +6,24 @@ import Redis from 'ioredis';
 import {PHASE_PRODUCTION_BUILD} from 'next/constants.js';
 
 async function createCacheConfig() {
+  let config = null;
+
   const redisClient = await setupRedisClient();
-  const lruCache = createLruHandler();
-
-  if (!redisClient) {
-    const config = {handlers: [lruCache]};
-    globalThis.cacheHandlerConfigPromise = null;
-    globalThis.cacheHandlerConfig = config;
-    return config;
+  if (redisClient) {
+    config = {
+      handlers: [
+        createRedisHandler({
+          client: redisClient,
+          keyPrefix: process.env.REDIS_KEY_PREFIX || 'nextjs:',
+        }),
+      ],
+    };
+  } else {
+    config = {handlers: [createLruHandler()]};
   }
-
-  const redisCacheHandler = createRedisHandler({
-    client: redisClient,
-    keyPrefix: 'nextjs:',
-  });
-
-  const config = {
-    handlers: [
-      createCompositeHandler({
-        handlers: [lruCache, redisCacheHandler],
-        setStrategy: ctx => (ctx?.tags.includes('memory-cache') ? 0 : 1),
-      }),
-    ],
-  };
 
   globalThis.cacheHandlerConfigPromise = null;
   globalThis.cacheHandlerConfig = config;
-
   return config;
 }
 

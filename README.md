@@ -55,6 +55,19 @@ bun ./next/standalone/server.js
 
 PS: Check https://nextjs.org/docs/app/api-reference/config/next-config-js/output#automatically-copying-traced-files for any additional steps such as copying static files.
 
+#### Enable Redis Cache
+
+Environment variables can be set to enable Redis caching:
+
+- `CACHE`: Set to `redis` to enable Redis caching.
+- `REDIS_URL`: Redis server URL (default: `http://localhost:6379`).
+- `REDIS_MASTER_NAME`: Redis master name (default: `shard_master0`).
+- `REDIS_PASSWORD`: Redis password (default: `1234`).
+- `REDIS_SENTINEL_PASSWORD`: Sentinel password (default: `1234`).
+- `NEXT_PRIVATE_DEBUG_CACHE`: (Optional) Enables verbose cache logging.
+
+NB: If `CACHE` is not set to `redis`, only in-memory caching will be used.
+
 ## Building and Running with Docker
 
 You can also build and run the web dashboard using Docker.

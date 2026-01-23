@@ -55,9 +55,13 @@ bun ./next/standalone/server.js
 
 PS: Check https://nextjs.org/docs/app/api-reference/config/next-config-js/output#automatically-copying-traced-files for any additional steps such as copying static files.
 
-#### Enable Redis Cache
+### Environment Variables
 
-Environment variables can be set to enable Redis caching:
+#### API URL
+
+- `NEXT_PUBLIC_ENDPOINT_URL` : Set this environment variable to change the API endpoint URL (default: `http://localhost:5862/api`).
+
+#### Redis Cache
 
 - `CACHE`: Set to `redis` to enable Redis caching.
 - `REDIS_URL`: Redis server URL (default: `http://localhost:6379`).

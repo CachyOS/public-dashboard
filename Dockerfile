@@ -1,40 +1,59 @@
-# Base image
-FROM oven/bun:1.3-slim AS base
+# -----------------------------------------------------------------------------
+# Taken from https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile.bun
+# This Dockerfile.bun is specifically configured for projects using Bun
+# For npm/pnpm or yarn, refer to the Dockerfile instead
+# -----------------------------------------------------------------------------
+
+# Use Bun's official image
+FROM oven/bun:1.3 AS base
+
 WORKDIR /app
 
-# Dependencies
+# Install dependencies with bun
 FROM base AS deps
+COPY package.json bun.lock* ./
+RUN bun install --no-save --frozen-lockfile
 
+# Rebuild the source code only when needed
+FROM base AS builder
 WORKDIR /app
-
-# Copy package files and install dependencies
-COPY package.json bun.lock ./
-RUN bun --bun install
-
-# Build
-FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+
+# Expose version tag in the build
 ARG NEXT_PUBLIC_APP_VERSION=production
-RUN bun --bun run build
 
-# Production
-FROM base AS production
-WORKDIR /app
-
-# Set production environment
-ENV NODE_ENV=production
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy the standalone build output and static files
-COPY --from=build /app/.next/standalone ./
-COPY --from=build /app/.next/static ./.next/static
+RUN bun run build
 
-# Expose the port the app runs on
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
+
+# Uncomment the following line in case you want to disable telemetry during runtime.
+ENV NEXT_TELEMETRY_DISABLED=1
+
+ENV NODE_ENV=production \
+    PORT=3000 \
+    HOSTNAME="0.0.0.0"
+
+RUN groupadd --system --gid 1001 nodejs \
+    && useradd --system --uid 1001 --no-log-init -g nodejs nextjs
+
+# Uncomment if public is in use
+# COPY --from=builder /app/public ./public
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
 EXPOSE 3000
 
-# Configure the server
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-CMD ["bun", "--bun", "server.js"]
+CMD ["bun", "./server.js"]

@@ -4,7 +4,7 @@ import {fetchMirrorlist} from './github';
 import {Mirror, RepoCheck, RepoStatus} from './types';
 
 const PRIMARY_MIRROR_URL = 'https://build.cachyos.org/repo';
-const FETCH_TIMEOUT_MS = 6000;
+const FETCH_TIMEOUT_MS = 1000;
 const SYNC_TOLERANCE_SECONDS = 3600;
 
 const REPO_PATHS = [
@@ -22,7 +22,11 @@ const REPO_PATHS = [
 
 export async function getMirrorsData() {
   'use cache';
-  cacheLife('minutes');
+  cacheLife({
+    expire: 60 * 60,
+    revalidate: 10 * 60,
+    stale: 5 * 60,
+  });
 
   const mirrorsList = await fetchMirrorlist();
 

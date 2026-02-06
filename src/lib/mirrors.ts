@@ -22,7 +22,11 @@ const REPO_PATHS = [
 
 export async function getMirrorsData() {
   'use cache';
-  cacheLife('minutes');
+  cacheLife({
+    expire: 60 * 60,
+    revalidate: 10 * 60,
+    stale: 5 * 60,
+  });
 
   const mirrorsList = await fetchMirrorlist();
 

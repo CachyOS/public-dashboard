@@ -4,7 +4,7 @@ import {fetchMirrorlist} from './github';
 import {Mirror, RepoCheck, RepoStatus} from './types';
 
 const PRIMARY_MIRROR_URL = 'https://build.cachyos.org/repo';
-const FETCH_TIMEOUT_MS = 1000;
+const FETCH_TIMEOUT_MS = 2000;
 const SYNC_TOLERANCE_SECONDS = 3600;
 
 const REPO_PATHS = [

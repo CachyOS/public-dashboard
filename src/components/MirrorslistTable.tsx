@@ -350,7 +350,7 @@ function RepoChecksTable({checks}: {checks: RepoCheck[]}) {
   });
 
   return (
-    <Table>
+    <Table className="table-fixed">
       <TableHeader>
         {table.getHeaderGroups().map(headerGroup => (
           <TableRow className="border-b-muted" key={headerGroup.id}>

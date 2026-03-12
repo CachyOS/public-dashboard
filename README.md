@@ -96,3 +96,8 @@ docker run -p 3000:3000 public-repo-dashboard
 ```
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
+
+
+## 🔧 Recent Fixes
+
+- Fixed issue #100: feat: look into web buttons with haptic feedback

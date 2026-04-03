@@ -20,7 +20,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "types": ["bun-types"]
   },
   "include": [
     "global.d.ts",

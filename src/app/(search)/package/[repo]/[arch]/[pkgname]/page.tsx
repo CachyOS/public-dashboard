@@ -18,10 +18,55 @@ import {
 export async function generateMetadata({
   params,
 }: PageProps<'/package/[repo]/[arch]/[pkgname]'>): Promise<Metadata> {
-  const {arch, pkgname, repo} = await params;
+  const rawParams = await params;
+  const validation = PackageDetailsPathParamsSchema.safeParse(rawParams);
+
+  if (!validation.success) {
+    return {
+      title: 'Package Not Found',
+    };
+  }
+
+  const arch = decodeURIComponent(validation.data.arch) as PackageArch;
+  const pkgname = decodeURIComponent(validation.data.pkgname);
+  const repo = decodeURIComponent(validation.data.repo);
+
+  let pkg: PackageDetails | undefined;
+  try {
+    const response = await getPackageDetails({
+      arch,
+      pkgname,
+      repo,
+    });
+    pkg = response.package;
+  } catch {
+    // Fall through to basic metadata
+  }
+
+  const title = `${pkgname} - ${repo} (${arch})`;
+
+  if (!pkg) {
+    return {title};
+  }
+
+  const description = pkg.pkg_desc || `Details for ${pkgname}`;
 
   return {
-    title: `${decodeURIComponent(pkgname)} - ${decodeURIComponent(repo)} (${decodeURIComponent(arch)})`,
+    description,
+    keywords: [
+      pkg.pkg_name,
+      pkg.pkg_base,
+      repo,
+      arch,
+      ...pkg.pkg_groups,
+      ...pkg.pkg_license,
+    ].filter(Boolean),
+    openGraph: {
+      description,
+      title,
+      type: 'website',
+    },
+    title,
   };
 }
 

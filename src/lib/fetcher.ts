@@ -59,11 +59,9 @@ export async function processResponse<T extends z.ZodType>(
   schema?: null | T
 ): Promise<z.infer<T>> {
   if (mode !== 'json') {
-    throw new FetcherError(
-      500,
-      `Unsupported response mode: ${mode}`,
-      `URL: "${response.url}". Status: ${response.status} ${response.statusText}.`
-    );
+    throw new FetcherError(500, `Unsupported response mode: ${mode}`, {
+      cause: `URL: "${response.url}". Status: ${response.status} ${response.statusText}.`,
+    });
   }
 
   let json;
@@ -72,8 +70,11 @@ export async function processResponse<T extends z.ZodType>(
   } catch (error) {
     throw new FetcherError(
       response.status,
-      'Invalid JSON response',
-      `Failed to parse JSON response from ${response.url}: ${error}`
+      `Failed to parse JSON response from ${response.url}`,
+      {
+        cause: error,
+        stack: error instanceof Error ? error.stack : undefined,
+      }
     );
   }
 
@@ -81,11 +82,14 @@ export async function processResponse<T extends z.ZodType>(
     const errorResponse = ErrorResponseSchema.safeParse(json);
     if (errorResponse.success) {
       throw new FetcherError(
-        Number(errorResponse.data.code) || response.status,
-        errorResponse.data.message || response.statusText || 'Fetch error'
+        Number(errorResponse.data.code),
+        response.statusText,
+        {cause: errorResponse.data.message}
       );
     }
-    throw new FetcherError(response.status, response.statusText, 'Fetch error');
+    throw new FetcherError(response.status, response.statusText, {
+      cause: `URL: "${response.url}"`,
+    });
   }
 
   // skip if user didn't provide zod schema for the response
@@ -94,14 +98,16 @@ export async function processResponse<T extends z.ZodType>(
   }
 
   const parsed = schema.safeParse(json);
-  if (parsed.success) {
-    return parsed.data;
+  if (parsed.error) {
+    throw new FetcherError(
+      500,
+      `Failed to parse response from ${response.url}`,
+      {
+        cause: parsed.error,
+        stack: parsed.error.stack,
+      }
+    );
   }
 
-  console.error(`Failed to parse response from ${response.url}:`, parsed.error);
-  throw new FetcherError(
-    500,
-    'Schema validation failed',
-    `Failed to parse response from ${response.url}`
-  );
+  return parsed.data;
 }

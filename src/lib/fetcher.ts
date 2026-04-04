@@ -81,11 +81,9 @@ export async function processResponse<T extends z.ZodType>(
   if (!response.ok) {
     const errorResponse = ErrorResponseSchema.safeParse(json);
     if (errorResponse.success) {
-      throw new FetcherError(
-        Number(errorResponse.data.code),
-        response.statusText,
-        {cause: errorResponse.data.message}
-      );
+      throw new FetcherError(response.status, response.statusText, {
+        cause: errorResponse.data,
+      });
     }
     throw new FetcherError(response.status, response.statusText, {
       cause: `URL: "${response.url}"`,

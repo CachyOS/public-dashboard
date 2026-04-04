@@ -40,7 +40,7 @@ describe('processResponse', () => {
     });
     expect(processResponse(res, 'json')).rejects.toThrow(FetcherError);
     expect(processResponse(res, 'json')).rejects.toMatchObject(
-      new FetcherError(400, 'Not Found')
+      new FetcherError(404, 'Not Found')
     );
   });
 

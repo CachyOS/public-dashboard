@@ -39,10 +39,9 @@ describe('processResponse', () => {
       statusText: 'Not Found',
     });
     expect(processResponse(res, 'json')).rejects.toThrow(FetcherError);
-    expect(processResponse(res, 'json')).rejects.toMatchObject({
-      message: 'not found (really)',
-      status: 400,
-    });
+    expect(processResponse(res, 'json')).rejects.toMatchObject(
+      new FetcherError(404, 'Not Found')
+    );
   });
 
   test('throws FetcherError on invalid JSON', () => {

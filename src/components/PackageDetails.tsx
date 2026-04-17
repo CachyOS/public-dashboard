@@ -48,7 +48,7 @@ export default async function PackageDetailsComponent({
             <DetailRow label="Homepage">
               {pkg.pkg_url ? (
                 <a
-                  className="text-primary hover:underline"
+                  className="text-primary hover:underline break-all"
                   href={pkg.pkg_url}
                   rel="noopener noreferrer"
                   target="_blank"
@@ -111,7 +111,7 @@ export default async function PackageDetailsComponent({
             </DetailRow>
             <DetailRow label="Download Mirror">
               <a
-                className="text-primary hover:underline"
+                className="text-primary hover:underline break-all"
                 href={getDownloadMirrorUrl(pkg)}
                 target="_blank"
               >

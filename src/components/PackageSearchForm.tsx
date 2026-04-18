@@ -1,22 +1,23 @@
 'use client';
 
-import {keepPreviousData, useQuery} from '@tanstack/react-query';
-import {Loader2} from 'lucide-react';
-import {useCallback, useRef, useState} from 'react';
-import {useDebounceValue} from 'usehooks-ts';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { Loader2 } from 'lucide-react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useDebounceValue } from 'usehooks-ts';
 
-import {Autocomplete} from '@/components/Autocomplete';
-import {Button} from '@/components/ui/button';
+import { Autocomplete } from '@/components/Autocomplete';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {Label} from '@/components/ui/label';
-import {useGenericShortcutListener} from '@/hooks/use-keyboard-shortcut-listener';
-import {getSuggestions} from '@/lib/query-actions';
-import {PackageArch, PackageRepo, PackagesSearchQueryParams} from '@/lib/types';
+import { Label } from '@/components/ui/label';
+import { useGenericShortcutListener } from '@/hooks/use-keyboard-shortcut-listener';
+import { getSuggestions } from '@/lib/query-actions';
+import { getArch } from '@/lib/utils';
+import { PackageArch, PackageRepo, PackagesSearchQueryParams } from '@/lib/types';
 
 interface PackageSearchFormProps {
   initialParams: PackagesSearchQueryParams;
@@ -24,6 +25,18 @@ interface PackageSearchFormProps {
   onReset: () => void;
   onSubmit: (params: PackagesSearchQueryParams) => void;
 }
+
+// Helper function to get allowed architectures based on selected repositories
+const getAllowedArchitectures = (repos: string[]) => {
+  if (repos.length === 0) {
+    return Object.values(PackageArch);
+  }
+
+  const validArchs = new Set(repos.map(repo => getArch(repo)));
+  validArchs.add('any');
+
+  return Object.values(PackageArch).filter(arch => validArchs.has(arch));
+};
 
 export default function PackageSearchForm({
   initialParams,
@@ -35,10 +48,10 @@ export default function PackageSearchForm({
     useState<PackagesSearchQueryParams>(initialParams);
 
   const [searchSuggest] = useDebounceValue(params.search, 300);
-  const {data: [, options] = [searchSuggest, []]} = useQuery({
+  const { data: [, options] = [searchSuggest, []] } = useQuery({
     enabled: searchSuggest.length > 0,
     placeholderData: keepPreviousData,
-    queryFn: ({queryKey: [, query], signal}) => getSuggestions({query, signal}),
+    queryFn: ({ queryKey: [, query], signal }) => getSuggestions({ query, signal }),
     queryKey: ['suggestions', searchSuggest],
     staleTime: 60 * 1000,
   });
@@ -55,10 +68,10 @@ export default function PackageSearchForm({
   const onInputChange = (
     e:
       | React.ChangeEvent<HTMLInputElement>
-      | {target: {name: string; value: string}}
+      | { target: { name: string; value: string } }
   ) => {
-    const {name, value} = e.target;
-    setParams(prev => ({...prev, [name]: value}));
+    const { name, value } = e.target;
+    setParams(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSelectionChange = (name: 'arch' | 'repo', value: string) => {
@@ -67,21 +80,38 @@ export default function PackageSearchForm({
       ? currentValues.filter(v => v !== value)
       : [...currentValues, value];
 
-    onInputChange({target: {name, value: newValues.join(',')}});
+    if (name === 'repo') {
+      const newRepos = newValues;
+      const validArchs = new Set<string>(getAllowedArchitectures(newRepos));
+      const currentArchs = params.arch ? params.arch.split(',').filter(Boolean) : [];
+      const filteredArchs = currentArchs.filter(arch => validArchs.has(arch));
+
+      setParams(prev => ({
+        ...prev,
+        repo: newRepos.join(','),
+        arch: filteredArchs.join(',')
+      }));
+    } else {
+      onInputChange({ target: { name, value: newValues.join(',') } });
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit(params);
   };
 
-  const handleReset = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleReset = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     onReset();
   };
 
   const repoValues = params.repo ? params.repo.split(',').filter(Boolean) : [];
   const archValues = params.arch ? params.arch.split(',').filter(Boolean) : [];
+
+  const allowedArchitectures = useMemo(() => {
+    return getAllowedArchitectures(repoValues);
+  }, [repoValues]);
 
   return (
     <form className="space-y-5" onReset={handleReset} onSubmit={handleSubmit}>
@@ -144,7 +174,7 @@ export default function PackageSearchForm({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
-              {Object.values(PackageArch).map(arch => (
+              {allowedArchitectures.map(arch => (
                 <DropdownMenuCheckboxItem
                   checked={archValues.includes(arch)}
                   key={arch}

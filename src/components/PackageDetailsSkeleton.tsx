@@ -1,4 +1,4 @@
-import {BackLink} from '@/components/BackLink';
+import { BackLink } from '@/components/BackLink';
 import {
   Card,
   CardContent,
@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {Skeleton} from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function PackageDetailsSkeleton() {
   return (
@@ -16,7 +16,7 @@ export default function PackageDetailsSkeleton() {
   );
 }
 
-function DetailRowSkeleton({label}: {label: string}) {
+function DetailRowSkeleton({ label }: { label: string }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-2 py-3 border-b last:border-b-0">
       <dt className="font-semibold text-muted-foreground">{label}</dt>

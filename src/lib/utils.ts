@@ -1,7 +1,7 @@
-import {type ClassValue, clsx} from 'clsx';
-import {twMerge} from 'tailwind-merge';
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-import {PackageDetails, PackageRepo} from './types';
+import { PackageDetails, PackageRepo } from './types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -41,7 +41,7 @@ export function convertURLSearchParamsToObject(
  * @example https://archlinux.cachyos.org/repo/extra/os/x86_64/cargo-rdme-1.5.0-1-x86_64.pkg.tar.zst
  */
 export function getDownloadMirrorUrl(pkg: PackageDetails): string {
-  const {pkg_arch, pkg_name, pkg_version, repo_name} = pkg;
+  const { pkg_arch, pkg_name, pkg_version, repo_name } = pkg;
   const arch = getArch(repo_name);
   const encodedName = encodeURIComponent(pkg_name);
   const encodedVersion = encodeURIComponent(pkg_version);
@@ -86,7 +86,7 @@ export function getPkgverWithoutBuildnum(pkgver: string): string {
   return pkgver.substring(0, dashPos + dotPos + 1);
 }
 
-function getArch(repoName: string): string {
+export function getArch(repoName: string): string {
   if (repoName.endsWith('v4') || repoName.endsWith('znver4')) {
     return 'x86_64_v4';
   }
@@ -149,11 +149,11 @@ export function pagination(
     left = leftSiblingIndex;
     right = rightSiblingIndex;
   }
-  if (!hasLeftEllipsis && hasRightEllipsis) {
+  else if (!hasLeftEllipsis && hasRightEllipsis) {
     const numbersToShow = totalVisiblePages - 2; // ellipsis, last
     right = Math.max(numbersToShow, rightSiblingIndex);
   }
-  if (hasLeftEllipsis && !hasRightEllipsis) {
+  else if (hasLeftEllipsis && !hasRightEllipsis) {
     const numbersToShow = totalVisiblePages - OFFSET - 2; // first, ellipsis
     left = Math.min(totalPages - numbersToShow, leftSiblingIndex);
   }
@@ -181,7 +181,7 @@ export function pagination(
 export function range(start: number, end: number): number[] {
   const INCLUSIVE_OFFSET = 1;
   return Array.from(
-    {length: end - start + INCLUSIVE_OFFSET},
+    { length: end - start + INCLUSIVE_OFFSET },
     (_, i) => i + start
   );
 }
@@ -190,17 +190,17 @@ export function range(start: number, end: number): number[] {
 export function readableDuration(seconds: number): string {
   if (seconds === 0) return '0 seconds';
 
-  const units: {unit: string; value: number}[] = [
-    {unit: 'day', value: 86400},
-    {unit: 'hour', value: 3600},
-    {unit: 'minute', value: 60},
-    {unit: 'second', value: 1},
+  const units: { unit: string; value: number }[] = [
+    { unit: 'day', value: 86400 },
+    { unit: 'hour', value: 3600 },
+    { unit: 'minute', value: 60 },
+    { unit: 'second', value: 1 },
   ];
 
   const parts: string[] = [];
   let remaining = seconds;
 
-  for (const {unit, value} of units) {
+  for (const { unit, value } of units) {
     if (remaining >= value) {
       const quantity = Math.floor(remaining / value);
       remaining %= value;

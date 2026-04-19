@@ -1,6 +1,6 @@
 import {describe, expect, test} from 'bun:test';
 
-import {PackageArch, PackageDetails} from './types';
+import {PackageArch, type PackageDetails} from './types';
 import {
   convertURLSearchParamsToObject,
   getDownloadMirrorUrl,

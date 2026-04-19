@@ -1,7 +1,7 @@
 import {describe, expect, test} from 'bun:test';
 
 import {FetcherError} from './errors';
-import {processResponse, ResponseType} from './fetcher';
+import {processResponse, type ResponseType} from './fetcher';
 
 function mockResponse({
   json = {},

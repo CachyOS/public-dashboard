@@ -1,5 +1,4 @@
 // thanks to https://github.com/CachyOS/builder-dashboard/blob/main/lib/fetcher.ts ;)
-import {ReadonlyHeaders} from 'next/dist/server/web/spec-extension/adapters/headers';
 import {z} from 'zod';
 
 import {FetcherError} from '@/lib/errors';
@@ -8,13 +7,17 @@ import {ErrorResponseSchema} from '@/lib/types';
 export const EndpointURL = z
   .httpUrl()
   .default('http://localhost:5862/api')
-  .parse(process.env.NEXT_PUBLIC_ENDPOINT_URL);
+  .parse(
+    import.meta.env?.VITE_ENDPOINT_URL ??
+      globalThis.process?.env?.VITE_ENDPOINT_URL ??
+      globalThis.process?.env?.NEXT_PUBLIC_ENDPOINT_URL
+  );
 
 export type ResponseType = 'json';
 
 export default async function fetcher<T extends z.ZodType>(
   path: string,
-  clientHeaders: ReadonlyHeaders,
+  clientHeaders: Headers,
   schema: T,
   init?: RequestInit,
   baseURL?: string,
@@ -22,7 +25,7 @@ export default async function fetcher<T extends z.ZodType>(
 ): Promise<z.infer<T>>;
 export default async function fetcher<T>(
   path: string,
-  clientHeaders: ReadonlyHeaders,
+  clientHeaders: Headers,
   schema?: null,
   init?: RequestInit,
   baseURL?: string,
@@ -30,7 +33,7 @@ export default async function fetcher<T>(
 ): Promise<T>;
 export default async function fetcher<T extends z.ZodType>(
   path: string,
-  clientHeaders: ReadonlyHeaders,
+  clientHeaders: Headers,
   schema?: null | T,
   init?: RequestInit,
   baseURL = EndpointURL,
@@ -47,8 +50,6 @@ export default async function fetcher<T extends z.ZodType>(
         '',
       ...init?.headers,
     },
-    // revalidate(expire) data after hour
-    next: {revalidate: 3600},
     ...init,
   }).then(res => processResponse(res, responseMode, schema));
 }
@@ -64,7 +65,7 @@ export async function processResponse<T extends z.ZodType>(
     });
   }
 
-  let json;
+  let json: unknown;
   try {
     json = await response.json();
   } catch (error) {
@@ -92,7 +93,7 @@ export async function processResponse<T extends z.ZodType>(
 
   // skip if user didn't provide zod schema for the response
   if (!schema) {
-    return json;
+    return json as z.infer<T>;
   }
 
   const parsed = schema.safeParse(json);

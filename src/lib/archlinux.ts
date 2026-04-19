@@ -1,5 +1,6 @@
-import {cacheLife} from 'next/cache';
 import {gunzipSync} from 'node:zlib';
+
+import {PROFILES, swrCached} from '@/lib/server/swr-cache';
 
 /**
  * A set of AUR Arch Linux package names.
@@ -7,10 +8,14 @@ import {gunzipSync} from 'node:zlib';
  */
 export type AurPkgNameSet = Set<string>;
 
-export async function fetchAurPkgNames(): Promise<AurPkgNameSet> {
-  'use cache';
-  cacheLife('hours');
+export const AUR_CACHE_KEY = 'aur:names';
 
+export async function fetchAurPkgNames(): Promise<AurPkgNameSet> {
+  const names = await swrCached(AUR_CACHE_KEY, fetchAurPkgList, PROFILES.aur);
+  return new Set(names);
+}
+
+async function fetchAurPkgList(): Promise<string[]> {
   const url = 'https://aur.archlinux.org/packages.gz';
 
   const res = await fetch(url, {
@@ -27,7 +32,5 @@ export async function fetchAurPkgNames(): Promise<AurPkgNameSet> {
   const arrayBuffer = await res.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
   const decompressed = gunzipSync(buffer);
-  const content = decompressed.toString('utf-8');
-
-  return new Set(content.split('\n'));
+  return decompressed.toString('utf-8').split('\n');
 }

@@ -5,8 +5,8 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import {useNavigate, useSearch} from '@tanstack/react-router';
 import {AlertCircle} from 'lucide-react';
-import {usePathname, useSearchParams} from 'next/navigation';
 import {useCallback, useEffect, useMemo} from 'react';
 import {useSessionStorage} from 'usehooks-ts';
 
@@ -17,28 +17,25 @@ import {PackageTablePagination} from '@/components/PackageTablePagination';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {searchQueryFn} from '@/lib/query-actions';
 import {STALE_TIME} from '@/lib/query-client';
-import {
-  PackagesSearchQueryParams,
-  PackagesSearchQueryParamsSchema,
-  PAGE_SIZE,
-} from '@/lib/types';
+import {PAGE_SIZE, type PackagesSearchQueryParams} from '@/lib/types';
 import {INTL_LOCALE} from '@/lib/utils';
 
 export default function PackageSearch() {
-  const pathname = usePathname();
-  const currentParams = useSearchParams();
+  const rawParams = useSearch({from: '/'});
+  const navigate = useNavigate({from: '/'});
   const queryClient = useQueryClient();
   const [, setGoBackPath] = useSessionStorage(SEARCH_BACK_PATH, '/');
 
-  const parsedParams = useMemo<PackagesSearchQueryParams>(() => {
-    return PackagesSearchQueryParamsSchema.parse({
-      arch: currentParams.get('arch') ?? '',
-      current_page: Number(currentParams.get('current_page')) || 1,
-      page_size: Number(currentParams.get('page_size')) || PAGE_SIZE[0],
-      repo: currentParams.getAll('repo').join(','),
-      search: currentParams.getAll('search').join(','),
-    });
-  }, [currentParams]);
+  const parsedParams = useMemo<PackagesSearchQueryParams>(
+    () => ({
+      arch: rawParams.arch ?? '',
+      current_page: rawParams.current_page ?? 1,
+      page_size: rawParams.page_size ?? PAGE_SIZE[0],
+      repo: rawParams.repo ?? '',
+      search: rawParams.search ?? '',
+    }),
+    [rawParams]
+  );
 
   const {data, error, isPending, isPlaceholderData} = useQuery({
     placeholderData: keepPreviousData,
@@ -48,24 +45,28 @@ export default function PackageSearch() {
 
   const setSearchParams = useCallback(
     (searchParams: PackagesSearchQueryParams) => {
-      const query = new URLSearchParams();
-
-      if (searchParams.search) query.append('search', searchParams.search);
-      if (searchParams.repo) query.append('repo', searchParams.repo);
-      if (searchParams.arch) query.append('arch', searchParams.arch);
-      if (searchParams.current_page && searchParams.current_page > 1)
-        query.append('current_page', String(searchParams.current_page));
-      if (searchParams.page_size && searchParams.page_size !== PAGE_SIZE[0])
-        query.append('page_size', String(searchParams.page_size));
-
-      window.history.pushState(null, '', `${pathname}?${query}`);
+      navigate({
+        search: {
+          arch: searchParams.arch || undefined,
+          current_page:
+            searchParams.current_page > 1
+              ? searchParams.current_page
+              : undefined,
+          page_size:
+            searchParams.page_size !== PAGE_SIZE[0]
+              ? searchParams.page_size
+              : undefined,
+          repo: searchParams.repo || undefined,
+          search: searchParams.search || undefined,
+        },
+      });
     },
-    [pathname]
+    [navigate]
   );
 
   useEffect(() => {
     setGoBackPath(`/${window.location.search}`);
-  }, [setGoBackPath, pathname, currentParams]);
+  }, [setGoBackPath]);
 
   const onFormSubmit = (searchParams: PackagesSearchQueryParams) => {
     searchParams.current_page = 1;

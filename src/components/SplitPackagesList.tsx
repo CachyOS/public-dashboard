@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
+import {Link} from '@tanstack/react-router';
 import {useState} from 'react';
 
-import {BriefPackageList} from '@/lib/types';
+import type {BriefPackageList} from '@/lib/types';
 
 export default function SplitPackagesList({
   splits,
@@ -19,8 +19,13 @@ export default function SplitPackagesList({
       {visibleSplits.map(split => (
         <Link
           className="text-primary hover:underline"
-          href={`/package/${split.repo_name}/${split.pkg_arch}/${split.pkg_name}`}
           key={split.pkg_name}
+          params={{
+            arch: split.pkg_arch,
+            pkgname: split.pkg_name,
+            repo: split.repo_name,
+          }}
+          to="/package/$repo/$arch/$pkgname"
         >
           {split.pkg_name}
         </Link>

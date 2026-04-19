@@ -16,7 +16,11 @@ import {
 import {Label} from '@/components/ui/label';
 import {useGenericShortcutListener} from '@/hooks/use-keyboard-shortcut-listener';
 import {getSuggestions} from '@/lib/query-actions';
-import {PackageArch, PackageRepo, PackagesSearchQueryParams} from '@/lib/types';
+import {
+  PackageArch,
+  PackageRepo,
+  type PackagesSearchQueryParams,
+} from '@/lib/types';
 
 interface PackageSearchFormProps {
   initialParams: PackagesSearchQueryParams;

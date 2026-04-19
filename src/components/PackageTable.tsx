@@ -16,9 +16,16 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {BriefPackage, BriefPackageList} from '@/lib/types';
+import type {BriefPackage, BriefPackageList} from '@/lib/types';
 
 import {DateTime} from './DateTime';
+
+declare module '@tanstack/react-table' {
+  interface ColumnMeta<TData, TValue> {
+    cellClassName?: string;
+    headerClassName?: string;
+  }
+}
 
 interface PackageSearchResultsTableProps {
   onArchitectureClick?: (arch: string) => void;
@@ -42,7 +49,12 @@ export default function PackageTable({
         return (
           <HoverPrefetchLink
             className="text-primary hover:underline font-medium"
-            href={`/package/${encodeURIComponent(pkg.repo_name)}/${encodeURIComponent(pkg.pkg_arch)}/${encodeURIComponent(pkg.pkg_name)}`}
+            to="/package/$repo/$arch/$pkgname"
+            params={{
+              arch: pkg.pkg_arch,
+              pkgname: pkg.pkg_name,
+              repo: pkg.repo_name,
+            }}
           >
             {pkg.pkg_name}
           </HoverPrefetchLink>
@@ -65,6 +77,7 @@ export default function PackageTable({
         return (
           <button
             className="cursor-pointer text-primary hover:underline"
+            type="button"
             onClick={() => onRepositoryClick?.(repoName)}
           >
             {repoName}
@@ -82,6 +95,7 @@ export default function PackageTable({
         return (
           <button
             className="cursor-pointer text-primary hover:underline"
+            type="button"
             onClick={() => onArchitectureClick?.(arch)}
           >
             {arch}

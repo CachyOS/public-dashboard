@@ -24,7 +24,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {Mirror, RepoCheck} from '@/lib/types';
+import type {Mirror, RepoCheck} from '@/lib/types';
 import {readableDuration} from '@/lib/utils';
 
 import {DateTime} from './DateTime';

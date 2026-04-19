@@ -47,31 +47,44 @@ To create a production-ready build, run the following command:
 bun --bun run build
 ```
 
-This will create an optimized build in the `.next` directory. To run the production server, use:
+This will create an optimized build in the `.dist` directory. To run the production server, use:
 
 ```bash
-bun ./next/standalone/server.js
+bun server.mjs
 ```
-
-PS: Check https://nextjs.org/docs/app/api-reference/config/next-config-js/output#automatically-copying-traced-files for any additional steps such as copying static files.
 
 ### Environment Variables
 
+#### Server
+
+- `PORT`: Port the production server listens on (default: `3000`). Read by `server.mjs`.
+- `HOSTNAME`: Host interface the production server binds to (default: `0.0.0.0`). Read by `server.mjs`.
+- `APP_VERSION`: Injected into the dashboard `<meta>` tag. Typically set at build time via `--build-arg` or `APP_VERSION=$(git rev-parse --short HEAD)`.
+
 #### API URL
 
-- `NEXT_PUBLIC_ENDPOINT_URL` : Set this environment variable to change the API endpoint URL (default: `http://localhost:5862/api`).
+- `VITE_ENDPOINT_URL`: API endpoint URL (default: `http://localhost:5862/api`).
+- `NEXT_PUBLIC_ENDPOINT_URL`: Legacy fallback for `VITE_ENDPOINT_URL`. Prefer the former.
+
+#### GitHub
+
+- `GITHUB_TOKEN`: Optional GitHub PAT used by the server when fetching the mirrorlist and PKGBUILD tree.
 
 #### Redis Cache
 
-- `CACHE`: Set to `redis` to enable Redis caching.
-- `REDIS_URL`: Redis server URL (default: `http://localhost:6379`).
-- `REDIS_MASTER_NAME`: Redis master name (default: `shard_master0`).
-- `REDIS_PASSWORD`: Redis password (default: `1234`).
-- `REDIS_SENTINEL_PASSWORD`: Sentinel password (default: `1234`).
-- `REDIS_KEY_PREFIX`: Prefix for Redis keys (default: `nextjs:`).
-- `NEXT_PRIVATE_DEBUG_CACHE`: (Optional) Enables verbose cache logging.
+- `CACHE`: Set to `redis` to enable Redis caching. Any other value (or unset) keeps the in-memory LRU as the sole cache layer.
+- `REDIS_URL`: Redis Sentinel URL (default: `http://localhost:6379`). Only the hostname is used as the Sentinel host.
+- `REDIS_MASTER_NAME`: Sentinel master group name (default: `shard_master0`).
+- `REDIS_PASSWORD`: Redis auth password (default: `1234`).
+- `REDIS_SENTINEL_PASSWORD`: Sentinel auth password (default: `1234`).
+- `CACHE_PREFILL_PATH`: Optional absolute path to the prefill JSON the server auto-seeds on startup. Defaults to `dist/cache-prefill.json` resolved from the module or CWD.
 
-NB: If `CACHE` is not set to `redis`, only in-memory caching will be used.
+NB: The cache in-process LRU (L1, up to 500 entries) plus Redis (L2). When `CACHE` is unset or not `redis`, only L1 is used.
+
+#### Build / Debug
+
+- `BUILD_PHASE`: Set to `1` during the build-time prefill step to skip Redis entirely (no connection attempt, no auto-seeding from an existing prefill). The `build` npm script sets this automatically — you only need it if running `scripts/prefill-cache.ts` manually.
+- `SWR_DEBUG`: Set to `1` to log every cache lifecycle event (`hit-fresh`, `hit-stale`, `expired`, `miss`, `fetch-start/ok/err`, `set-mem`, `set-redis`, `seed`, `dedupe`, etc.). Alternatively, set `DEBUG` to a value containing `swr` (e.g. `DEBUG=swr`).
 
 ## Building and Running with Docker
 
@@ -85,7 +98,7 @@ To build the Docker image, run the following command from the root directory:
 docker build -t public-repo-dashboard .
 ```
 
-An optional `--build-arg NEXT_PUBLIC_APP_VERSION=$(git rev-parse --short HEAD)` can be used to include the current Git commit in the dashboard's `<meta>` tag during the build.
+An optional `--build-arg APP_VERSION=$(git rev-parse --short HEAD)` can be used to include the current Git commit in the dashboard's `<meta>` tag during the build.
 
 ### Run the Docker Container
 
@@ -96,3 +109,4 @@ docker run -p 3000:3000 public-repo-dashboard
 ```
 
 The application will be available at [http://localhost:3000](http://localhost:3000).
+

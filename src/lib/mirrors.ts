@@ -1,7 +1,9 @@
-import {cacheLife} from 'next/cache';
+import {PROFILES, swrCached} from '@/lib/server/swr-cache';
 
 import {fetchMirrorlist} from './github';
-import {Mirror, RepoCheck, RepoStatus} from './types';
+import type {Mirror, RepoCheck, RepoStatus} from './types';
+
+export const MIRRORS_CACHE_KEY = 'mirrors:data';
 
 const PRIMARY_MIRROR_URL = 'https://build.cachyos.org/repo';
 const FETCH_TIMEOUT_MS = 2000;
@@ -21,13 +23,10 @@ const REPO_PATHS = [
 ] as const;
 
 export async function getMirrorsData() {
-  'use cache';
-  cacheLife({
-    expire: 60 * 60,
-    revalidate: 10 * 60,
-    stale: 5 * 60,
-  });
+  return swrCached(MIRRORS_CACHE_KEY, computeMirrorsData, PROFILES.mirrors);
+}
 
+async function computeMirrorsData() {
   const mirrorsList = await fetchMirrorlist();
 
   const baselinePromises = REPO_PATHS.map(async path => ({
@@ -39,65 +38,28 @@ export async function getMirrorsData() {
   const baselineMap = new Map(baselines.map(b => [b.path, b.timestamp]));
 
   const mirrorChecks = mirrorsList.map(async mirrorUrl => {
-    const checks: RepoCheck[] = [];
-    // Sequential to avoid overwhelming mirrors
-    for (const path of REPO_PATHS) {
-      const timestamp = await fetchRepoTimestamp(mirrorUrl, path);
-      const baseline = baselineMap.get(path);
+    const checks = await Promise.all(
+      REPO_PATHS.map(async (path): Promise<RepoCheck> => {
+        const timestamp = await fetchRepoTimestamp(mirrorUrl, path);
+        const baseline = baselineMap.get(path);
 
-      let status: RepoStatus = 'error';
-      let lag: null | number = null;
+        let status: RepoStatus = 'error';
+        let lag: null | number = null;
 
-      if (timestamp !== null) {
-        if (baseline) {
-          lag = baseline - timestamp;
-          status = lag <= SYNC_TOLERANCE_SECONDS ? 'synced' : 'out-of-sync';
-        } else {
-          status = 'synced';
+        if (timestamp !== null) {
+          if (baseline) {
+            lag = baseline - timestamp;
+            status = lag <= SYNC_TOLERANCE_SECONDS ? 'synced' : 'out-of-sync';
+          } else {
+            status = 'synced';
+          }
         }
-      }
 
-      checks.push({
-        lastUpdated: timestamp,
-        path,
-        status,
-        syncLagSeconds: lag,
-      });
-    }
+        return {lastUpdated: timestamp, path, status, syncLagSeconds: lag};
+      })
+    );
 
-    const validChecks = checks.filter(c => c.status !== 'error');
-    const totalChecks = checks.length;
-    const errorChecks = checks.length - validChecks.length;
-    const syncedChecks = checks.filter(c => c.status === 'synced').length;
-
-    let overallStatus: Mirror['overallStatus'] = 'error';
-
-    if (validChecks.length === 0) {
-      overallStatus = 'error';
-    } else if (syncedChecks === totalChecks) {
-      overallStatus = 'healthy';
-    } else if (errorChecks > 0 || syncedChecks < totalChecks) {
-      overallStatus = 'partial';
-      if (syncedChecks === 0) overallStatus = 'out-of-sync';
-    }
-
-    const lags = validChecks
-      .map(c => c.syncLagSeconds)
-      .filter((l): l is number => l !== null)
-      .filter(l => l > 0);
-
-    const averageLag =
-      lags.length > 0 ? lags.reduce((a, b) => a + b, 0) / lags.length : null;
-
-    const url = new URL(mirrorUrl);
-
-    return {
-      averageLagSeconds: averageLag,
-      checks,
-      name: url.hostname,
-      overallStatus,
-      url: mirrorUrl,
-    } satisfies Mirror;
+    return buildMirrorResult(mirrorUrl, checks);
   });
 
   const mirrors = await Promise.all(mirrorChecks);
@@ -124,6 +86,42 @@ export async function getMirrorsData() {
   });
 
   return {baselines, mirrors};
+}
+
+function buildMirrorResult(mirrorUrl: string, checks: RepoCheck[]): Mirror {
+  const validChecks = checks.filter(c => c.status !== 'error');
+  const totalChecks = checks.length;
+  const errorChecks = checks.length - validChecks.length;
+  const syncedChecks = checks.filter(c => c.status === 'synced').length;
+
+  let overallStatus: Mirror['overallStatus'] = 'error';
+
+  if (validChecks.length === 0) {
+    overallStatus = 'error';
+  } else if (syncedChecks === totalChecks) {
+    overallStatus = 'healthy';
+  } else if (errorChecks > 0 || syncedChecks < totalChecks) {
+    overallStatus = 'partial';
+    if (syncedChecks === 0) overallStatus = 'out-of-sync';
+  }
+
+  const lags = validChecks
+    .map(c => c.syncLagSeconds)
+    .filter((l): l is number => l !== null)
+    .filter(l => l > 0);
+
+  const averageLag =
+    lags.length > 0 ? lags.reduce((a, b) => a + b, 0) / lags.length : null;
+
+  const url = new URL(mirrorUrl);
+
+  return {
+    averageLagSeconds: averageLag,
+    checks,
+    name: url.hostname,
+    overallStatus,
+    url: mirrorUrl,
+  } satisfies Mirror;
 }
 
 async function fetchRepoTimestamp(

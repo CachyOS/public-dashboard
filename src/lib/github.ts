@@ -1,5 +1,7 @@
 import {z} from 'zod';
 
+import {PROFILES, swrCached} from '@/lib/server/swr-cache';
+
 const GitTreeItemSchema = z.object({
   mode: z.string(),
   path: z.string(),
@@ -29,27 +31,32 @@ const GitContentItemSchema = z.object({
 export type PkgbuildMap = Record<string, string>;
 
 export async function fetchMirrorlist(
-  params: {
-    owner?: string;
-    path?: string;
-    repo?: string;
-    token?: string;
-  } = {}
+  params: {owner?: string; path?: string; repo?: string; token?: string} = {}
 ): Promise<Array<string>> {
   const {
     owner = 'CachyOS',
     path = 'cachyos-mirrorlist/cachyos-mirrorlist',
     repo = 'CachyOS-PKGBUILDS',
-    token = process.env.GITHUB_TOKEN,
+    token = import.meta.env.GITHUB_TOKEN,
   } = params;
 
   const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(
     repo
   )}/contents/${encodeURIComponent(path)}`;
 
+  return swrCached(
+    `github:mirrorlist:${url}`,
+    () => fetchMirrorlistFromGithub(url, token),
+    PROFILES.github
+  );
+}
+
+async function fetchMirrorlistFromGithub(
+  url: string,
+  token?: string
+): Promise<string[]> {
   const res = await fetch(url, {
     headers: getHeaders(token),
-    next: {revalidate: 3600},
   });
 
   if (!res.ok) {
@@ -62,7 +69,7 @@ export async function fetchMirrorlist(
   const json = await res.json();
   const data = GitContentItemSchema.parse(json);
 
-  const mirrors = atob(data.content)
+  return atob(data.content)
     .split('\n')
     .filter(line => line.trim().startsWith('Server'))
     .map(line =>
@@ -72,32 +79,35 @@ export async function fetchMirrorlist(
         .replace(/\$arch\/\$repo/, '')
         .trim()
     );
-
-  return mirrors;
 }
 
 export async function fetchPkgbuilds(
-  params: {
-    owner?: string;
-    ref?: string;
-    repo?: string;
-    token?: string;
-  } = {}
+  params: {owner?: string; ref?: string; repo?: string; token?: string} = {}
 ): Promise<PkgbuildMap> {
   const {
     owner = 'CachyOS',
     ref = 'master',
     repo = 'CachyOS-PKGBUILDS',
-    token = process.env.GITHUB_TOKEN,
+    token = import.meta.env.GITHUB_TOKEN,
   } = params;
 
   const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(
     repo
   )}/git/trees/${encodeURIComponent(ref)}?recursive=1`;
 
+  return swrCached(
+    `github:pkgbuilds:${url}`,
+    () => fetchPkgbuildsFromGithub(url, token),
+    PROFILES.github
+  );
+}
+
+async function fetchPkgbuildsFromGithub(
+  url: string,
+  token?: string
+): Promise<PkgbuildMap> {
   const res = await fetch(url, {
     headers: getHeaders(token),
-    next: {revalidate: 3600},
   });
 
   if (!res.ok) {

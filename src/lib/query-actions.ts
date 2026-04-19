@@ -1,6 +1,6 @@
 import {
   PackageSearchResponseSchema,
-  PackagesSearchQueryParams,
+  type PackagesSearchQueryParams,
 } from '@/lib/types';
 
 import {EndpointURL} from './fetcher';

@@ -63,12 +63,13 @@ export function PackageTablePagination({
           <span className="sm:sr-only">Previous</span>
         </Button>
         {pages.map((page, index) => {
+          const pageKey = `${page}-${index}`;
           if (page === ELLIPSIS) {
             return (
               <Button
                 className="hidden sm:block"
                 disabled
-                key={index}
+                key={pageKey}
                 size="sm"
                 variant="ghost"
               >
@@ -79,7 +80,7 @@ export function PackageTablePagination({
           return (
             <Button
               className="hidden sm:block"
-              key={index}
+              key={pageKey}
               onClick={() => onClick(page)}
               onFocus={() => onPrefetch?.(page)}
               onMouseEnter={() => onPrefetch?.(page)}

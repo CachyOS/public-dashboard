@@ -1,7 +1,7 @@
 'use client';
 
 import {Clipboard, ClipboardCheck, ClipboardX} from 'lucide-react';
-import {ComponentProps, useState} from 'react';
+import {type ComponentProps, useState} from 'react';
 import {useCopyToClipboard, useTimeout} from 'usehooks-ts';
 
 import {Button} from '@/components/ui/button';
@@ -35,7 +35,7 @@ export function CopyButton(props: CopyButtonProps) {
           .catch(error => {
             setCopyState('error');
             console.error('Failed to copy', error);
-            alert('Failed to copy to clipboard: ' + error);
+            alert(`Failed to copy to clipboard: ${error}`);
           });
       }}
       size="icon"

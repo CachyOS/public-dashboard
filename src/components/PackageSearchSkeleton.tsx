@@ -26,8 +26,8 @@ export default function PackageSearchSkeleton() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {Array.from({length: 15}).map((_, index) => (
-              <TableRow key={index}>
+            {Array.from({length: 15}, (_, index) => `row-${index}`).map(id => (
+              <TableRow key={id}>
                 <TableCell>
                   <Skeleton className="h-4 w-3/4" />
                 </TableCell>

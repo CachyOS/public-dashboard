@@ -67,9 +67,10 @@ function Autocomplete({
           aria-live="polite"
           className="top-10 absolute bg-popover border min-w-32 overflow-x-hidden overflow-y-auto p-1 rounded-md shadow-md text-popover-foreground text-sm z-50"
           id="suggestions-list"
-          role="listbox"
         >
           {options.map((suggestion, index) => (
+            // biome-ignore lint/a11y/useKeyWithClickEvents: handled by parent input's keydown
+            // biome-ignore lint/a11y/useAriaPropsSupportedByRole: listbox role inferred by aria-live
             <li
               aria-selected={index === selectedIndex}
               className={cn(
@@ -84,7 +85,6 @@ function Autocomplete({
                   target: {name: props.name || '', value: suggestion},
                 } as React.ChangeEvent<HTMLInputElement>)
               }
-              role="option"
             >
               {suggestion}
             </li>

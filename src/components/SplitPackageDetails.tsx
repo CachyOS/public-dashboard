@@ -1,7 +1,7 @@
 import {BackLink} from '@/components/BackLink';
 import PackageTable from '@/components/PackageTable';
 import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import {BriefPackageList, PackageArch} from '@/lib/types';
+import type {BriefPackageList, PackageArch} from '@/lib/types';
 
 interface SplitPackageDetailsProps {
   arch: PackageArch;

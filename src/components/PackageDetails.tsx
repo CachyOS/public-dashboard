@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import {Link} from '@tanstack/react-router';
 
 import {BackLink} from '@/components/BackLink';
 import {PackageFiles} from '@/components/PackageFiles';
@@ -11,10 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {AurPkgNameSet, fetchAurPkgNames} from '@/lib/archlinux';
-import {fetchPkgbuilds, PkgbuildMap} from '@/lib/github';
-import {BriefPackageList, PackageDetails, PackageRepo} from '@/lib/types';
-import {getDownloadMirrorUrl, getPkgverWithoutBuildnum} from '@/lib/utils';
+import type {BriefPackageList, PackageDetails} from '@/lib/types';
+import {getDownloadMirrorUrl} from '@/lib/utils';
 
 import {DateTime} from './DateTime';
 import {HoverPrefetchLink} from './HoverPrefetchLink';
@@ -22,13 +20,14 @@ import {HoverPrefetchLink} from './HoverPrefetchLink';
 type PackageDetailsComponentProps = {
   pkg: PackageDetails;
   pkgSplits: BriefPackageList;
+  sourceUrl: null | string;
 };
 
-export default async function PackageDetailsComponent({
+export default function PackageDetailsComponent({
   pkg,
   pkgSplits,
+  sourceUrl,
 }: PackageDetailsComponentProps) {
-  const sourceUrl = await getSourceUrl(pkg);
   return (
     <>
       <div className="mb-4">
@@ -80,7 +79,12 @@ export default async function PackageDetailsComponent({
               <DetailRow label="Base Package">
                 <Link
                   className="text-primary hover:underline"
-                  href={`/package/${pkg.repo_name}/${pkg.pkg_arch}/${pkg.pkg_base}`}
+                  to="/package/$repo/$arch/$pkgname"
+                  params={{
+                    arch: pkg.pkg_arch,
+                    pkgname: pkg.pkg_base,
+                    repo: pkg.repo_name,
+                  }}
                 >
                   {pkg.pkg_base}
                 </Link>
@@ -114,6 +118,7 @@ export default async function PackageDetailsComponent({
                 className="text-primary hover:underline break-all"
                 href={getDownloadMirrorUrl(pkg)}
                 target="_blank"
+                rel="noopener"
               >
                 {getDownloadMirrorUrl(pkg)}
               </a>
@@ -166,9 +171,7 @@ function BadgeLinkList({items}: {items: string[]}) {
     <div className="flex flex-wrap gap-1">
       {items.map(item => (
         <Badge asChild key={item} variant="secondary">
-          <HoverPrefetchLink
-            href={{pathname: '/', query: {search: getSearch(item)}}}
-          >
+          <HoverPrefetchLink to="/" search={{search: getSearch(item)}}>
             {item}
           </HoverPrefetchLink>
         </Badge>
@@ -214,57 +217,5 @@ function formatBytes(bytes: number, decimals = 2): string {
   const dm = decimals < 0 ? 0 : decimals;
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-}
-
-async function getSourceUrl(pkg: PackageDetails): Promise<null | string> {
-  const isArch = [PackageRepo.CORE, PackageRepo.EXTRA].some(needle =>
-    pkg.repo_name.includes(needle)
-  );
-  if (isArch) {
-    if (!pkg.pkg_base) {
-      return null;
-    }
-    const archPkgVersion = getPkgverWithoutBuildnum(pkg.pkg_version).replace(
-      ':',
-      '-'
-    );
-    return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${archPkgVersion}`;
-  }
-
-  const repos = ['linux-cachyos', 'CachyOS-PKGBUILDS'];
-  for (const repo of repos) {
-    try {
-      const cachyosPaths: PkgbuildMap = await fetchPkgbuilds({
-        repo,
-      });
-
-      let pkgbuildPath: string | undefined;
-      if (repo === 'linux-cachyos') {
-        pkgbuildPath = Object.entries(cachyosPaths)
-          .filter(([repoPkg]) => pkg.pkg_name.startsWith(repoPkg))
-          .map(([, path]) => path)
-          .at(0);
-      } else {
-        pkgbuildPath = cachyosPaths[pkg.pkg_name];
-      }
-
-      if (pkgbuildPath) {
-        return `https://github.com/CachyOS/${repo}/tree/master/${pkgbuildPath}`;
-      }
-    } catch (error) {
-      console.error(`Failed to fetch ${repo}:`, error);
-    }
-  }
-
-  try {
-    const aurPkgNames: AurPkgNameSet = await fetchAurPkgNames();
-    if (aurPkgNames.has(pkg.pkg_name)) {
-      return `https://aur.archlinux.org/cgit/aur.git/tree/?h=${pkg.pkg_name}`;
-    }
-  } catch (error) {
-    console.error('Failed to fetch AUR PKGNAMES:', error);
-  }
-
-  return null;
+  return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`;
 }

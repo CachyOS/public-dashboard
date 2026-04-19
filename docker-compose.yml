@@ -3,16 +3,15 @@ services:
     build:
       context: .
       args:
-        - NEXT_PUBLIC_APP_VERSION=latest
+        - APP_VERSION=latest
     container_name: public-repo-dashboard
     environment:
-      # This should match the API service URL.
-      - NEXT_PUBLIC_ENDPOINT_URL=https://dashboard.cachyos.org/api
+      # URL of the upstream JSON API this dashboard wraps.
+      - VITE_ENDPOINT_URL=https://dashboard.cachyos.org/api
+      # Optional: set to 'redis' to enable the upstream JSON cache layer.
+      # - CACHE=redis
+      # - REDIS_URL=redis://redis:6379
+      # - SENTRY_DSN=
     ports:
       - 3000:3000
     restart: on-failure
-    volumes:
-      - cache-data:/app/.next/cache
-
-volumes:
-  cache-data:

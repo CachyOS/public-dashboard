@@ -11,6 +11,7 @@ import {ThemeProvider} from 'next-themes';
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools';
 
 import appCss from '../styles/globals.css?url';
+import favicon from '../assets/icon.svg';
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -18,7 +19,10 @@ interface MyRouterContext {
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   head: () => ({
-    links: [{href: appCss, rel: 'stylesheet'}],
+    links: [
+      {href: appCss, rel: 'stylesheet'},
+      {href: favicon, rel: 'icon'},
+    ],
     meta: [
       {charSet: 'utf-8'},
       {content: 'width=device-width, initial-scale=1', name: 'viewport'},

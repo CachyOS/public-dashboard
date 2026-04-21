@@ -7,7 +7,7 @@ import {Card, CardContent} from '@/components/ui/card';
 import {searchQueryFn} from '@/lib/query-actions';
 import {PAGE_SIZE, type PackagesSearchQueryParams} from '@/lib/types';
 
-const defaultValues = {
+export const indexDefaults = {
   arch: '',
   current_page: 1,
   page_size: PAGE_SIZE[0],
@@ -16,13 +16,13 @@ const defaultValues = {
 };
 
 const SearchParamsSchema = z.object({
-  arch: z.string().catch(defaultValues.arch),
-  current_page: z.number().int().positive().catch(defaultValues.current_page),
+  arch: z.string().catch(indexDefaults.arch),
+  current_page: z.number().int().positive().catch(indexDefaults.current_page),
   page_size: z
     .union(PAGE_SIZE.map(size => z.literal(size)))
-    .catch(defaultValues.page_size),
-  repo: z.string().catch(defaultValues.repo),
-  search: z.string().catch(defaultValues.search),
+    .catch(indexDefaults.page_size),
+  repo: z.string().catch(indexDefaults.repo),
+  search: z.string().catch(indexDefaults.search),
 });
 
 type SearchParams = z.infer<typeof SearchParamsSchema>;
@@ -51,7 +51,7 @@ export const Route = createFileRoute('/')({
   loaderDeps: ({search}) => search,
   validateSearch: SearchParamsSchema,
   search: {
-    middlewares: [stripSearchParams(defaultValues)],
+    middlewares: [stripSearchParams(indexDefaults)],
   },
 });
 

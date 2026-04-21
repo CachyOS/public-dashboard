@@ -1,13 +1,12 @@
 'use client';
 
+import {Link} from '@tanstack/react-router';
 import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
-
-import {HoverPrefetchLink} from '@/components/HoverPrefetchLink';
 import {
   Table,
   TableBody,
@@ -17,7 +16,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import type {BriefPackage, BriefPackageList} from '@/lib/types';
-
 import {DateTime} from './DateTime';
 
 declare module '@tanstack/react-table' {
@@ -47,7 +45,7 @@ export default function PackageTable({
       cell: ({row}) => {
         const pkg = row.original;
         return (
-          <HoverPrefetchLink
+          <Link
             className="text-primary hover:underline font-medium"
             to="/package/$repo/$arch/$pkgname"
             params={{
@@ -57,7 +55,7 @@ export default function PackageTable({
             }}
           >
             {pkg.pkg_name}
-          </HoverPrefetchLink>
+          </Link>
         );
       },
       header: 'Package Name',

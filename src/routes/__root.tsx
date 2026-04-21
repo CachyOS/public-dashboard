@@ -7,17 +7,13 @@ import {
 } from '@tanstack/react-router';
 import {TanStackRouterDevtoolsPanel} from '@tanstack/react-router-devtools';
 import {ThemeProvider} from 'next-themes';
-
-import TanStackQueryDevtools from '../integrations/tanstack-query/devtools';
-
-import appCss from '../styles/globals.css?url';
 import favicon from '../assets/icon.svg';
+import TanStackQueryDevtools from '../integrations/tanstack-query/devtools';
+import appCss from '../styles/globals.css?url';
 
-interface MyRouterContext {
+export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
-}
-
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+}>()({
   head: () => ({
     links: [
       {href: appCss, rel: 'stylesheet'},

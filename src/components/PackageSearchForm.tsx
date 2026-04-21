@@ -163,7 +163,12 @@ export default function PackageSearchForm({
         </div>
       </div>
       <div className="flex space-x-4">
-        <Button className="w-32" disabled={isLoading} type="submit">
+        <Button
+          suppressHydrationWarning
+          className="w-32"
+          disabled={isLoading}
+          type="submit"
+        >
           {isLoading ? (
             <>
               <Loader2 className="animate-spin" />

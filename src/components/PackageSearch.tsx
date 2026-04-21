@@ -46,17 +46,14 @@ export default function PackageSearch() {
     (searchParams: PackagesSearchQueryParams) => {
       navigate({
         search: {
-          arch: searchParams.arch || undefined,
-          current_page:
-            searchParams.current_page > 1
-              ? searchParams.current_page
-              : undefined,
+          arch: searchParams.arch ?? '',
+          current_page: Math.max(searchParams.current_page, 1),
           page_size:
-            searchParams.page_size !== PAGE_SIZE[0]
-              ? searchParams.page_size
-              : undefined,
-          repo: searchParams.repo || undefined,
-          search: searchParams.search || undefined,
+            searchParams.page_size === PAGE_SIZE[0]
+              ? PAGE_SIZE[0]
+              : searchParams.page_size,
+          repo: searchParams.repo ?? '',
+          search: searchParams.search ?? '',
         },
       });
     },
@@ -64,7 +61,7 @@ export default function PackageSearch() {
   );
 
   useEffect(() => {
-    setGoBackPath(`/${window.location.search}`);
+    setGoBackPath(`/${globalThis.location.search}`);
   }, [setGoBackPath]);
 
   const onFormSubmit = (searchParams: PackagesSearchQueryParams) => {

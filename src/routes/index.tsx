@@ -1,4 +1,4 @@
-import {createFileRoute, stripSearchParams} from '@tanstack/react-router';
+import {createFileRoute} from '@tanstack/react-router';
 import {z} from 'zod';
 
 import PackageSearch from '@/components/PackageSearch';
@@ -7,22 +7,12 @@ import {Card, CardContent} from '@/components/ui/card';
 import {searchQueryFn} from '@/lib/query-actions';
 import {PAGE_SIZE, type PackagesSearchQueryParams} from '@/lib/types';
 
-export const indexDefaults = {
-  arch: '',
-  current_page: 1,
-  page_size: PAGE_SIZE[0],
-  repo: '',
-  search: '',
-};
-
 const SearchParamsSchema = z.object({
-  arch: z.string().catch(indexDefaults.arch),
-  current_page: z.number().int().positive().catch(indexDefaults.current_page),
-  page_size: z
-    .union(PAGE_SIZE.map(size => z.literal(size)))
-    .catch(indexDefaults.page_size),
-  repo: z.string().catch(indexDefaults.repo),
-  search: z.string().catch(indexDefaults.search),
+  arch: z.string().optional(),
+  current_page: z.number().int().positive().optional(),
+  page_size: z.union(PAGE_SIZE.map(size => z.literal(size))).optional(),
+  repo: z.string().optional(),
+  search: z.string().optional(),
 });
 
 type SearchParams = z.infer<typeof SearchParamsSchema>;
@@ -30,10 +20,10 @@ type SearchParams = z.infer<typeof SearchParamsSchema>;
 function toQueryParams(search: SearchParams): PackagesSearchQueryParams {
   return {
     arch: search.arch,
-    current_page: search.current_page,
-    page_size: search.page_size,
-    repo: search.repo,
-    search: search.search,
+    current_page: search.current_page ?? 1,
+    page_size: search.page_size ?? PAGE_SIZE[0],
+    repo: search.repo ?? '',
+    search: search.search ?? '',
   };
 }
 
@@ -48,11 +38,8 @@ export const Route = createFileRoute('/')({
       queryKey: ['search', params],
     });
   },
-  loaderDeps: ({search}) => search,
+  loaderDeps: ({search}) => toQueryParams(search),
   validateSearch: SearchParamsSchema,
-  search: {
-    middlewares: [stripSearchParams(indexDefaults)],
-  },
 });
 
 function HomePage() {

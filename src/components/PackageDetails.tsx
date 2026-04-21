@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/card';
 import type {BriefPackageList, PackageDetails} from '@/lib/types';
 import {getDownloadMirrorUrl} from '@/lib/utils';
-import {indexDefaults} from '@/routes';
 import {DateTime} from './DateTime';
 
 type PackageDetailsComponentProps = {
@@ -173,7 +172,6 @@ function BadgeLinkList({items}: {items: string[]}) {
           <Link
             to="/"
             search={{
-              ...indexDefaults,
               search: getSearch(item),
             }}
           >

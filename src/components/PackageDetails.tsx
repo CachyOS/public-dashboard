@@ -11,11 +11,14 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import type {BriefPackageList, PackageDetails} from '@/lib/types';
+import {
+  type BriefPackageList,
+  PAGE_SIZE,
+  type PackageDetails,
+} from '@/lib/types';
 import {getDownloadMirrorUrl} from '@/lib/utils';
 
 import {DateTime} from './DateTime';
-import {HoverPrefetchLink} from './HoverPrefetchLink';
 
 type PackageDetailsComponentProps = {
   pkg: PackageDetails;
@@ -171,9 +174,18 @@ function BadgeLinkList({items}: {items: string[]}) {
     <div className="flex flex-wrap gap-1">
       {items.map(item => (
         <Badge asChild key={item} variant="secondary">
-          <HoverPrefetchLink to="/" search={{search: getSearch(item)}}>
+          <Link
+            to="/"
+            search={{
+              search: getSearch(item),
+              arch: '',
+              current_page: 1,
+              page_size: PAGE_SIZE[0],
+              repo: '',
+            }}
+          >
             {item}
-          </HoverPrefetchLink>
+          </Link>
         </Badge>
       ))}
     </div>

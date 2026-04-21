@@ -16,7 +16,6 @@ import PackageTable from '@/components/PackageTable';
 import {PackageTablePagination} from '@/components/PackageTablePagination';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {searchQueryFn} from '@/lib/query-actions';
-import {STALE_TIME} from '@/lib/query-client';
 import {PAGE_SIZE, type PackagesSearchQueryParams} from '@/lib/types';
 import {INTL_LOCALE} from '@/lib/utils';
 
@@ -90,7 +89,6 @@ export default function PackageSearch() {
     queryClient.prefetchQuery({
       queryFn: searchQueryFn({...parsedParams, current_page: page}),
       queryKey: ['search', {...parsedParams, current_page: page}],
-      staleTime: STALE_TIME,
     });
   };
 

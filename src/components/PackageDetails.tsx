@@ -11,13 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {
-  type BriefPackageList,
-  PAGE_SIZE,
-  type PackageDetails,
-} from '@/lib/types';
+import type {BriefPackageList, PackageDetails} from '@/lib/types';
 import {getDownloadMirrorUrl} from '@/lib/utils';
-
+import {indexDefaults} from '@/routes';
 import {DateTime} from './DateTime';
 
 type PackageDetailsComponentProps = {
@@ -177,11 +173,8 @@ function BadgeLinkList({items}: {items: string[]}) {
           <Link
             to="/"
             search={{
+              ...indexDefaults,
               search: getSearch(item),
-              arch: '',
-              current_page: 1,
-              page_size: PAGE_SIZE[0],
-              repo: '',
             }}
           >
             {item}

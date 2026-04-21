@@ -9,7 +9,7 @@
       "@/*": ["./src/*"]
     },
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "types": ["bun"],
+    "types": ["vite/client", "bun"],
 
     "allowJs": true,
     "esModuleInterop": true,

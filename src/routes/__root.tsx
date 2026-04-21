@@ -1,5 +1,6 @@
 import {TanStackDevtools} from '@tanstack/react-devtools';
 import type {QueryClient} from '@tanstack/react-query';
+import {ReactQueryDevtoolsPanel} from '@tanstack/react-query-devtools';
 import {
   createRootRouteWithContext,
   HeadContent,
@@ -8,7 +9,6 @@ import {
 import {TanStackRouterDevtoolsPanel} from '@tanstack/react-router-devtools';
 import {ThemeProvider} from 'next-themes';
 import favicon from '../assets/icon.svg';
-import TanStackQueryDevtools from '../integrations/tanstack-query/devtools';
 import appCss from '../styles/globals.css?url';
 
 export const Route = createRootRouteWithContext<{
@@ -49,7 +49,10 @@ function RootDocument({children}: {children: React.ReactNode}) {
               name: 'TanStack Router',
               render: <TanStackRouterDevtoolsPanel />,
             },
-            TanStackQueryDevtools,
+            {
+              name: 'TanStack Query',
+              render: <ReactQueryDevtoolsPanel />,
+            },
           ]}
         />
         <Scripts />

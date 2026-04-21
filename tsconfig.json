@@ -18,7 +18,6 @@
     "isolatedModules": true,
     "incremental": true,
     "allowImportingTsExtensions": true,
-    "verbatimModuleSyntax": true,
     "noEmit": true,
 
     "skipLibCheck": true,

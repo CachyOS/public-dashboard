@@ -70,7 +70,7 @@ export default function PackageSearchForm({
     onInputChange({target: {name, value: newValues.join(',')}});
   };
 
-  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
     onSubmit(params);
   };

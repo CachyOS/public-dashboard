@@ -9,10 +9,9 @@
     "preview": "vite preview",
     "start": "bun server.mjs",
     "test": "bun test",
-    "format": "biome format --fix && eslint . --fix",
-    "lint": "biome lint",
-    "check": "biome check && eslint . && tsc --noEmit",
-    "biome:check": "biome check"
+    "format": "biome format --fix",
+    "lint": "oxlint",
+    "check": "biome check && oxlint && tsc --noEmit"
   },
   "dependencies": {
     "@fontsource-variable/inter": "^5.2.8",
@@ -54,9 +53,8 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "dotenv": "^17.4.2",
-    "eslint": "=9",
     "eslint-plugin-perfectionist": "^5.9.0",
-    "eslint-plugin-react": "^7.37.5",
+    "oxlint": "^1.61.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
     "vite": "^8.0.8"

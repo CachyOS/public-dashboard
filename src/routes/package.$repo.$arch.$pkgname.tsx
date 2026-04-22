@@ -18,10 +18,49 @@ import {
 
 type LoaderData = {
   package: null | PackageDetails;
+  sourceUrl: null | string;
   splitBase?: string;
   splits: BriefPackage[];
-  sourceUrl: null | string;
 };
+
+async function loadSplitFallback(
+  pkgname: string,
+  repo: string
+): Promise<BriefPackage[]> {
+  const validation = SplitPackagesQueryParamsSchema.safeParse({
+    pkgbase: pkgname,
+    repo,
+  });
+  if (!validation.success) throw notFound();
+  try {
+    const response = await getSplitPackages({data: validation.data});
+    if (response.length === 0) throw notFound();
+    return response;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'NotFoundError') throw error;
+    console.error(`Failed to fetch split packages for ${pkgname}:`, error);
+    throw notFound();
+  }
+}
+
+async function loadSplitsForBase(
+  pkg: PackageDetails,
+  repo: string
+): Promise<BriefPackage[]> {
+  if (pkg.pkg_name !== pkg.pkg_base) return [];
+  const validation = SplitPackagesQueryParamsSchema.safeParse({
+    pkgbase: pkg.pkg_base,
+    repo,
+  });
+  if (!validation.success) return [];
+  try {
+    const response = await getSplitPackages({data: validation.data});
+    return response.filter(p => p.pkg_name !== pkg.pkg_base);
+  } catch (error) {
+    console.error('Failed to fetch split packages:', error);
+    return [];
+  }
+}
 
 async function resolvePackage({
   arch,
@@ -51,48 +90,9 @@ async function resolvePackage({
   } catch (error) {
     if (error instanceof FetcherError && error.status === 404) {
       const splits = await loadSplitFallback(pkgname, repo);
-      return {package: null, splitBase: pkgname, sourceUrl: null, splits};
+      return {package: null, sourceUrl: null, splitBase: pkgname, splits};
     }
     console.error(`Failed to fetch package details for ${pkgname}:`, error);
-    throw notFound();
-  }
-}
-
-async function loadSplitsForBase(
-  pkg: PackageDetails,
-  repo: string
-): Promise<BriefPackage[]> {
-  if (pkg.pkg_name !== pkg.pkg_base) return [];
-  const validation = SplitPackagesQueryParamsSchema.safeParse({
-    pkgbase: pkg.pkg_base,
-    repo,
-  });
-  if (!validation.success) return [];
-  try {
-    const response = await getSplitPackages({data: validation.data});
-    return response.filter(p => p.pkg_name !== pkg.pkg_base);
-  } catch (error) {
-    console.error('Failed to fetch split packages:', error);
-    return [];
-  }
-}
-
-async function loadSplitFallback(
-  pkgname: string,
-  repo: string
-): Promise<BriefPackage[]> {
-  const validation = SplitPackagesQueryParamsSchema.safeParse({
-    pkgbase: pkgname,
-    repo,
-  });
-  if (!validation.success) throw notFound();
-  try {
-    const response = await getSplitPackages({data: validation.data});
-    if (response.length === 0) throw notFound();
-    return response;
-  } catch (error) {
-    if (error instanceof Error && error.name === 'NotFoundError') throw error;
-    console.error(`Failed to fetch split packages for ${pkgname}:`, error);
     throw notFound();
   }
 }

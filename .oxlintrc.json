@@ -1,0 +1,174 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "react",
+    "typescript"
+  ],
+  "jsPlugins": [
+    "@tanstack/eslint-plugin-query",
+    "eslint-plugin-perfectionist"
+  ],
+  "categories": {
+    "correctness": "off"
+  },
+  "settings": {
+    "react": {
+      "version": "19.2.5"
+    }
+  },
+  "env": {
+    "builtin": true
+  },
+  "ignorePatterns": [
+    "**/dist/**",
+    "**/.output/**"
+  ],
+  "rules": {
+    "react/display-name": "warn",
+    "react/no-direct-mutation-state": "error",
+    "react/no-find-dom-node": "error",
+    "react/no-is-mounted": "error",
+    "react/no-string-refs": "error",
+    "typescript/no-deprecated": "error",
+    "@tanstack/query/exhaustive-deps": "error",
+    "@tanstack/query/no-rest-destructuring": "warn",
+    "@tanstack/query/stable-query-client": "error",
+    "@tanstack/query/no-unstable-deps": "error",
+    "@tanstack/query/infinite-query-property-order": "error",
+    "@tanstack/query/no-void-query-fn": "error",
+    "@tanstack/query/mutation-property-order": "error",
+    "perfectionist/sort-variable-declarations": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-intersection-types": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-import-attributes": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-export-attributes": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-heritage-clauses": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-array-includes": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-object-types": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-union-types": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-switch-case": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-decorators": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-interfaces": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-jsx-props": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-modules": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-classes": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-exports": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-objects": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-enums": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-sets": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ],
+    "perfectionist/sort-maps": [
+      "error",
+      {
+        "type": "natural",
+        "order": "asc"
+      }
+    ]
+  }
+}

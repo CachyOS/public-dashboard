@@ -51,6 +51,27 @@ export async function fetchMirrorlist(
   );
 }
 
+export async function fetchPkgbuilds(
+  params: {owner?: string; ref?: string; repo?: string; token?: string} = {}
+): Promise<PkgbuildMap> {
+  const {
+    owner = 'CachyOS',
+    ref = 'master',
+    repo = 'CachyOS-PKGBUILDS',
+    token = import.meta.env.GITHUB_TOKEN,
+  } = params;
+
+  const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(
+    repo
+  )}/git/trees/${encodeURIComponent(ref)}?recursive=1`;
+
+  return swrCached(
+    `github:pkgbuilds:${url}`,
+    () => fetchPkgbuildsFromGithub(url, token),
+    PROFILES.github
+  );
+}
+
 async function fetchMirrorlistFromGithub(
   url: string,
   token?: string
@@ -79,27 +100,6 @@ async function fetchMirrorlistFromGithub(
         .replace(/\$arch\/\$repo/, '')
         .trim()
     );
-}
-
-export async function fetchPkgbuilds(
-  params: {owner?: string; ref?: string; repo?: string; token?: string} = {}
-): Promise<PkgbuildMap> {
-  const {
-    owner = 'CachyOS',
-    ref = 'master',
-    repo = 'CachyOS-PKGBUILDS',
-    token = import.meta.env.GITHUB_TOKEN,
-  } = params;
-
-  const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(
-    repo
-  )}/git/trees/${encodeURIComponent(ref)}?recursive=1`;
-
-  return swrCached(
-    `github:pkgbuilds:${url}`,
-    () => fetchPkgbuildsFromGithub(url, token),
-    PROFILES.github
-  );
 }
 
 async function fetchPkgbuildsFromGithub(

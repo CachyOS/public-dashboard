@@ -148,10 +148,12 @@ export function pagination(
   if (hasLeftEllipsis && hasRightEllipsis) {
     left = leftSiblingIndex;
     right = rightSiblingIndex;
-  } else if (!hasLeftEllipsis && hasRightEllipsis) {
+  }
+  if (!hasLeftEllipsis && hasRightEllipsis) {
     const numbersToShow = totalVisiblePages - 2; // ellipsis, last
     right = Math.max(numbersToShow, rightSiblingIndex);
-  } else if (hasLeftEllipsis && !hasRightEllipsis) {
+  }
+  if (hasLeftEllipsis && !hasRightEllipsis) {
     const numbersToShow = totalVisiblePages - OFFSET - 2; // first, ellipsis
     left = Math.min(totalPages - numbersToShow, leftSiblingIndex);
   }

@@ -98,12 +98,12 @@ export default function PackageSearchForm({
     }
   };
 
-  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSubmit(params);
   };
 
-  const handleReset = (e: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleReset = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onReset();
   };

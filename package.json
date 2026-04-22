@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "start": "bun server.mjs",
     "test": "bun test",
-    "format": "biome format --fix",
+    "format": "biome check --write --linter-enabled=false",
     "lint": "oxlint",
     "check": "biome check && oxlint && tsc --noEmit"
   },

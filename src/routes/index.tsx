@@ -19,7 +19,7 @@ type SearchParams = z.infer<typeof SearchParamsSchema>;
 
 function toQueryParams(search: SearchParams): PackagesSearchQueryParams {
   return {
-    arch: search.arch,
+    arch: search.arch ?? '',
     current_page: search.current_page ?? 1,
     page_size: search.page_size ?? PAGE_SIZE[0],
     repo: search.repo ?? '',
@@ -32,12 +32,12 @@ export const Route = createFileRoute('/')({
   head: () => ({meta: [{title: 'CachyOS | Package Search'}]}),
   loaderDeps: ({search}) => toQueryParams(search),
   // oxlint-disable-next-line perfectionist/sort-objects -- loaderDeps must precede loader for type inference
-  loader: async ({context: {queryClient}, deps}) => {
-    queryClient.prefetchQuery({
+  loader: async ({context: {queryClient}, deps}) =>
+    queryClient.ensureQueryData({
       queryFn: searchQueryFn(deps),
       queryKey: ['search', deps],
-    });
-  },
+      staleTime: 60_000,
+    }),
   validateSearch: SearchParamsSchema,
 });
 

@@ -1,33 +1,7 @@
-import {
-  PackageSearchResponseSchema,
-  type PackagesSearchQueryParams,
-} from '@/lib/types';
+import {searchPackages} from '@/lib/server/actions';
+import type {PackagesSearchQueryParams} from '@/lib/types';
 
 import {EndpointURL} from './fetcher';
-
-export function buildSearchQuery(params: PackagesSearchQueryParams) {
-  return new URLSearchParams({
-    arch: params.arch ?? '',
-    current_page: String(params.current_page),
-    page_size: String(params.page_size),
-    repo: params.repo,
-    search: params.search,
-  }).toString();
-}
-
-export async function fetchSearchResults(
-  params: PackagesSearchQueryParams,
-  signal?: AbortSignal
-) {
-  const query = buildSearchQuery(params);
-  const response = await fetch(`/api/search?${query}`, {signal});
-  if (!response.ok) {
-    throw new Error(
-      `Failed to fetch search results. ${response.statusText}`.trim()
-    );
-  }
-  return PackageSearchResponseSchema.parse(await response.json());
-}
 
 export async function getSuggestions({
   query,
@@ -50,5 +24,5 @@ export async function getSuggestions({
 
 export function searchQueryFn(params: PackagesSearchQueryParams) {
   return ({signal}: {signal?: AbortSignal}) =>
-    fetchSearchResults(params, signal);
+    searchPackages({data: params, signal});
 }

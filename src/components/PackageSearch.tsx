@@ -40,6 +40,7 @@ export default function PackageSearch() {
     placeholderData: keepPreviousData,
     queryFn: searchQueryFn(parsedParams),
     queryKey: ['search', parsedParams],
+    staleTime: 60_000,
   });
 
   const setSearchParams = useCallback(

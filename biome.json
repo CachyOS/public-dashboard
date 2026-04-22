@@ -34,10 +34,7 @@
   },
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    }
+    "enabled": false
   },
   "javascript": {
     "formatter": {

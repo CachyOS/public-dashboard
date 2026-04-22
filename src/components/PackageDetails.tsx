@@ -77,12 +77,12 @@ export default function PackageDetailsComponent({
               <DetailRow label="Base Package">
                 <Link
                   className="text-primary hover:underline"
-                  to="/package/$repo/$arch/$pkgname"
                   params={{
                     arch: pkg.pkg_arch,
                     pkgname: pkg.pkg_base,
                     repo: pkg.repo_name,
                   }}
+                  to="/package/$repo/$arch/$pkgname"
                 >
                   {pkg.pkg_base}
                 </Link>
@@ -115,8 +115,8 @@ export default function PackageDetailsComponent({
               <a
                 className="text-primary hover:underline break-all"
                 href={getDownloadMirrorUrl(pkg)}
-                target="_blank"
                 rel="noopener"
+                target="_blank"
               >
                 {getDownloadMirrorUrl(pkg)}
               </a>
@@ -170,10 +170,10 @@ function BadgeLinkList({items}: {items: string[]}) {
       {items.map(item => (
         <Badge asChild key={item} variant="secondary">
           <Link
-            to="/"
             search={{
               search: getSearch(item),
             }}
+            to="/"
           >
             {item}
           </Link>

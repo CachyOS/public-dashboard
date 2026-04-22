@@ -47,12 +47,12 @@ export default function PackageTable({
         return (
           <Link
             className="text-primary hover:underline font-medium"
-            to="/package/$repo/$arch/$pkgname"
             params={{
               arch: pkg.pkg_arch,
               pkgname: pkg.pkg_name,
               repo: pkg.repo_name,
             }}
+            to="/package/$repo/$arch/$pkgname"
           >
             {pkg.pkg_name}
           </Link>
@@ -75,8 +75,8 @@ export default function PackageTable({
         return (
           <button
             className="cursor-pointer text-primary hover:underline"
-            type="button"
             onClick={() => onRepositoryClick?.(repoName)}
+            type="button"
           >
             {repoName}
           </button>
@@ -93,8 +93,8 @@ export default function PackageTable({
         return (
           <button
             className="cursor-pointer text-primary hover:underline"
-            type="button"
             onClick={() => onArchitectureClick?.(arch)}
+            type="button"
           >
             {arch}
           </button>

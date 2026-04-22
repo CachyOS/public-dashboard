@@ -26,6 +26,42 @@ export async function getMirrorsData() {
   return swrCached(MIRRORS_CACHE_KEY, computeMirrorsData, PROFILES.mirrors);
 }
 
+function buildMirrorResult(mirrorUrl: string, checks: RepoCheck[]): Mirror {
+  const validChecks = checks.filter(c => c.status !== 'error');
+  const totalChecks = checks.length;
+  const errorChecks = checks.length - validChecks.length;
+  const syncedChecks = checks.filter(c => c.status === 'synced').length;
+
+  let overallStatus: Mirror['overallStatus'] = 'error';
+
+  if (validChecks.length === 0) {
+    overallStatus = 'error';
+  } else if (syncedChecks === totalChecks) {
+    overallStatus = 'healthy';
+  } else if (errorChecks > 0 || syncedChecks < totalChecks) {
+    overallStatus = 'partial';
+    if (syncedChecks === 0) overallStatus = 'out-of-sync';
+  }
+
+  const lags = validChecks
+    .map(c => c.syncLagSeconds)
+    .filter((l): l is number => l !== null)
+    .filter(l => l > 0);
+
+  const averageLag =
+    lags.length > 0 ? lags.reduce((a, b) => a + b, 0) / lags.length : null;
+
+  const url = new URL(mirrorUrl);
+
+  return {
+    averageLagSeconds: averageLag,
+    checks,
+    name: url.hostname,
+    overallStatus,
+    url: mirrorUrl,
+  } satisfies Mirror;
+}
+
 async function computeMirrorsData() {
   const mirrorsList = await fetchMirrorlist();
 
@@ -86,42 +122,6 @@ async function computeMirrorsData() {
   });
 
   return {baselines, mirrors};
-}
-
-function buildMirrorResult(mirrorUrl: string, checks: RepoCheck[]): Mirror {
-  const validChecks = checks.filter(c => c.status !== 'error');
-  const totalChecks = checks.length;
-  const errorChecks = checks.length - validChecks.length;
-  const syncedChecks = checks.filter(c => c.status === 'synced').length;
-
-  let overallStatus: Mirror['overallStatus'] = 'error';
-
-  if (validChecks.length === 0) {
-    overallStatus = 'error';
-  } else if (syncedChecks === totalChecks) {
-    overallStatus = 'healthy';
-  } else if (errorChecks > 0 || syncedChecks < totalChecks) {
-    overallStatus = 'partial';
-    if (syncedChecks === 0) overallStatus = 'out-of-sync';
-  }
-
-  const lags = validChecks
-    .map(c => c.syncLagSeconds)
-    .filter((l): l is number => l !== null)
-    .filter(l => l > 0);
-
-  const averageLag =
-    lags.length > 0 ? lags.reduce((a, b) => a + b, 0) / lags.length : null;
-
-  const url = new URL(mirrorUrl);
-
-  return {
-    averageLagSeconds: averageLag,
-    checks,
-    name: url.hostname,
-    overallStatus,
-    url: mirrorUrl,
-  } satisfies Mirror;
 }
 
 async function fetchRepoTimestamp(

@@ -56,127 +56,28 @@ function memorySet(key: string, entry: Entry<unknown>): void {
 
 let redisPromise: null | Promise<null | Redis> = null;
 
-function isBuildPhase(): boolean {
-  return process.env.BUILD_PHASE === '1';
-}
+type PrefillEntry = {
+  key: string;
+  profileName: ProfileName;
+  updatedAt: number;
+  value: unknown;
+};
 
-async function getRedis(): Promise<null | Redis> {
-  if (isBuildPhase()) return null;
-  if ((process.env.CACHE ?? '').toLowerCase() !== 'redis') return null;
-  if (!redisPromise) redisPromise = setupRedisClient();
-  return redisPromise;
-}
+type PrefillPayload = {entries: PrefillEntry[]; updatedAt: number};
 
-async function setupRedisClient(): Promise<null | Redis> {
-  const redisUrl = new URL(process.env.REDIS_URL ?? 'http://localhost:6379');
-  const redisClient = new Redis(redisUrl.toString(), {
-    name: process.env.REDIS_MASTER_NAME ?? 'shard_master0',
-    password: process.env.REDIS_PASSWORD ?? '1234',
-    sentinelPassword: process.env.REDIS_SENTINEL_PASSWORD ?? '1234',
-    sentinels: [{host: redisUrl.hostname}],
-  });
-  console.info('[swr] Connecting ioredis client...');
-  try {
-    await new Promise<void>((resolvePromise, rejectPromise) => {
-      redisClient.once('ready', () => {
-        console.info('[swr] ioredis client ready.');
-        resolvePromise();
-      });
-      redisClient.once('error', rejectPromise);
-    });
-    redisClient.on('error', err => console.error('[swr] redis error:', err));
-    return redisClient;
-  } catch (error) {
-    console.warn('[swr] Failed to connect Redis client:', error);
-    try {
-      redisClient.disconnect();
-    } catch (disconnectError) {
-      console.error(
-        '[swr] Failed to disconnect Redis client after connection failure:',
-        disconnectError
-      );
-    }
-    return null;
-  }
-}
-
-function ageSeconds(entry: Entry<unknown>): number {
-  return (Date.now() - entry.updatedAt) / 1000;
-}
-
-async function readBacking<T>(key: string): Promise<Entry<T> | null> {
-  const mem = memory.get(key) as Entry<T> | undefined;
-  if (mem) {
-    dbg('mem-hit', key, {age: Math.round(ageSeconds(mem))});
-    return mem;
-  }
-  const client = await getRedis();
-  if (!client) {
-    dbg('mem-miss', key);
-    return null;
-  }
-  try {
-    const raw = await client.get(key);
-    if (!raw) {
-      dbg('redis-miss', key);
-      return null;
-    }
-    const parsed = JSON.parse(raw) as Entry<T>;
-    memorySet(key, parsed);
-    dbg('redis-hit', key, {age: Math.round(ageSeconds(parsed))});
-    return parsed;
-  } catch (err) {
-    console.error('[swr] redis read error:', err);
-    return null;
-  }
-}
-
-async function writeBacking<T>(key: string, entry: Entry<T>): Promise<void> {
-  memorySet(key, entry);
-  const client = await getRedis();
-  if (!client) {
-    dbg('set-mem', key, {ttl: entry.profile.expire});
-    return;
-  }
-  try {
-    await client.set(key, JSON.stringify(entry), 'EX', entry.profile.expire);
-    dbg('set-redis', key, {ttl: entry.profile.expire});
-  } catch (err) {
-    console.error('[swr] redis write error:', err);
-  }
-}
-
-function refresh<T>(
+/** Seed the cache from a pre-built payload (called by the prefill loader). */
+export function seedCache<T>(
   key: string,
-  fn: () => Promise<T>,
-  profile: CacheProfile
-): Promise<T> {
-  const existing = inflight.get(key) as Promise<T> | undefined;
-  if (existing) {
-    dbg('dedupe', key);
-    return existing;
-  }
-  const task = (async () => {
-    const started = Date.now();
-    dbg('fetch-start', key);
-    try {
-      const value = await fn();
-      const durationMs = Date.now() - started;
-      await writeBacking(key, {profile, updatedAt: Date.now(), value});
-      dbg('fetch-ok', key, {durationMs});
-      return value;
-    } catch (err) {
-      dbg('fetch-err', key, {
-        durationMs: Date.now() - started,
-        error: (err as Error).message,
-      });
-      throw err;
-    } finally {
-      inflight.delete(key);
-    }
-  })();
-  inflight.set(key, task);
-  return task;
+  value: T,
+  profile: CacheProfile,
+  updatedAt = Date.now()
+): void {
+  const entry: Entry<T> = {profile, updatedAt, value};
+  memorySet(key, entry);
+  dbg('seed', key, {age: Math.round((Date.now() - updatedAt) / 1000)});
+  void writeBacking(key, entry).catch(err =>
+    console.error('[swr] seed redis write failed:', err)
+  );
 }
 
 /**
@@ -213,42 +114,8 @@ export async function swrCached<T>(
   return refresh(key, fn, profile);
 }
 
-/** Seed the cache from a pre-built payload (called by the prefill loader). */
-export function seedCache<T>(
-  key: string,
-  value: T,
-  profile: CacheProfile,
-  updatedAt = Date.now()
-): void {
-  const entry: Entry<T> = {profile, updatedAt, value};
-  memorySet(key, entry);
-  dbg('seed', key, {age: Math.round((Date.now() - updatedAt) / 1000)});
-  void writeBacking(key, entry).catch(err =>
-    console.error('[swr] seed redis write failed:', err)
-  );
-}
-
-type PrefillEntry = {
-  key: string;
-  profileName: ProfileName;
-  updatedAt: number;
-  value: unknown;
-};
-type PrefillPayload = {entries: PrefillEntry[]; updatedAt: number};
-
-function candidatePrefillPaths(): string[] {
-  const paths: string[] = [];
-  if (import.meta.env.CACHE_PREFILL_PATH)
-    paths.push(import.meta.env.CACHE_PREFILL_PATH);
-  try {
-    const here = dirname(fileURLToPath(import.meta.url));
-    paths.push(resolve(here, '..', 'cache-prefill.json'));
-    paths.push(resolve(here, '..', '..', 'cache-prefill.json'));
-  } catch {
-    // import.meta.url unavailable
-  }
-  paths.push(resolve(process.cwd(), 'dist', 'cache-prefill.json'));
-  return paths;
+function ageSeconds(entry: Entry<unknown>): number {
+  return (Date.now() - entry.updatedAt) / 1000;
 }
 
 function autoSeedFromPrefill(): void {
@@ -279,6 +146,139 @@ function autoSeedFromPrefill(): void {
       );
     }
     return;
+  }
+}
+
+function candidatePrefillPaths(): string[] {
+  const paths: string[] = [];
+  if (import.meta.env.CACHE_PREFILL_PATH)
+    paths.push(import.meta.env.CACHE_PREFILL_PATH);
+  try {
+    const here = dirname(fileURLToPath(import.meta.url));
+    paths.push(resolve(here, '..', 'cache-prefill.json'));
+    paths.push(resolve(here, '..', '..', 'cache-prefill.json'));
+  } catch {
+    // import.meta.url unavailable
+  }
+  paths.push(resolve(process.cwd(), 'dist', 'cache-prefill.json'));
+  return paths;
+}
+
+async function getRedis(): Promise<null | Redis> {
+  if (isBuildPhase()) return null;
+  if ((process.env.CACHE ?? '').toLowerCase() !== 'redis') return null;
+  if (!redisPromise) redisPromise = setupRedisClient();
+  return redisPromise;
+}
+
+function isBuildPhase(): boolean {
+  return process.env.BUILD_PHASE === '1';
+}
+
+async function readBacking<T>(key: string): Promise<Entry<T> | null> {
+  const mem = memory.get(key) as Entry<T> | undefined;
+  if (mem) {
+    dbg('mem-hit', key, {age: Math.round(ageSeconds(mem))});
+    return mem;
+  }
+  const client = await getRedis();
+  if (!client) {
+    dbg('mem-miss', key);
+    return null;
+  }
+  try {
+    const raw = await client.get(key);
+    if (!raw) {
+      dbg('redis-miss', key);
+      return null;
+    }
+    const parsed = JSON.parse(raw) as Entry<T>;
+    memorySet(key, parsed);
+    dbg('redis-hit', key, {age: Math.round(ageSeconds(parsed))});
+    return parsed;
+  } catch (err) {
+    console.error('[swr] redis read error:', err);
+    return null;
+  }
+}
+function refresh<T>(
+  key: string,
+  fn: () => Promise<T>,
+  profile: CacheProfile
+): Promise<T> {
+  const existing = inflight.get(key) as Promise<T> | undefined;
+  if (existing) {
+    dbg('dedupe', key);
+    return existing;
+  }
+  const task = (async () => {
+    const started = Date.now();
+    dbg('fetch-start', key);
+    try {
+      const value = await fn();
+      const durationMs = Date.now() - started;
+      await writeBacking(key, {profile, updatedAt: Date.now(), value});
+      dbg('fetch-ok', key, {durationMs});
+      return value;
+    } catch (err) {
+      dbg('fetch-err', key, {
+        durationMs: Date.now() - started,
+        error: (err as Error).message,
+      });
+      throw err;
+    } finally {
+      inflight.delete(key);
+    }
+  })();
+  inflight.set(key, task);
+  return task;
+}
+
+async function setupRedisClient(): Promise<null | Redis> {
+  const redisUrl = new URL(process.env.REDIS_URL ?? 'http://localhost:6379');
+  const redisClient = new Redis(redisUrl.toString(), {
+    name: process.env.REDIS_MASTER_NAME ?? 'shard_master0',
+    password: process.env.REDIS_PASSWORD ?? '1234',
+    sentinelPassword: process.env.REDIS_SENTINEL_PASSWORD ?? '1234',
+    sentinels: [{host: redisUrl.hostname}],
+  });
+  console.info('[swr] Connecting ioredis client...');
+  try {
+    await new Promise<void>((resolvePromise, rejectPromise) => {
+      redisClient.once('ready', () => {
+        console.info('[swr] ioredis client ready.');
+        resolvePromise();
+      });
+      redisClient.once('error', rejectPromise);
+    });
+    redisClient.on('error', err => console.error('[swr] redis error:', err));
+    return redisClient;
+  } catch (error) {
+    console.warn('[swr] Failed to connect Redis client:', error);
+    try {
+      redisClient.disconnect();
+    } catch (disconnectError) {
+      console.error(
+        '[swr] Failed to disconnect Redis client after connection failure:',
+        disconnectError
+      );
+    }
+    return null;
+  }
+}
+
+async function writeBacking<T>(key: string, entry: Entry<T>): Promise<void> {
+  memorySet(key, entry);
+  const client = await getRedis();
+  if (!client) {
+    dbg('set-mem', key, {ttl: entry.profile.expire});
+    return;
+  }
+  try {
+    await client.set(key, JSON.stringify(entry), 'EX', entry.profile.expire);
+    dbg('set-redis', key, {ttl: entry.profile.expire});
+  } catch (err) {
+    console.error('[swr] redis write error:', err);
   }
 }
 

@@ -30,14 +30,15 @@ function toQueryParams(search: SearchParams): PackagesSearchQueryParams {
 export const Route = createFileRoute('/')({
   component: HomePage,
   head: () => ({meta: [{title: 'CachyOS | Package Search'}]}),
-  validateSearch: SearchParamsSchema,
   loaderDeps: ({search}) => toQueryParams(search),
+  // oxlint-disable-next-line perfectionist/sort-objects -- loaderDeps must precede loader for type inference
   loader: async ({context: {queryClient}, deps}) => {
     queryClient.prefetchQuery({
       queryFn: searchQueryFn(deps),
       queryKey: ['search', deps],
     });
   },
+  validateSearch: SearchParamsSchema,
 });
 
 function HomePage() {

@@ -164,9 +164,9 @@ export default function PackageSearchForm({
       </div>
       <div className="flex space-x-4">
         <Button
-          suppressHydrationWarning
           className="w-32"
           disabled={isLoading}
+          suppressHydrationWarning
           type="submit"
         >
           {isLoading ? (

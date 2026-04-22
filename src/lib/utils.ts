@@ -86,7 +86,7 @@ export function getPkgverWithoutBuildnum(pkgver: string): string {
   return pkgver.substring(0, dashPos + dotPos + 1);
 }
 
-function getArch(repoName: string): string {
+export function getArch(repoName: string): string {
   if (repoName.endsWith('v4') || repoName.endsWith('znver4')) {
     return 'x86_64_v4';
   }

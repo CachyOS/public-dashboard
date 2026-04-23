@@ -1,9 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "react",
-    "typescript"
-  ],
+  "plugins": ["react", "typescript"],
   "jsPlugins": [
     "@tanstack/eslint-plugin-query",
     "@tanstack/eslint-plugin-router",
@@ -20,10 +17,7 @@
   "env": {
     "builtin": true
   },
-  "ignorePatterns": [
-    "**/dist/**",
-    "**/.output/**"
-  ],
+  "ignorePatterns": ["**/dist/**", "**/.output/**"],
   "rules": {
     "react/display-name": "warn",
     "react/no-direct-mutation-state": "error",
@@ -150,8 +144,8 @@
       {
         "type": "unsorted",
         "useConfigurationIf": {
-        "matchesAstSelector": "CallExpression[callee.callee.name='createFileRoute'] > ObjectExpression",
-        },
+          "matchesAstSelector": "CallExpression[callee.callee.name='createFileRoute'] > ObjectExpression"
+        }
       },
       {
         "type": "natural",

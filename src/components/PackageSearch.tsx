@@ -12,6 +12,7 @@ import {useSessionStorage} from 'usehooks-ts';
 
 import {SEARCH_BACK_PATH} from '@/components/BackLink';
 import PackageSearchForm from '@/components/PackageSearchForm';
+import PackageSearchSkeleton from '@/components/PackageSearchSkeleton';
 import PackageTable from '@/components/PackageTable';
 import {PackageTablePagination} from '@/components/PackageTablePagination';
 import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
@@ -107,6 +108,8 @@ export default function PackageSearch() {
           <AlertDescription>{error.message}</AlertDescription>
         </Alert>
       )}
+
+      {isPending && !data && <PackageSearchSkeleton />}
 
       {data && (
         <div className="space-y-4">

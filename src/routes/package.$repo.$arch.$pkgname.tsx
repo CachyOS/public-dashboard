@@ -99,6 +99,14 @@ async function resolvePackage({
 
 export const Route = createFileRoute('/package/$repo/$arch/$pkgname')({
   component: PackageDetailsPage,
+  loader: async ({params}) => {
+    const validation = PackageDetailsPathParamsSchema.safeParse(params);
+    if (!validation.success) throw notFound();
+    const arch = decodeURIComponent(validation.data.arch) as PackageArch;
+    const pkgname = decodeURIComponent(validation.data.pkgname);
+    const repo = decodeURIComponent(validation.data.repo);
+    return resolvePackage({arch, pkgname, repo});
+  },
   head: ({loaderData, params}) => {
     const arch = decodeURIComponent(params.arch);
     const pkgname = decodeURIComponent(params.pkgname);
@@ -129,14 +137,6 @@ export const Route = createFileRoute('/package/$repo/$arch/$pkgname')({
         {content: 'website', property: 'og:type'},
       ],
     };
-  },
-  loader: async ({params}) => {
-    const validation = PackageDetailsPathParamsSchema.safeParse(params);
-    if (!validation.success) throw notFound();
-    const arch = decodeURIComponent(validation.data.arch) as PackageArch;
-    const pkgname = decodeURIComponent(validation.data.pkgname);
-    const repo = decodeURIComponent(validation.data.repo);
-    return resolvePackage({arch, pkgname, repo});
   },
 });
 

@@ -7,8 +7,8 @@ import {getMirrorsData} from '@/lib/server/actions';
 
 export const Route = createFileRoute('/mirrors')({
   component: MirrorsPage,
-  head: () => ({meta: [{title: 'CachyOS | Mirrors List'}]}),
   loader: () => getMirrorsData(),
+  head: () => ({meta: [{title: 'CachyOS | Mirrors List'}]}),
 });
 
 function MirrorsPage() {

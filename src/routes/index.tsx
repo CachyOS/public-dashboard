@@ -1,4 +1,4 @@
-import {createFileRoute} from '@tanstack/react-router';
+import {createFileRoute, stripSearchParams} from '@tanstack/react-router';
 import {z} from 'zod';
 
 import PackageSearch from '@/components/PackageSearch';
@@ -17,19 +17,27 @@ const SearchParamsSchema = z.object({
 
 type SearchParams = z.infer<typeof SearchParamsSchema>;
 
+const defaultValues = {
+  arch: '',
+  current_page: 1,
+  page_size: PAGE_SIZE[0],
+  repo: '',
+  search: '',
+};
+
 function toQueryParams(search: SearchParams): PackagesSearchQueryParams {
   return {
-    arch: search.arch ?? '',
-    current_page: search.current_page ?? 1,
-    page_size: search.page_size ?? PAGE_SIZE[0],
-    repo: search.repo ?? '',
-    search: search.search ?? '',
+    ...defaultValues,
+    ...search,
   };
 }
 
 export const Route = createFileRoute('/')({
   component: HomePage,
   validateSearch: SearchParamsSchema,
+  search: {
+    middlewares: [stripSearchParams(defaultValues)],
+  },
   loaderDeps: ({search}) => toQueryParams(search),
   loader: async ({context: {queryClient}, deps}) =>
     queryClient.ensureQueryData({

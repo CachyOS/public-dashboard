@@ -23,7 +23,7 @@ export const Route = createRootRouteWithContext<{
       {charSet: 'utf-8'},
       {content: 'width=device-width, initial-scale=1', name: 'viewport'},
       {
-        content: import.meta.env.APP_VERSION || 'development',
+        content: import.meta.env.VITE_APP_VERSION || 'development',
         name: 'version',
       },
       {title: 'CachyOS'},

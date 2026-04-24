@@ -10,8 +10,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG APP_VERSION=production
-ENV APP_VERSION=${APP_VERSION}
+ARG VITE_APP_VERSION=production
+ENV VITE_APP_VERSION=${VITE_APP_VERSION}
 
 RUN bun run build
 

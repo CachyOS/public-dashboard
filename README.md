@@ -59,7 +59,7 @@ bun server.mjs
 
 - `PORT`: Port the production server listens on (default: `3000`). Read by `server.mjs`.
 - `HOSTNAME`: Host interface the production server binds to (default: `0.0.0.0`). Read by `server.mjs`.
-- `APP_VERSION`: Injected into the dashboard `<meta>` tag. Typically set at build time via `--build-arg` or `APP_VERSION=$(git rev-parse --short HEAD)`.
+- `VITE_APP_VERSION`: Injected into the dashboard `<meta>` tag. Typically set at build time via `--build-arg` or `VITE_APP_VERSION=$(git rev-parse --short HEAD)`.
 
 #### API URL
 
@@ -98,7 +98,7 @@ To build the Docker image, run the following command from the root directory:
 docker build -t public-repo-dashboard .
 ```
 
-An optional `--build-arg APP_VERSION=$(git rev-parse --short HEAD)` can be used to include the current Git commit in the dashboard's `<meta>` tag during the build.
+An optional `--build-arg VITE_APP_VERSION=$(git rev-parse --short HEAD)` can be used to include the current Git commit in the dashboard's `<meta>` tag during the build.
 
 ### Run the Docker Container
 

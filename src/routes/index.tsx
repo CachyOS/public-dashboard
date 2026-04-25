@@ -39,12 +39,13 @@ export const Route = createFileRoute('/')({
     middlewares: [stripSearchParams(defaultValues)],
   },
   loaderDeps: ({search}) => toQueryParams(search),
-  loader: async ({context: {queryClient}, deps}) =>
-    queryClient.ensureQueryData({
+  loader: ({context: {queryClient}, deps}) => {
+    queryClient.prefetchQuery({
       queryFn: searchQueryFn(deps),
       queryKey: ['search', deps],
       staleTime: 60_000,
-    }),
+    });
+  },
   head: () => ({meta: [{title: 'CachyOS | Package Search'}]}),
 });
 

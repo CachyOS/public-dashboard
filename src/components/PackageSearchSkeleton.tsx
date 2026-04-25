@@ -11,7 +11,7 @@ import {
 export default function PackageSearchSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pb-1">
         <Skeleton className="h-4 w-1/4" />
       </div>
       <div className="rounded-md border">
@@ -29,19 +29,19 @@ export default function PackageSearchSkeleton() {
             {Array.from({length: 15}, (_, index) => `row-${index}`).map(id => (
               <TableRow key={id}>
                 <TableCell>
-                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 mb-1 w-3/4" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 mb-1 w-1/2" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 mb-1 w-1/2" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-4 w-1/2" />
+                  <Skeleton className="h-4 mb-1 w-1/2" />
                 </TableCell>
                 <TableCell>
-                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-4 mb-1 w-3/4" />
                 </TableCell>
               </TableRow>
             ))}

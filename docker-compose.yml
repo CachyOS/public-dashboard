@@ -3,7 +3,7 @@ services:
     build:
       context: .
       args:
-        - APP_VERSION=latest
+        - VITE_APP_VERSION=latest
     container_name: public-repo-dashboard
     environment:
       # URL of the upstream JSON API this dashboard wraps.

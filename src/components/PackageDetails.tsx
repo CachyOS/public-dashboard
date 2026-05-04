@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import type {BriefPackageList, PackageDetails} from '@/lib/types';
-import {getDownloadMirrorUrl} from '@/lib/utils';
+import {cn, getDownloadMirrorUrl} from '@/lib/utils';
 import {DateTime} from './DateTime';
 
 type PackageDetailsComponentProps = {
@@ -36,7 +36,8 @@ export default function PackageDetailsComponent({
         <CardHeader>
           <CardTitle className="text-2xl break-all">{pkg.pkg_name}</CardTitle>
           <CardDescription>
-            Version {pkg.pkg_version} from {pkg.repo_name} ({pkg.pkg_arch})
+            Version <MonoValue>{pkg.pkg_version}</MonoValue> from{' '}
+            {pkg.repo_name} ({pkg.pkg_arch})
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -106,10 +107,18 @@ export default function PackageDetailsComponent({
               {pkg.pkg_packager || 'Unknown Packager'}
             </DetailRow>
             <DetailRow label="Package Size">
-              {pkg.pkg_csize ? formatBytes(pkg.pkg_csize) : 'unknown'}
+              {pkg.pkg_csize ? (
+                <MonoValue>{formatBytes(pkg.pkg_csize)}</MonoValue>
+              ) : (
+                'unknown'
+              )}
             </DetailRow>
             <DetailRow label="Installed Size">
-              {pkg.pkg_isize ? formatBytes(pkg.pkg_isize) : 'unknown'}
+              {pkg.pkg_isize ? (
+                <MonoValue>{formatBytes(pkg.pkg_isize)}</MonoValue>
+              ) : (
+                'unknown'
+              )}
             </DetailRow>
             <DetailRow label="Download Mirror">
               <a
@@ -122,9 +131,9 @@ export default function PackageDetailsComponent({
               </a>
             </DetailRow>
             <DetailRow label="SHA256 Sum">
-              <span className="font-mono text-sm break-all">
+              <MonoValue className="text-sm break-all">
                 {pkg.pkg_sha256sum || 'unknown'}
-              </span>
+              </MonoValue>
             </DetailRow>
             <DetailRow label="Dependencies">
               <BadgeLinkList items={pkg.pkg_depends} />
@@ -221,4 +230,16 @@ function formatBytes(bytes: number, decimals = 2): string {
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return `${parseFloat((bytes / k ** i).toFixed(dm))} ${sizes[i]}`;
+}
+
+function MonoValue({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <span className={cn('font-mono text-primary', className)}>{children}</span>
+  );
 }

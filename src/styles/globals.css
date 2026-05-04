@@ -17,23 +17,30 @@
 :root {
   /* Accent palette */
   --color-accent-200: #90e0d1;
+  --color-accent-300: #d6f0eb;
+  --color-accent-400: #5fd4c0;
   --color-accent-600: #007d6f;
+  --color-accent-800: #0f3a34;
   --color-accent-900: #003c34;
   --color-accent-950: #002b25;
 
   /* Gray palette */
-  --color-gray-100: #f2f6ff;
-  --color-gray-200: #e6eeff;
-  --color-gray-300: #b8c2d7;
+  --color-gray-100: #f5f7fa;
+  --color-gray-150: #eef1f7;
+  --color-gray-200: #e6eaf2;
+  --color-gray-300: #cdd5e3;
   --color-gray-400: #798bb2;
   --color-gray-500: #47577b;
   --color-gray-700: #283758;
+  --color-gray-750: #2a3550;
   --color-gray-800: #182545;
+  --color-gray-850: #172033;
   --color-gray-900: #111826;
+  --color-gray-950: #0d1422;
 
   --radius: 0.625rem;
 
-  /* Surfaces and text */
+  /* 60% Base surfaces and text */
   --background: var(--color-gray-100);
   --foreground: var(--color-gray-900);
 
@@ -43,24 +50,29 @@
   --popover: #ffffff;
   --popover-foreground: var(--color-gray-900);
 
-  /* Brand and emphasis */
+  /* 30% Structure: secondary, muted, borders */
+  --secondary: var(--color-gray-200);
+  --secondary-foreground: var(--color-gray-900);
+
+  --muted: var(--color-gray-150);
+  --muted-foreground: var(--color-gray-500);
+
+  --border: var(--color-gray-300);
+  --input: var(--color-gray-300);
+
+  /* 10% Accent: brand, key digits, focus */
   --primary: var(--color-accent-600);
   --primary-foreground: #ffffff;
 
-  --secondary: var(--color-accent-200);
-  --secondary-foreground: var(--color-gray-900);
+  --accent: var(--color-accent-300);
+  --accent-foreground: var(--color-accent-900);
 
-  --muted: var(--color-gray-100);
-  --muted-foreground: var(--color-gray-500);
-
-  --accent: var(--color-accent-200);
-  --accent-foreground: var(--color-gray-900);
-
-  /* Feedback and UI affordances */
-  --destructive: #dc2626;
-  --border: var(--color-gray-300);
-  --input: var(--color-gray-300);
   --ring: var(--color-accent-600);
+
+  /* Feedback */
+  --destructive: #dc2626;
+  --success: #15803d;
+  --success-foreground: #ffffff;
 
   /* Charts (kept similar, nudged toward teal/cyan hues) */
   --chart-1: #0ea5a5; /* teal-600 */
@@ -74,41 +86,46 @@
   --sidebar-foreground: var(--color-gray-900);
   --sidebar-primary: var(--color-accent-600);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--color-accent-200);
-  --sidebar-accent-foreground: var(--color-gray-900);
+  --sidebar-accent: var(--color-accent-300);
+  --sidebar-accent-foreground: var(--color-accent-900);
   --sidebar-border: var(--color-gray-300);
   --sidebar-ring: var(--color-accent-600);
 }
 
 .dark {
-  /* Surfaces and text */
-  --background: var(--color-gray-900);
+  /* 60% Base surfaces and text */
+  --background: var(--color-gray-950);
   --foreground: #ffffff;
 
-  --card: var(--color-gray-800);
+  --card: var(--color-gray-850);
   --card-foreground: #ffffff;
 
-  --popover: var(--color-gray-800);
+  --popover: var(--color-gray-850);
   --popover-foreground: #ffffff;
 
-  /* Brand and emphasis */
-  --primary: var(--color-accent-200);
-  --primary-foreground: var(--color-gray-900);
-
-  --secondary: var(--color-gray-700);
+  /* 30% Structure: secondary, muted, borders */
+  --secondary: #1f2a40;
   --secondary-foreground: #ffffff;
 
-  --muted: var(--color-gray-800);
+  --muted: #1a2336;
   --muted-foreground: var(--color-gray-300);
 
-  --accent: var(--color-accent-600);
-  --accent-foreground: #ffffff;
+  --border: var(--color-gray-750);
+  --input: var(--color-gray-750);
 
-  /* Feedback and UI affordances */
+  /* 10% Accent: brand, key digits, focus */
+  --primary: var(--color-accent-400);
+  --primary-foreground: var(--color-gray-900);
+
+  --accent: var(--color-accent-800);
+  --accent-foreground: var(--color-accent-400);
+
+  --ring: var(--color-accent-400);
+
+  /* Feedback */
   --destructive: #ef4444;
-  --border: var(--color-gray-700);
-  --input: var(--color-gray-700);
-  --ring: var(--color-accent-600);
+  --success: #4ade80;
+  --success-foreground: #052e16;
 
   /* Charts tuned for dark bg */
   --chart-1: #22d3ee; /* cyan-400 */
@@ -118,14 +135,14 @@
   --chart-5: #60a5fa; /* blue-400 */
 
   /* Sidebar */
-  --sidebar: var(--color-accent-900);
+  --sidebar: var(--color-gray-850);
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: var(--color-accent-200);
+  --sidebar-primary: var(--color-accent-400);
   --sidebar-primary-foreground: var(--color-gray-900);
-  --sidebar-accent: var(--color-accent-600);
-  --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #1f2a37;
-  --sidebar-ring: var(--color-accent-600);
+  --sidebar-accent: var(--color-accent-800);
+  --sidebar-accent-foreground: var(--color-accent-400);
+  --sidebar-border: var(--color-gray-750);
+  --sidebar-ring: var(--color-accent-400);
 }
 
 @theme {
@@ -150,6 +167,8 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);

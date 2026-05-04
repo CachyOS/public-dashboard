@@ -42,8 +42,8 @@ export function CopyButton(props: CopyButtonProps) {
       variant="ghost"
     >
       {copyState === 'idle' && <Clipboard />}
-      {copyState === 'success' && <ClipboardCheck className="text-green-600" />}
-      {copyState === 'error' && <ClipboardX className="text-red-600" />}
+      {copyState === 'success' && <ClipboardCheck className="text-success" />}
+      {copyState === 'error' && <ClipboardX className="text-destructive" />}
       <span className="sr-only">Copy to clipboard</span>
     </Button>
   );

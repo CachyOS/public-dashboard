@@ -59,10 +59,13 @@ export default function PackageSearchForm({
   const onInputChange = (
     e:
       | React.ChangeEvent<HTMLInputElement>
-      | {target: {name: string; value: string}}
+      | {target: {name: string; type?: string; value: string}}
   ) => {
-    const {name, value} = e.target;
+    const {name, type, value} = e.target;
     setParams(prev => ({...prev, [name]: value}));
+    if (type == 'click') {
+      onSubmit({...params, [name]: value});
+    }
   };
 
   const handleSelectionChange = (name: 'arch' | 'repo', value: string) => {
@@ -94,6 +97,7 @@ export default function PackageSearchForm({
           <Label htmlFor="search">Package Name/Description</Label>
           <Autocomplete
             aria-label="Search input"
+            autoFocus={params.search.trim() == ''}
             id="search"
             name="search"
             onChange={onInputChange}

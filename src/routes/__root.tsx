@@ -26,6 +26,26 @@ export const Route = createRootRouteWithContext<{
         content: import.meta.env.VITE_APP_VERSION || 'development',
         name: 'version',
       },
+      {
+        content: 'CachyOS Package Repository Dashboard',
+        property: 'og:title',
+      },
+      {
+        content: 'Search and view packages across all CachyOS repositories.',
+        property: 'og:description',
+      },
+      {
+        content: 'website',
+        property: 'og:type',
+      },
+      {
+        content: 'https://dashboard.cachyos.org/',
+        property: 'og:url',
+      },
+      {
+        content: 'https://dashboard.cachyos.org/icon.svg',
+        property: 'og:image',
+      },
       {title: 'CachyOS'},
     ],
   }),

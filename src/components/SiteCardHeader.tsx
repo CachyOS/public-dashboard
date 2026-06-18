@@ -1,6 +1,7 @@
 import {Link} from '@tanstack/react-router';
 import {Package, ServerIcon} from 'lucide-react';
 import icon from '@/assets/icon.svg';
+import {ContainerToggle} from '@/components/container-toggle';
 import {ThemeToggle} from '@/components/theme-toggle';
 import {CardDescription, CardHeader, CardTitle} from '@/components/ui/card';
 
@@ -46,6 +47,7 @@ export function SiteCardHeader({
               <span className="sr-only sm:not-sr-only">Packages</span>
             </Link>
           )}
+          <ContainerToggle />
           <ThemeToggle />
         </div>
       </div>

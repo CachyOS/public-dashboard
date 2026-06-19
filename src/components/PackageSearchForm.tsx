@@ -97,7 +97,7 @@ export default function PackageSearchForm({
           <Label htmlFor="search">Package Name/Description</Label>
           <Autocomplete
             aria-label="Search input"
-            autoFocus={params.search.trim() == ''}
+            autoFocus={params.search.trim() === ''}
             id="search"
             name="search"
             onChange={onInputChange}

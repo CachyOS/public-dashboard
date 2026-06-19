@@ -82,7 +82,11 @@ function Autocomplete({
               key={suggestion}
               onClick={() =>
                 handleInputChange({
-                  target: {name: props.name || '', value: suggestion},
+                  target: {
+                    name: props.name || '',
+                    type: 'click',
+                    value: suggestion,
+                  },
                 } as React.ChangeEvent<HTMLInputElement>)
               }
             >

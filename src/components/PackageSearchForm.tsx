@@ -63,7 +63,7 @@ export default function PackageSearchForm({
   ) => {
     const {name, type, value} = e.target;
     setParams(prev => ({...prev, [name]: value}));
-    if (type == 'click') {
+    if (type === 'click') {
       onSubmit({...params, [name]: value});
     }
   };

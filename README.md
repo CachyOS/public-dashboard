@@ -37,6 +37,8 @@ The web dashboard for the CachyOS repositories provides a user-friendly interfac
     bun --bun run dev
     ```
 
+To be able to use real API from local environment create an `.env` file and add `VITE_ENDPOINT_URL=https://dashboard.cachyos.org/api` there.
+
 The application will be available at [http://localhost:3000](http://localhost:3000).
 
 ### Building for Production

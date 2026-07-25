@@ -25,7 +25,11 @@ export async function getSourceUrl(
     return `https://gitlab.archlinux.org/archlinux/packaging/packages/${pkg.pkg_base}/-/tree/${archPkgVersion}`;
   }
 
-  for (const repo of ['linux-cachyos', 'CachyOS-PKGBUILDS']) {
+  for (const repo of [
+    'linux-cachyos',
+    'CachyOS-PKGBUILDS',
+    'cachyos-aur-derived',
+  ]) {
     try {
       const cachyosPaths: PkgbuildMap = await fetchPkgbuilds({repo});
       const pkgbuildPath =

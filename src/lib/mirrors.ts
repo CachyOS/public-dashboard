@@ -1,13 +1,16 @@
+import fetcher from '@/lib/fetcher';
 import {PROFILES, swrCached} from '@/lib/server/swr-cache';
+import {
+  type Mirror,
+  type MirrorBaseline,
+  MirrorsResponseSchema,
+} from '@/lib/types';
 
-import {fetchMirrorlist} from './github';
-import type {Mirror, RepoCheck, RepoStatus} from './types';
-
-export const MIRRORS_CACHE_KEY = 'mirrors:data';
+// cached values are read unvalidated, so bump on every shape change.
+export const MIRRORS_CACHE_KEY = 'mirrors:data:v2';
 
 const PRIMARY_MIRROR_URL = 'https://build.cachyos.org/repo';
 const FETCH_TIMEOUT_MS = 2000;
-const SYNC_TOLERANCE_SECONDS = 3600;
 
 const REPO_PATHS = [
   'x86_64/cachyos',
@@ -26,122 +29,67 @@ export async function getMirrorsData() {
   return swrCached(MIRRORS_CACHE_KEY, computeMirrorsData, PROFILES.mirrors);
 }
 
-function buildMirrorResult(mirrorUrl: string, checks: RepoCheck[]): Mirror {
-  const validChecks = checks.filter(c => c.status !== 'error');
-  const totalChecks = checks.length;
-  const errorChecks = checks.length - validChecks.length;
-  const syncedChecks = checks.filter(c => c.status === 'synced').length;
+async function computeMirrorsData(): Promise<{
+  baselines: MirrorBaseline[];
+  mirrors: Mirror[];
+}> {
+  const [baselines, {mirrors}] = await Promise.all([
+    fetchBaselines(),
+    fetcher('/v1/mirrors', new Headers(), MirrorsResponseSchema, {
+      method: 'GET',
+    }),
+  ]);
 
-  let overallStatus: Mirror['overallStatus'] = 'error';
-
-  if (validChecks.length === 0) {
-    overallStatus = 'error';
-  } else if (syncedChecks === totalChecks) {
-    overallStatus = 'healthy';
-  } else if (errorChecks > 0 || syncedChecks < totalChecks) {
-    overallStatus = 'partial';
-    if (syncedChecks === 0) overallStatus = 'out-of-sync';
-  }
-
-  const lags = validChecks
-    .map(c => c.syncLagSeconds)
-    .filter((l): l is number => l !== null)
-    .filter(l => l > 0);
-
-  const averageLag =
-    lags.length > 0 ? lags.reduce((a, b) => a + b, 0) / lags.length : null;
-
-  const url = new URL(mirrorUrl);
-
-  return {
-    averageLagSeconds: averageLag,
-    checks,
-    name: url.hostname,
-    overallStatus,
-    url: mirrorUrl,
-  } satisfies Mirror;
+  return {baselines, mirrors: sortMirrors(mirrors)};
 }
 
-async function computeMirrorsData() {
-  const mirrorsList = await fetchMirrorlist();
-
-  const baselinePromises = REPO_PATHS.map(async path => ({
-    path,
-    timestamp: await fetchRepoTimestamp(PRIMARY_MIRROR_URL, path),
-  }));
-
-  const baselines = await Promise.all(baselinePromises);
-  const baselineMap = new Map(baselines.map(b => [b.path, b.timestamp]));
-
-  const mirrorChecks = mirrorsList.map(async mirrorUrl => {
-    const checks = await Promise.all(
-      REPO_PATHS.map(async (path): Promise<RepoCheck> => {
-        const timestamp = await fetchRepoTimestamp(mirrorUrl, path);
-        const baseline = baselineMap.get(path);
-
-        let status: RepoStatus = 'error';
-        let lag: null | number = null;
-
-        if (timestamp !== null) {
-          if (baseline) {
-            lag = baseline - timestamp;
-            status = lag <= SYNC_TOLERANCE_SECONDS ? 'synced' : 'out-of-sync';
-          } else {
-            status = 'synced';
-          }
-        }
-
-        return {lastUpdated: timestamp, path, status, syncLagSeconds: lag};
-      })
-    );
-
-    return buildMirrorResult(mirrorUrl, checks);
-  });
-
-  const mirrors = await Promise.all(mirrorChecks);
-
-  mirrors.sort((a, b) => {
-    const score = (s: Mirror['overallStatus']) => {
-      switch (s) {
-        case 'error':
-          return 3;
-        case 'healthy':
-          return 0;
-        case 'out-of-sync':
-          return 2;
-        case 'partial':
-          return 1;
-      }
-    };
-    const statusDiff = score(a.overallStatus) - score(b.overallStatus);
-    if (statusDiff !== 0) return statusDiff;
-    if (a.averageLagSeconds === null && b.averageLagSeconds === null) return 0;
-    if (a.averageLagSeconds === null) return 1;
-    if (b.averageLagSeconds === null) return -1;
-    return a.averageLagSeconds - b.averageLagSeconds;
-  });
-
-  return {baselines, mirrors};
+async function fetchBaselines(): Promise<MirrorBaseline[]> {
+  return Promise.all(
+    REPO_PATHS.map(async path => ({
+      path,
+      timestamp: await fetchRepoTimestampMs(path),
+    }))
+  );
 }
 
-async function fetchRepoTimestamp(
-  baseUrl: string,
-  repoPath: string
-): Promise<null | number> {
-  const base = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-  const fullUrl = `${base}${repoPath}/lastupdate`;
+/**
+ * Reads a repo `lastupdate` as milliseconds.
+ */
+async function fetchRepoTimestampMs(repoPath: string): Promise<null | number> {
+  const url = `${PRIMARY_MIRROR_URL}/${repoPath}/lastupdate`;
 
   try {
-    const res = await fetch(fullUrl, {
+    const res = await fetch(url, {
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
     if (!res.ok) return null;
 
     const text = await res.text();
-    const timestamp = Number.parseInt(text.trim(), 10);
-    return Number.isNaN(timestamp) ? null : timestamp / 1000;
+    const microseconds = Number.parseInt(text.trim(), 10);
+    return Number.isNaN(microseconds) ? null : Math.floor(microseconds / 1000);
   } catch (err) {
-    console.debug(`Failed to fetch ${fullUrl}:`, err);
+    console.debug(`Failed to fetch ${url}:`, err);
     return null;
   }
+}
+
+const STATUS_RANK: Record<Mirror['overall_status'], number> = {
+  error: 3,
+  healthy: 0,
+  'out-of-sync': 2,
+  partial: 1,
+};
+
+// Sorts mirrors of unknown lag last, rather than first as `null` would.
+const NO_LAG = Number.MAX_SAFE_INTEGER;
+
+/**
+ * Orders mirrors by health, then by lag. The API groups them by tier instead.
+ */
+function sortMirrors(mirrors: Mirror[]): Mirror[] {
+  return [...mirrors].sort(
+    (a, b) =>
+      STATUS_RANK[a.overall_status] - STATUS_RANK[b.overall_status] ||
+      (a.average_lag_seconds ?? NO_LAG) - (b.average_lag_seconds ?? NO_LAG)
+  );
 }

@@ -20,36 +20,11 @@ const GitTreeResponseSchema = z.object({
 
 export type GitTreeResponse = z.infer<typeof GitTreeResponseSchema>;
 
-const GitContentItemSchema = z.object({
-  content: z.string(),
-});
-
 /**
  * Maps package names to their relative PKGBUILD paths.
  * @example { "linux-cachyos": "linux-cachyos", "linux-api-headers": "toolchain/linux-api-headers" }
  */
 export type PkgbuildMap = Record<string, string>;
-
-export async function fetchMirrorlist(
-  params: {owner?: string; path?: string; repo?: string; token?: string} = {}
-): Promise<Array<string>> {
-  const {
-    owner = 'CachyOS',
-    path = 'cachyos-mirrorlist/cachyos-mirrorlist',
-    repo = 'CachyOS-PKGBUILDS',
-    token = import.meta.env.GITHUB_TOKEN,
-  } = params;
-
-  const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(
-    repo
-  )}/contents/${encodeURIComponent(path)}`;
-
-  return swrCached(
-    `github:mirrorlist:${url}`,
-    () => fetchMirrorlistFromGithub(url, token),
-    PROFILES.github
-  );
-}
 
 export async function fetchPkgbuilds(
   params: {owner?: string; ref?: string; repo?: string; token?: string} = {}
@@ -72,36 +47,6 @@ export async function fetchPkgbuilds(
   );
 }
 
-async function fetchMirrorlistFromGithub(
-  url: string,
-  token?: string
-): Promise<string[]> {
-  const res = await fetch(url, {
-    headers: getHeaders(token),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(
-      `GitHub API error ${res.status}: ${text || res.statusText}`
-    );
-  }
-
-  const json = await res.json();
-  const data = GitContentItemSchema.parse(json);
-
-  return atob(data.content)
-    .split('\n')
-    .filter(line => line.trim().startsWith('Server'))
-    .map(line =>
-      line
-        .trim()
-        .replace(/Server\s*=\s*/, '')
-        .replace(/\$arch\/\$repo/, '')
-        .trim()
-    );
-}
-
 async function fetchPkgbuildsFromGithub(
   url: string,
   token?: string
@@ -120,13 +65,14 @@ async function fetchPkgbuildsFromGithub(
   const json = await res.json();
   const data = GitTreeResponseSchema.parse(json);
 
-  return data.tree
-    .filter(node => node.path.endsWith('PKGBUILD'))
-    .map(node => node.path.replace(/\/PKGBUILD$/, ''))
-    .reduce((acc, path) => {
-      acc[path.split('/').pop() ?? ''] = path;
+  return data.tree.reduce((acc, node) => {
+    if (!node.path.endsWith('PKGBUILD')) {
       return acc;
-    }, {} as PkgbuildMap);
+    }
+    const path = node.path.replace(/\/PKGBUILD$/, '');
+    acc[path.split('/').pop() ?? ''] = path;
+    return acc;
+  }, {} as PkgbuildMap);
 }
 
 function getHeaders(token?: string) {

@@ -24,21 +24,18 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import type {Mirror, RepoCheck} from '@/lib/types';
+import type {Mirror, MirrorBaseline, RepoCheck} from '@/lib/types';
 import {readableDuration} from '@/lib/utils';
 
 import {DateTime} from './DateTime';
 import {Badge} from './ui/badge';
 
 interface MirrorslistTableProps {
-  baselines: {path: string; timestamp: null | number}[];
+  baselines: MirrorBaseline[];
   mirrors: Mirror[];
 }
 
-const baselineColumnHelper = createColumnHelper<{
-  path: string;
-  timestamp: null | number;
-}>();
+const baselineColumnHelper = createColumnHelper<MirrorBaseline>();
 const mirrorColumnHelper = createColumnHelper<Mirror>();
 const checkColumnHelper = createColumnHelper<RepoCheck>();
 
@@ -49,7 +46,7 @@ export default function MirrorslistTable({
   'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
 
   const mirrorColumns = [
-    mirrorColumnHelper.accessor('name', {
+    mirrorColumnHelper.accessor(row => new URL(row.url).hostname, {
       cell: ({getValue, row}) => (
         <div className="flex items-center gap-2">
           {row.getIsExpanded() ? (
@@ -61,18 +58,13 @@ export default function MirrorslistTable({
         </div>
       ),
       header: 'Name',
+      id: 'name',
       meta: {
         headerClassName: 'md:min-w-[300px]',
       },
     }),
-    mirrorColumnHelper.accessor('averageLagSeconds', {
-      cell: ({getValue}) => (
-        <span>
-          {getValue() === null
-            ? '-'
-            : readableDuration((getValue() ?? 0) / 1000)}
-        </span>
-      ),
+    mirrorColumnHelper.accessor('average_lag_seconds', {
+      cell: ({getValue}) => <span>{readableLag(getValue())}</span>,
       header: 'Average Lag',
       meta: {
         headerClassName: 'md:min-w-[200px]',
@@ -93,7 +85,7 @@ export default function MirrorslistTable({
         headerClassName: 'md:w-[200px]',
       },
     }),
-    mirrorColumnHelper.accessor('overallStatus', {
+    mirrorColumnHelper.accessor('overall_status', {
       cell: ({getValue}) => {
         const status = getValue();
         const variant =
@@ -222,11 +214,7 @@ export default function MirrorslistTable({
   );
 }
 
-function BaselinesTable({
-  baselines,
-}: {
-  baselines: {path: string; timestamp: null | number}[];
-}) {
+function BaselinesTable({baselines}: {baselines: MirrorBaseline[]}) {
   'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
 
   const columns = [
@@ -304,6 +292,13 @@ function BaselinesTable({
   );
 }
 
+/**
+ * Formats a sync lag, dashing out mirrors that are not behind the builder.
+ */
+function readableLag(seconds: null | number): string {
+  return seconds === null || seconds <= 0 ? '-' : readableDuration(seconds);
+}
+
 function RepoChecksTable({checks}: {checks: RepoCheck[]}) {
   'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
 
@@ -311,20 +306,15 @@ function RepoChecksTable({checks}: {checks: RepoCheck[]}) {
     checkColumnHelper.accessor('path', {
       header: 'Repo Path',
     }),
-    checkColumnHelper.accessor('lastUpdated', {
+    checkColumnHelper.accessor('last_updated', {
       cell: ({getValue}) => {
         const date = getValue();
-        return date ? <DateTime timestamp={date} /> : '-';
+        return date ? <DateTime timestamp={Date.parse(date)} /> : '-';
       },
       header: 'Last Updated',
     }),
-    checkColumnHelper.accessor('syncLagSeconds', {
-      cell: ({getValue}) => {
-        const duration = getValue();
-        return duration === null || duration === 0
-          ? '-'
-          : readableDuration(duration / 1000);
-      },
+    checkColumnHelper.accessor('sync_lag_seconds', {
+      cell: ({getValue}) => readableLag(getValue()),
       header: 'Lag',
     }),
     checkColumnHelper.accessor('status', {

@@ -9,25 +9,6 @@ export enum PackageArch {
   x86_64_v4 = 'x86_64_v4',
 }
 
-export type Mirror = {
-  averageLagSeconds: null | number;
-  checks: RepoCheck[];
-  name: string;
-  overallStatus: MirrorStatus;
-  url: string;
-};
-
-export type MirrorStatus = 'error' | 'healthy' | 'out-of-sync' | 'partial';
-
-export type RepoCheck = {
-  lastUpdated: null | number;
-  path: string;
-  status: RepoStatus;
-  syncLagSeconds: null | number;
-};
-
-export type RepoStatus = 'error' | 'out-of-sync' | 'synced';
-
 export const packageArchValues = Object.values(PackageArch);
 export const PackageArchSchema = z.enum(
   PackageArch,
@@ -67,7 +48,7 @@ export const BriefPackageSchema = z.strictObject({
    * The timestamp (Unix epoch) when the package was last updated.
    */
   pkg_builddate: z
-    .number('BuildDate must be an positive integer')
+    .number({error: 'BuildDate must be an positive integer'})
     .nonnegative(),
   /**
    * A brief description of the package.
@@ -101,22 +82,114 @@ export const ErrorResponseSchema = z.strictObject({
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 
 /**
+ * The `lastupdate` timestamp of a repo on the build server.
+ */
+export type MirrorBaseline = {
+  /**
+   * The path of the repo on the build server.
+   */
+  path: string;
+  /**
+   * The timestamp (Unix epoch, in milliseconds), or null when unreachable.
+   */
+  timestamp: null | number;
+};
+
+/**
+ * The freshness of a single repo on a mirror.
+ */
+export const RepoCheckSchema = z.strictObject({
+  /**
+   * The time the repo was last updated on the mirror, null on error.
+   */
+  last_updated: z.iso.datetime().nullable(),
+  /**
+   * The path of the repo on the mirror.
+   */
+  path: z.string(),
+  /**
+   * The sync status of the repo.
+   */
+  status: z.enum(['synced', 'out-of-sync', 'error']),
+  /**
+   * The seconds the repo is behind the build server, null when unknown.
+   */
+  sync_lag_seconds: z.number().int().nullable(),
+});
+export type RepoCheck = z.infer<typeof RepoCheckSchema>;
+
+/**
+ * A mirror of the CachyOS package repositories.
+ */
+export const MirrorSchema = z.strictObject({
+  /**
+   * The mean sync lag in seconds across the repos, null when unknown.
+   */
+  average_lag_seconds: z.number().int().nullable(),
+  /**
+   * The freshness of each repo on the mirror.
+   */
+  checks: z.array(RepoCheckSchema),
+  /**
+   * The country the mirror is served from.
+   */
+  country_code: z.string(),
+  /**
+   * The worst sync lag in seconds across the repos, null when unknown.
+   */
+  delay_seconds: z.number().int().nullable(),
+  /**
+   * The time of the newest successful repo sync, null when none succeeded.
+   */
+  last_sync: z.iso.datetime().nullable(),
+  /**
+   * Whether the mirror is stale or missing repo data.
+   */
+  out_of_date: z.boolean(),
+  /**
+   * The aggregate sync status across the repos.
+   */
+  overall_status: z.enum(['healthy', 'partial', 'out-of-sync', 'error']),
+  /**
+   * Tier 1 mirrors pull directly from upstream, tier 2 mirrors do not.
+   */
+  tier: z.union([z.literal(1), z.literal(2)]),
+  /**
+   * The base URL of the mirror, without the `$arch/$repo` suffix.
+   */
+  url: z.httpUrl(),
+});
+export type Mirror = z.infer<typeof MirrorSchema>;
+
+/**
+ * The response schema for a mirrors request.
+ */
+export const MirrorsResponseSchema = z.strictObject({
+  mirrors: z.array(MirrorSchema),
+});
+export type MirrorsResponse = z.infer<typeof MirrorsResponseSchema>;
+
+/**
  * Detailed information for a specific package.
  */
 export const PackageDetailsSchema = z.strictObject({
   pkg_arch: PackageArchSchema,
   pkg_base: z.string(),
   pkg_builddate: z
-    .number('BuildDate must be an positive integer')
+    .number({error: 'BuildDate must be an positive integer'})
     .nonnegative(),
   pkg_checkdepends: z.array(z.string()),
   pkg_conflicts: z.array(z.string()),
-  pkg_csize: z.number('CSIZE must be an positive integer').nonnegative(),
+  pkg_csize: z
+    .number({error: 'CSIZE must be an positive integer'})
+    .nonnegative(),
   pkg_depends: z.array(z.string()),
   pkg_desc: z.string(),
   pkg_files: z.array(z.string()).optional().default([]),
   pkg_groups: z.array(z.string()),
-  pkg_isize: z.number('ISIZE must be an positive integer').nonnegative(),
+  pkg_isize: z
+    .number({error: 'ISIZE must be an positive integer'})
+    .nonnegative(),
   pkg_license: z.array(z.string()),
   pkg_makedepends: z.array(z.string()),
   pkg_name: z.string(),
@@ -129,7 +202,9 @@ export const PackageDetailsSchema = z.strictObject({
   pkg_url: z.string().nullable(),
   pkg_version: z.string(),
   repo_name: PackageRepoSchema,
-  updated: z.number('Updated must be an positive integer').nonnegative(),
+  updated: z
+    .number({error: 'Updated must be an positive integer'})
+    .nonnegative(),
 });
 export type PackageDetails = z.infer<typeof PackageDetailsSchema>;
 
@@ -189,12 +264,14 @@ export const PackageSearchResponseSchema = z.strictObject({
    * The total number of packages matching the search criteria.
    */
   total_packages: z
-    .number('Total packages must be a positive integer')
+    .number({error: 'Total packages must be a positive integer'})
     .nonnegative(),
   /**
    * The total number of pages available.
    */
-  total_pages: z.number('Total pages must be a positive integer').nonnegative(),
+  total_pages: z
+    .number({error: 'Total pages must be a positive integer'})
+    .nonnegative(),
 });
 export type PackageSearchResponse = z.infer<typeof PackageSearchResponseSchema>;
 
@@ -212,7 +289,7 @@ export const PackagesSearchQueryParamsSchema = z.strictObject({
    * @default 1
    */
   current_page: z
-    .number('Current page must be a positive integer')
+    .number({error: 'Current page must be a positive integer'})
     .positive()
     .catch(1),
   /**

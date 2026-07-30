@@ -28,17 +28,46 @@ export function PackageTablePagination({
   totalPages: number;
 }) {
   const pages = pagination(currentPage, totalPages);
+
   return (
-    <div className="flex justify-between">
-      <div className="items-center gap-2 flex">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 sm:hidden">
+          <Label
+            className="text-sm text-muted-foreground"
+            htmlFor="page-picker"
+          >
+            Page
+          </Label>
+          <Select
+            onValueChange={value => onClick(Number(value))}
+            value={currentPage.toString()}
+          >
+            <SelectTrigger className="w-28" id="page-picker" size="sm">
+              <SelectValue placeholder={`${currentPage} / ${totalPages}`} />
+            </SelectTrigger>
+            <SelectContent side="top">
+              {Array.from({length: totalPages}, (_, index) => {
+                const page = index + 1;
+
+                return (
+                  <SelectItem key={page} value={`${page}`}>
+                    {page} / {totalPages}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+
         <Label
-          className="sr-only md:not-sr-only text-sm text-muted-foreground"
+          className="text-sm text-muted-foreground"
           htmlFor="rows-per-page"
         >
           Rows per page
         </Label>
         <Select onValueChange={onPageSizeChange} value={pageSize.toString()}>
-          <SelectTrigger className="w-20" id="rows-per-page" size="sm">
+          <SelectTrigger className="w-24" id="rows-per-page" size="sm">
             <SelectValue placeholder={pageSize} />
           </SelectTrigger>
           <SelectContent side="top">
@@ -50,8 +79,10 @@ export function PackageTablePagination({
           </SelectContent>
         </Select>
       </div>
-      <div className="flex items-center justify-end space-x-2">
+
+      <div className="flex items-center justify-between gap-2 sm:justify-end">
         <Button
+          className="min-w-0 flex-1 sm:flex-none"
           disabled={currentPage <= 1}
           onClick={() => onClick(currentPage - 1)}
           onFocus={() => onPrefetch?.(currentPage - 1)}
@@ -60,38 +91,38 @@ export function PackageTablePagination({
           variant="ghost"
         >
           <ChevronLeft />
-          <span className="sm:sr-only">Previous</span>
+          <span>Previous</span>
         </Button>
-        {pages.map((page, index) => {
-          const pageKey = `${page}-${index}`;
-          if (page === ELLIPSIS) {
+
+        <div className="hidden items-center gap-2 sm:flex">
+          {pages.map((page, index) => {
+            const pageKey = `${page}-${index}`;
+
+            if (page === ELLIPSIS) {
+              return (
+                <Button disabled key={pageKey} size="sm" variant="ghost">
+                  {page}
+                </Button>
+              );
+            }
+
             return (
               <Button
-                className="hidden sm:block"
-                disabled
                 key={pageKey}
+                onClick={() => onClick(page)}
+                onFocus={() => onPrefetch?.(page)}
+                onMouseEnter={() => onPrefetch?.(page)}
                 size="sm"
-                variant="ghost"
+                variant={page === currentPage ? 'default' : 'ghost'}
               >
                 {page}
               </Button>
             );
-          }
-          return (
-            <Button
-              className="hidden sm:block"
-              key={pageKey}
-              onClick={() => onClick(page)}
-              onFocus={() => onPrefetch?.(page)}
-              onMouseEnter={() => onPrefetch?.(page)}
-              size="sm"
-              variant={page === currentPage ? 'default' : 'ghost'}
-            >
-              {page}
-            </Button>
-          );
-        })}
+          })}
+        </div>
+
         <Button
+          className="min-w-0 flex-1 sm:flex-none"
           disabled={currentPage >= totalPages}
           onClick={() => onClick(currentPage + 1)}
           onFocus={() => onPrefetch?.(currentPage + 1)}
@@ -99,10 +130,10 @@ export function PackageTablePagination({
           size="sm"
           variant="ghost"
         >
-          <span className="sm:sr-only">Next</span>
+          <span>Next</span>
           <ChevronRight />
         </Button>
-      </div>{' '}
+      </div>
     </div>
   );
 }

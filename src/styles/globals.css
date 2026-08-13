@@ -176,4 +176,24 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto !important;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+
+    /* A spinner is the only in-progress signal, so slow it rather than stop it. */
+    .animate-spin {
+      animation-duration: 1.5s !important;
+      animation-iteration-count: infinite !important;
+    }
+  }
 }

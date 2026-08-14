@@ -17,10 +17,10 @@ export function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button size="icon" variant="ghost">
+        <Button size="icon" title="Toggle theme (d)" variant="ghost">
           <Sun className="block dark:hidden size-5" />
           <Moon className="hidden dark:block size-5" />
-          <span className="sr-only">Toggle theme</span>
+          <span className="sr-only">Toggle theme, keyboard shortcut d</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

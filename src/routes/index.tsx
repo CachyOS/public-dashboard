@@ -2,6 +2,7 @@ import {createFileRoute, stripSearchParams} from '@tanstack/react-router';
 import {z} from 'zod';
 
 import PackageSearch from '@/components/PackageSearch';
+import {PageMain} from '@/components/PageMain';
 import {SiteCardHeader} from '@/components/SiteCardHeader';
 import {Card, CardContent} from '@/components/ui/card';
 import {searchQueryFn} from '@/lib/query-actions';
@@ -51,7 +52,7 @@ export const Route = createFileRoute('/')({
 
 function HomePage() {
   return (
-    <main className="container mx-auto p-2 sm:p-4 md:p-8">
+    <PageMain>
       <Card>
         <SiteCardHeader
           description="Find packages across all CachyOS repositories."
@@ -62,6 +63,6 @@ function HomePage() {
           <PackageSearch />
         </CardContent>
       </Card>
-    </main>
+    </PageMain>
   );
 }

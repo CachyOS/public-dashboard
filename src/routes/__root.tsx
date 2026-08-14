@@ -2,18 +2,21 @@ import {TanStackDevtools} from '@tanstack/react-devtools';
 import type {QueryClient} from '@tanstack/react-query';
 import {ReactQueryDevtoolsPanel} from '@tanstack/react-query-devtools';
 import {
+  CatchBoundary,
   createRootRouteWithContext,
   HeadContent,
   Scripts,
 } from '@tanstack/react-router';
 import {TanStackRouterDevtoolsPanel} from '@tanstack/react-router-devtools';
-import {ThemeProvider} from 'next-themes';
+import {RouteError} from '@/components/ErrorBoundary';
+import {ThemeProvider} from '@/components/theme-provider';
 import favicon from '../assets/icon.svg';
 import appCss from '../styles/globals.css?url';
 
 export const Route = createRootRouteWithContext<{
   queryClient: QueryClient;
 }>()({
+  errorComponent: RouteError,
   head: () => ({
     links: [
       {href: appCss, rel: 'stylesheet'},
@@ -60,7 +63,9 @@ function RootDocument({children}: {children: React.ReactNode}) {
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" disableTransitionOnChange>
-          {children}
+          <CatchBoundary errorComponent={RouteError} getResetKey={() => 'root'}>
+            {children}
+          </CatchBoundary>
         </ThemeProvider>
         <TanStackDevtools
           config={{position: 'bottom-right'}}

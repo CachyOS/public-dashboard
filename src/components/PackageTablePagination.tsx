@@ -59,7 +59,7 @@ export function PackageTablePagination({
           size="sm"
           variant="ghost"
         >
-          <ChevronLeft />
+          <ChevronLeft data-icon="inline-start" />
           <span className="sm:sr-only">Previous</span>
         </Button>
         {pages.map((page, index) => {
@@ -100,7 +100,7 @@ export function PackageTablePagination({
           variant="ghost"
         >
           <span className="sm:sr-only">Next</span>
-          <ChevronRight />
+          <ChevronRight data-icon="inline-end" />
         </Button>
       </div>{' '}
     </div>

@@ -5,11 +5,17 @@ import {PageMain} from '@/components/PageMain';
 import {SiteCardHeader} from '@/components/SiteCardHeader';
 import {Card, CardContent} from '@/components/ui/card';
 import {getMirrorsData} from '@/lib/server/actions';
+import {pageHead} from '@/lib/site';
 
 export const Route = createFileRoute('/mirrors')({
   component: MirrorsPage,
   loader: () => getMirrorsData(),
-  head: () => ({meta: [{title: 'CachyOS | Mirrors List'}]}),
+  head: () =>
+    pageHead({
+      description: 'List of CachyOS package repository mirrors.',
+      path: '/mirrors',
+      title: 'Mirrors List',
+    }),
 });
 
 function MirrorsPage() {

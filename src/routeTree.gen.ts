@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as MirrorsRouteImport } from './routes/mirrors'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as PackageRepoArchPkgnameRouteImport } from './routes/package.$repo.$arch.$pkgname'
 import { Route as ApiPackageRepoArchPkgnameFilesRouteImport } from './routes/api/package.$repo.$arch.$pkgname.files'
 
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MirrorsRoute = MirrorsRouteImport.update({
   id: '/mirrors',
   path: '/mirrors',
@@ -45,6 +51,7 @@ const ApiPackageRepoArchPkgnameFilesRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/mirrors': typeof MirrorsRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/api/search': typeof ApiSearchRoute
   '/package/$repo/$arch/$pkgname': typeof PackageRepoArchPkgnameRoute
   '/api/package/$repo/$arch/$pkgname/files': typeof ApiPackageRepoArchPkgnameFilesRoute
@@ -52,6 +59,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/mirrors': typeof MirrorsRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/api/search': typeof ApiSearchRoute
   '/package/$repo/$arch/$pkgname': typeof PackageRepoArchPkgnameRoute
   '/api/package/$repo/$arch/$pkgname/files': typeof ApiPackageRepoArchPkgnameFilesRoute
@@ -60,6 +68,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/mirrors': typeof MirrorsRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/api/search': typeof ApiSearchRoute
   '/package/$repo/$arch/$pkgname': typeof PackageRepoArchPkgnameRoute
   '/api/package/$repo/$arch/$pkgname/files': typeof ApiPackageRepoArchPkgnameFilesRoute
@@ -69,6 +78,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/mirrors'
+    | '/robots.txt'
     | '/api/search'
     | '/package/$repo/$arch/$pkgname'
     | '/api/package/$repo/$arch/$pkgname/files'
@@ -76,6 +86,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/mirrors'
+    | '/robots.txt'
     | '/api/search'
     | '/package/$repo/$arch/$pkgname'
     | '/api/package/$repo/$arch/$pkgname/files'
@@ -83,6 +94,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/mirrors'
+    | '/robots.txt'
     | '/api/search'
     | '/package/$repo/$arch/$pkgname'
     | '/api/package/$repo/$arch/$pkgname/files'
@@ -91,6 +103,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   MirrorsRoute: typeof MirrorsRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   ApiSearchRoute: typeof ApiSearchRoute
   PackageRepoArchPkgnameRoute: typeof PackageRepoArchPkgnameRoute
   ApiPackageRepoArchPkgnameFilesRoute: typeof ApiPackageRepoArchPkgnameFilesRoute
@@ -98,6 +111,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mirrors': {
       id: '/mirrors'
       path: '/mirrors'
@@ -139,6 +159,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   MirrorsRoute: MirrorsRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   ApiSearchRoute: ApiSearchRoute,
   PackageRepoArchPkgnameRoute: PackageRepoArchPkgnameRoute,
   ApiPackageRepoArchPkgnameFilesRoute: ApiPackageRepoArchPkgnameFilesRoute,

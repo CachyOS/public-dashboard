@@ -8,6 +8,7 @@ import {
   getSourceUrl,
   getSplitPackages,
 } from '@/lib/server/actions';
+import {pageHead} from '@/lib/site';
 import {
   type BriefPackage,
   type PackageArch,
@@ -112,13 +113,30 @@ export const Route = createFileRoute('/package/$repo/$arch/$pkgname')({
     const pkgname = decodeURIComponent(params.pkgname);
     const repo = decodeURIComponent(params.repo);
     const title = `${pkgname} - ${repo} (${arch})`;
+    // the canonical URL needs the encoded form that was requested
+    const path = `/package/${params.repo}/${params.arch}/${params.pkgname}`;
     const pkg = (loaderData as LoaderData | undefined)?.package;
-    if (!pkg) return {meta: [{title: `CachyOS | ${title}`}]};
+
+    // fallback to list of splits
+    if (!pkg) {
+      return pageHead({
+        description: `Split packages for ${pkgname} in ${repo} (${arch}).`,
+        path,
+        robots: 'noindex, follow',
+        title,
+      });
+    }
+
     const description = pkg.pkg_desc || `Details for ${pkgname}`;
+    const head = pageHead({
+      description,
+      path,
+      title,
+    });
     return {
+      ...head,
       meta: [
-        {title: `CachyOS | ${title}`},
-        {content: description, name: 'description'},
+        ...head.meta,
         {
           content: [
             pkg.pkg_name,
@@ -132,9 +150,6 @@ export const Route = createFileRoute('/package/$repo/$arch/$pkgname')({
             .join(', '),
           name: 'keywords',
         },
-        {content: title, property: 'og:title'},
-        {content: description, property: 'og:description'},
-        {content: 'website', property: 'og:type'},
       ],
     };
   },

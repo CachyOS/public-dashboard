@@ -4,6 +4,7 @@ import {keepPreviousData, useQuery} from '@tanstack/react-query';
 import {Loader2} from 'lucide-react';
 import {useCallback, useRef, useState} from 'react';
 import {useDebounceValue} from 'usehooks-ts';
+import {z} from 'zod';
 
 import {Autocomplete} from '@/components/Autocomplete';
 import {Button} from '@/components/ui/button';
@@ -29,6 +30,18 @@ interface PackageSearchFormProps {
   onSubmit: (params: PackagesSearchQueryParams) => void;
 }
 
+const SEARCH_ERROR_ID = 'search-error';
+const MAX_SEARCH_LENGTH = 128;
+
+// checked on submit
+const SearchTermSchema = z
+  .string()
+  .max(MAX_SEARCH_LENGTH, `Use ${MAX_SEARCH_LENGTH} characters or fewer.`)
+  .refine(
+    value => value.length === 0 || value.trim().length > 0,
+    'Enter a package name or description, or clear the field to browse all packages.'
+  );
+
 export default function PackageSearchForm({
   initialParams,
   isLoading,
@@ -37,6 +50,7 @@ export default function PackageSearchForm({
 }: PackageSearchFormProps) {
   const [params, setParams] =
     useState<PackagesSearchQueryParams>(initialParams);
+  const [searchError, setSearchError] = useState<null | string>(null);
 
   const [searchSuggest] = useDebounceValue(params.search, 300);
   const {data: [, options] = [searchSuggest, []]} = useQuery({
@@ -59,13 +73,20 @@ export default function PackageSearchForm({
   const onInputChange = (
     e:
       | React.ChangeEvent<HTMLInputElement>
-      | {target: {name: string; type?: string; value: string}}
+      | {target: {name: string; value: string}}
   ) => {
-    const {name, type, value} = e.target;
+    const {name, value} = e.target;
     setParams(prev => ({...prev, [name]: value}));
-    if (type === 'click') {
-      onSubmit({...params, [name]: value});
+    if (name === 'search') {
+      setSearchError(null);
     }
+  };
+
+  // picked suggestion is already a valid term
+  const onSuggestionSelect = (search: string) => {
+    setParams(prev => ({...prev, search}));
+    setSearchError(null);
+    onSubmit({...params, search});
   };
 
   const handleSelectionChange = (name: 'arch' | 'repo', value: string) => {
@@ -79,11 +100,20 @@ export default function PackageSearchForm({
 
   const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
+
+    const result = SearchTermSchema.safeParse(params.search);
+    if (!result.success) {
+      setSearchError(result.error.issues[0].message);
+      primarySearchFilterInputRef.current?.focus();
+      return;
+    }
+
     onSubmit(params);
   };
 
   const handleReset = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setSearchError(null);
     onReset();
   };
 
@@ -94,18 +124,30 @@ export default function PackageSearchForm({
     <form className="space-y-5" onReset={handleReset} onSubmit={handleSubmit}>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor="search">Package Name/Description</Label>
           <Autocomplete
-            aria-label="Search input"
+            aria-describedby={searchError ? SEARCH_ERROR_ID : undefined}
+            aria-invalid={searchError !== null}
             autoFocus={params.search.trim() === ''}
+            emptyMessage="No matching packages."
             id="search"
+            label="Package Name/Description"
             name="search"
             onChange={onInputChange}
+            onSelect={onSuggestionSelect}
             options={options}
             placeholder="e.g., openssl"
             ref={primarySearchFilterInputRef}
             value={params.search}
           />
+          {searchError && (
+            <p
+              className="text-destructive text-sm"
+              id={SEARCH_ERROR_ID}
+              role="alert"
+            >
+              {searchError}
+            </p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor="repo">Repository</Label>
@@ -113,6 +155,8 @@ export default function PackageSearchForm({
             <DropdownMenuTrigger asChild>
               <Button
                 className="bg-transparent w-full justify-start font-normal"
+                id="repo"
+                type="button"
                 variant="outline"
               >
                 <div className="truncate">
@@ -142,6 +186,8 @@ export default function PackageSearchForm({
             <DropdownMenuTrigger asChild>
               <Button
                 className="bg-transparent w-full justify-start font-normal"
+                id="arch"
+                type="button"
                 variant="outline"
               >
                 <div className="truncate">
@@ -175,7 +221,11 @@ export default function PackageSearchForm({
         >
           {isLoading ? (
             <>
-              <Loader2 className="animate-spin" />
+              <Loader2
+                aria-hidden="true"
+                className="animate-spin"
+                data-icon="inline-start"
+              />
               Searching…
             </>
           ) : (
@@ -186,6 +236,10 @@ export default function PackageSearchForm({
         <Button type="reset" variant="ghost">
           Reset
         </Button>
+
+        <span aria-live="polite" className="sr-only" role="status">
+          {isLoading ? 'Searching packages…' : ''}
+        </span>
       </div>
     </form>
   );

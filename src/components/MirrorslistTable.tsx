@@ -200,7 +200,7 @@ export default function MirrorslistTable({
         <CollapsibleTrigger asChild>
           <Button className="p-0" size="sm" variant="outline">
             <p>Builder Latest Status</p>
-            <ChevronsUpDown className="h-4 w-4" />
+            <ChevronsUpDown className="h-4 w-4" data-icon="inline-end" />
             <span className="sr-only">Toggle</span>
           </Button>
         </CollapsibleTrigger>

@@ -10,6 +10,7 @@ import {
 import {TanStackRouterDevtoolsPanel} from '@tanstack/react-router-devtools';
 import {RouteError} from '@/components/ErrorBoundary';
 import {ThemeProvider} from '@/components/theme-provider';
+import {SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN} from '@/lib/site';
 import favicon from '../assets/icon.svg';
 import appCss from '../styles/globals.css?url';
 
@@ -29,12 +30,13 @@ export const Route = createRootRouteWithContext<{
         content: import.meta.env.VITE_APP_VERSION || 'development',
         name: 'version',
       },
+      {content: SITE_DESCRIPTION, name: 'description'},
       {
         content: 'CachyOS Package Repository Dashboard',
         property: 'og:title',
       },
       {
-        content: 'Search and view packages across all CachyOS repositories.',
+        content: SITE_DESCRIPTION,
         property: 'og:description',
       },
       {
@@ -42,12 +44,20 @@ export const Route = createRootRouteWithContext<{
         property: 'og:type',
       },
       {
-        content: 'https://dashboard.cachyos.org/',
-        property: 'og:url',
+        content: SITE_NAME,
+        property: 'og:site_name',
       },
       {
-        content: 'https://dashboard.cachyos.org/icon.svg',
+        content: `${SITE_ORIGIN}/icon.svg`,
         property: 'og:image',
+      },
+      {
+        content: 'summary_large_image',
+        name: 'twitter:card',
+      },
+      {
+        content: `${SITE_ORIGIN}/icon.svg`,
+        name: 'twitter:image',
       },
       {title: 'CachyOS'},
     ],

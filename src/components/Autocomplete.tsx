@@ -1,24 +1,57 @@
 'use client';
 
-import {useState} from 'react';
+import {useId, useState} from 'react';
 
 import {Input} from '@/components/ui/input';
+import {Label} from '@/components/ui/label';
 import {cn} from '@/lib/utils';
 
 function Autocomplete({
+  emptyMessage,
+  id,
+  label,
   onChange,
+  onSelect,
   options = [],
   value = '',
   ...props
-}: React.ComponentProps<'input'> & {isLoading?: boolean; options: string[]}) {
-  const [query, setQuery] = useState(String(value));
+}: Omit<React.ComponentProps<'input'>, 'onSelect'> & {
+  emptyMessage?: string;
+  isLoading?: boolean;
+  label: string;
+  onSelect?: (value: string) => void;
+  options: string[];
+}) {
+  const generatedId = useId();
+  const inputId = id ?? generatedId;
+  const listboxId = `${inputId}-listbox`;
+  const optionId = (index: number) => `${listboxId}-option-${index}`;
+
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isFocused, setIsFocused] = useState(false);
 
+  // keep list open on no matches so it can say so..
+  const showEmpty =
+    emptyMessage !== undefined &&
+    options.length === 0 &&
+    String(value).trim().length > 0;
+  const isOpen = isFocused && (options.length > 0 || showEmpty);
+
+  let announcement = '';
+  if (isOpen) {
+    announcement = showEmpty
+      ? (emptyMessage ?? '')
+      : `${options.length} ${options.length === 1 ? 'suggestion' : 'suggestions'} available.`;
+  }
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
     onChange?.(e);
     setSelectedIndex(-1);
+  };
+
+  const selectOption = (suggestion: string) => {
+    setSelectedIndex(-1);
+    onSelect?.(suggestion);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -29,10 +62,9 @@ function Autocomplete({
       e.preventDefault();
       setSelectedIndex(prev => (prev > 0 ? prev - 1 : -1));
     } else if (e.key === 'Enter' && selectedIndex >= 0) {
-      handleInputChange({
-        target: {name: props.name || '', value: options[selectedIndex]},
-      } as React.ChangeEvent<HTMLInputElement>);
-      setSelectedIndex(-1);
+      // otherwise form submits term the suggestion replaces
+      e.preventDefault();
+      selectOption(options[selectedIndex]);
     } else if (e.key === 'Escape') {
       setSelectedIndex(-1);
     }
@@ -43,58 +75,68 @@ function Autocomplete({
   };
 
   const handleBlur = () => {
-    setTimeout(() => {
-      setIsFocused(false);
-      setSelectedIndex(-1);
-    }, 200);
+    setIsFocused(false);
+    setSelectedIndex(-1);
   };
 
   return (
-    <div className="relative">
-      <Input
-        aria-autocomplete="list"
-        aria-controls="suggestions-list"
-        aria-expanded={options.length > 0}
-        onBlur={handleBlur}
-        onChange={handleInputChange}
-        onFocus={handleFocus}
-        onKeyDown={handleKeyDown}
-        value={query}
-        {...props}
-      />
-      {options.length > 0 && isFocused && (
-        <ul
-          aria-live="polite"
-          className="top-10 absolute bg-popover border min-w-32 overflow-x-hidden overflow-y-auto p-1 rounded-md shadow-md text-popover-foreground text-sm z-50"
-          id="suggestions-list"
-        >
-          {options.map((suggestion, index) => (
-            // biome-ignore lint/a11y/useKeyWithClickEvents: handled by parent input's keydown
-            // biome-ignore lint/a11y/useAriaPropsSupportedByRole: listbox role inferred by aria-live
-            <li
-              aria-selected={index === selectedIndex}
-              className={cn(
-                'px-4 py-1.5 cursor-pointer hover:bg-accent rounded-md',
-                {
-                  'bg-accent': index === selectedIndex,
-                }
-              )}
-              key={suggestion}
-              onClick={() =>
-                handleInputChange({
-                  target: {
-                    name: props.name || '',
-                    type: 'click',
-                    value: suggestion,
-                  },
-                } as React.ChangeEvent<HTMLInputElement>)
-              }
-            >
-              {suggestion}
-            </li>
-          ))}
-        </ul>
-      )}
+    <div className="space-y-2">
+      <Label htmlFor={inputId}>{label}</Label>
+      <div className="relative">
+        <Input
+          aria-activedescendant={
+            selectedIndex >= 0 ? optionId(selectedIndex) : undefined
+          }
+          aria-autocomplete="list"
+          aria-controls={listboxId}
+          aria-expanded={isOpen}
+          id={inputId}
+          onBlur={handleBlur}
+          onChange={handleInputChange}
+          onFocus={handleFocus}
+          onKeyDown={handleKeyDown}
+          role="combobox"
+          value={value}
+          {...props}
+        />
+        {isOpen && (
+          <ul
+            className="top-10 absolute bg-popover border min-w-32 overflow-x-hidden overflow-y-auto p-1 rounded-md shadow-md text-popover-foreground text-sm z-50"
+            id={listboxId}
+            role="listbox"
+          >
+            {showEmpty && (
+              <li className="px-4 py-1.5 text-muted-foreground">
+                {emptyMessage}
+              </li>
+            )}
+            {options.map((suggestion, index) => (
+              <li
+                aria-selected={index === selectedIndex}
+                className={cn(
+                  'px-4 py-1.5 cursor-pointer hover:bg-accent rounded-md',
+                  {
+                    'bg-accent': index === selectedIndex,
+                  }
+                )}
+                id={optionId(index)}
+                key={suggestion}
+                // keeps focus on the input
+                onMouseDown={e => {
+                  e.preventDefault();
+                  selectOption(suggestion);
+                }}
+                role="option"
+              >
+                {suggestion}
+              </li>
+            ))}
+          </ul>
+        )}
+        <span aria-live="polite" className="sr-only" role="status">
+          {announcement}
+        </span>
+      </div>
     </div>
   );
 }

@@ -6,16 +6,16 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import {useNavigate, useSearch} from '@tanstack/react-router';
-import {AlertCircle} from 'lucide-react';
 import {useCallback, useEffect, useMemo} from 'react';
 import {useSessionStorage} from 'usehooks-ts';
 
 import {SEARCH_BACK_PATH} from '@/components/BackLink';
+import {EmptyState} from '@/components/EmptyState';
+import {ErrorState} from '@/components/ErrorState';
 import PackageSearchForm from '@/components/PackageSearchForm';
 import PackageSearchSkeleton from '@/components/PackageSearchSkeleton';
 import PackageTable from '@/components/PackageTable';
 import {PackageTablePagination} from '@/components/PackageTablePagination';
-import {Alert, AlertDescription, AlertTitle} from '@/components/ui/alert';
 import {searchQueryFn} from '@/lib/query-actions';
 import {PAGE_SIZE, type PackagesSearchQueryParams} from '@/lib/types';
 import {INTL_LOCALE} from '@/lib/utils';
@@ -101,19 +101,17 @@ export default function PackageSearch() {
         onSubmit={onFormSubmit}
       />
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error.message}</AlertDescription>
-        </Alert>
-      )}
+      {error && <ErrorState message={error.message} title="Error" />}
 
       {isPending && !data && <PackageSearchSkeleton />}
 
       {data && (
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
+          <p
+            aria-live="polite"
+            className="text-sm text-muted-foreground"
+            role="status"
+          >
             Found {data.total_packages.toLocaleString(INTL_LOCALE)} packages.
             Page {parsedParams.current_page.toLocaleString(INTL_LOCALE)} of{' '}
             {data.total_pages.toLocaleString(INTL_LOCALE)}.
@@ -169,9 +167,12 @@ export default function PackageSearch() {
               />
             </>
           ) : (
-            <p className="text-center text-muted-foreground">
-              No packages found matching your criteria.
-            </p>
+            <EmptyState
+              action="Reset filters"
+              description="Nothing matches these filters. Try a shorter term, or clear the repository and architecture filters."
+              onAction={onFormReset}
+              title="No packages found"
+            />
           )}
         </div>
       )}

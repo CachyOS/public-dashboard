@@ -4,6 +4,8 @@ import {useQuery} from '@tanstack/react-query';
 import {useState} from 'react';
 
 import {CopyButton} from '@/components/CopyButton';
+import {EmptyState} from '@/components/EmptyState';
+import {ErrorState} from '@/components/ErrorState';
 import {Button} from '@/components/ui/button';
 import {PackageDetailFilesResponseSchema, PackageRepo} from '@/lib/types';
 import {cn} from '@/lib/utils';
@@ -64,14 +66,39 @@ export function PackageFiles({arch, pkgname, repo}: PackageFilesProps) {
 
   if (query.isError) {
     return (
-      <span className="text-destructive text-sm">{query.error.message}</span>
+      <ErrorState
+        actions={
+          <Button
+            className="mt-2"
+            onClick={() => {
+              query.refetch();
+            }}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            Try again
+          </Button>
+        }
+        message={query.error.message}
+        title="Package files could not be loaded"
+      />
     );
   }
 
   const files = query.data ?? [];
 
   if (files.length === 0) {
-    return <span className="text-muted-foreground">No files found.</span>;
+    return (
+      <EmptyState
+        action="Check again"
+        description="This package does not publish a file list, or it has not been indexed yet."
+        onAction={() => {
+          query.refetch();
+        }}
+        title="No files listed"
+      />
+    );
   }
 
   return (

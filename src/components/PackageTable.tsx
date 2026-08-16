@@ -1,12 +1,7 @@
 'use client';
 
 import {Link} from '@tanstack/react-router';
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+import {createColumnHelper, flexRender, useTable} from '@tanstack/react-table';
 import {
   Table,
   TableBody,
@@ -15,15 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {basicFeatures} from '@/lib/table';
 import type {BriefPackage, BriefPackageList} from '@/lib/types';
 import {DateTime} from './DateTime';
-
-declare module '@tanstack/react-table' {
-  interface ColumnMeta<TData, TValue> {
-    cellClassName?: string;
-    headerClassName?: string;
-  }
-}
 
 interface PackageSearchResultsTableProps {
   onArchitectureClick?: (arch: string) => void;
@@ -31,7 +20,7 @@ interface PackageSearchResultsTableProps {
   packages: BriefPackageList;
 }
 
-const columnHelper = createColumnHelper<BriefPackage>();
+const columnHelper = createColumnHelper<typeof basicFeatures, BriefPackage>();
 
 export default function PackageTable({
   onArchitectureClick,
@@ -40,7 +29,7 @@ export default function PackageTable({
 }: PackageSearchResultsTableProps) {
   'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
 
-  const columns = [
+  const columns = columnHelper.columns([
     columnHelper.accessor('pkg_name', {
       cell: ({row}) => {
         const pkg = row.original;
@@ -114,13 +103,13 @@ export default function PackageTable({
         headerClassName: 'md:w-[200px]',
       },
     }),
-  ];
+  ]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data: packages,
-    getCoreRowModel: getCoreRowModel(),
+    features: basicFeatures,
   });
 
   return (
@@ -150,10 +139,7 @@ export default function PackageTable({
         <TableBody>
           {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map(row => (
-              <TableRow
-                data-state={row.getIsSelected() && 'selected'}
-                key={row.id}
-              >
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map(cell => (
                   <TableCell
                     className={cell.column.columnDef.meta?.cellClassName}

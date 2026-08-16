@@ -1,12 +1,6 @@
 'use client';
 
-import {
-  createColumnHelper,
-  flexRender,
-  getCoreRowModel,
-  getExpandedRowModel,
-  useReactTable,
-} from '@tanstack/react-table';
+import {createColumnHelper, flexRender, useTable} from '@tanstack/react-table';
 import {ChevronDown, ChevronRight, ChevronsUpDown, Info} from 'lucide-react';
 import {Fragment} from 'react';
 
@@ -24,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import {basicFeatures, expandingFeatures} from '@/lib/table';
 import type {Mirror, MirrorBaseline, RepoCheck} from '@/lib/types';
 import {readableDuration} from '@/lib/utils';
 
@@ -35,9 +30,17 @@ interface MirrorslistTableProps {
   mirrors: Mirror[];
 }
 
-const baselineColumnHelper = createColumnHelper<MirrorBaseline>();
-const mirrorColumnHelper = createColumnHelper<Mirror>();
-const checkColumnHelper = createColumnHelper<RepoCheck>();
+const baselineColumnHelper = createColumnHelper<
+  typeof basicFeatures,
+  MirrorBaseline
+>();
+const mirrorColumnHelper = createColumnHelper<
+  typeof expandingFeatures,
+  Mirror
+>();
+const checkColumnHelper = createColumnHelper<typeof basicFeatures, RepoCheck>();
+
+const alwaysExpandable = () => true;
 
 export default function MirrorslistTable({
   baselines,
@@ -45,7 +48,7 @@ export default function MirrorslistTable({
 }: MirrorslistTableProps) {
   'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
 
-  const mirrorColumns = [
+  const mirrorColumns = mirrorColumnHelper.columns([
     mirrorColumnHelper.accessor(row => new URL(row.url).hostname, {
       cell: ({getValue, row}) => (
         <div className="flex items-center gap-2">
@@ -101,15 +104,14 @@ export default function MirrorslistTable({
         headerClassName: 'md:w-[200px]',
       },
     }),
-  ];
+  ]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
-  const mirrorsTable = useReactTable({
+  const mirrorsTable = useTable({
     columns: mirrorColumns,
     data: mirrors,
-    getCoreRowModel: getCoreRowModel(),
-    getExpandedRowModel: getExpandedRowModel(),
-    getRowCanExpand: () => true,
+    features: expandingFeatures,
+    getRowCanExpand: alwaysExpandable,
   });
 
   return (
@@ -144,7 +146,6 @@ export default function MirrorslistTable({
                   <Fragment key={row.id}>
                     <TableRow
                       className="cursor-pointer hover:bg-muted/50"
-                      data-state={row.getIsSelected() && 'selected'}
                       onClick={row.getToggleExpandedHandler()}
                     >
                       {row.getVisibleCells().map(cell => (
@@ -217,7 +218,7 @@ export default function MirrorslistTable({
 function BaselinesTable({baselines}: {baselines: MirrorBaseline[]}) {
   'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
 
-  const columns = [
+  const columns = baselineColumnHelper.columns([
     baselineColumnHelper.accessor('path', {
       header: 'Path',
       meta: {
@@ -231,13 +232,13 @@ function BaselinesTable({baselines}: {baselines: MirrorBaseline[]}) {
         headerClassName: 'md:min-w-[300px]',
       },
     }),
-  ];
+  ]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data: baselines,
-    getCoreRowModel: getCoreRowModel(),
+    features: basicFeatures,
   });
 
   return (
@@ -266,10 +267,7 @@ function BaselinesTable({baselines}: {baselines: MirrorBaseline[]}) {
       <TableBody>
         {table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map(row => (
-            <TableRow
-              data-state={row.getIsSelected() && 'selected'}
-              key={row.id}
-            >
+            <TableRow key={row.id}>
               {row.getVisibleCells().map(cell => (
                 <TableCell
                   className={cell.column.columnDef.meta?.cellClassName}
@@ -302,7 +300,7 @@ function readableLag(seconds: null | number): string {
 function RepoChecksTable({checks}: {checks: RepoCheck[]}) {
   'use no memo'; // TODO: https://github.com/TanStack/table/issues/6137
 
-  const columns = [
+  const columns = checkColumnHelper.columns([
     checkColumnHelper.accessor('path', {
       header: 'Repo Path',
     }),
@@ -330,13 +328,13 @@ function RepoChecksTable({checks}: {checks: RepoCheck[]}) {
       },
       header: 'Status',
     }),
-  ];
+  ]);
 
   // eslint-disable-next-line react-hooks/incompatible-library
-  const table = useReactTable({
+  const table = useTable({
     columns,
     data: checks,
-    getCoreRowModel: getCoreRowModel(),
+    features: basicFeatures,
   });
 
   return (

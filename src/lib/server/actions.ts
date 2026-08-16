@@ -30,7 +30,7 @@ function forwardedHeaders(): Headers {
  * Retrieves detailed information for a specific package.
  */
 export const getPackageDetails = createServerFn({method: 'GET'})
-  .inputValidator(PackageDetailsPathParamsSchema)
+  .validator(PackageDetailsPathParamsSchema)
   .handler(async ({data}): Promise<PackageDetailsResponse> => {
     const {arch, pkgname, repo} = data satisfies PackageDetailsPathParams;
     const path = `/v1/package/${repo}/${arch}/${pkgname}`;
@@ -43,7 +43,7 @@ export const getPackageDetails = createServerFn({method: 'GET'})
  * Retrieves the list of files for a specific package.
  */
 export const getPackageFiles = createServerFn({method: 'GET'})
-  .inputValidator(PackageDetailsPathParamsSchema)
+  .validator(PackageDetailsPathParamsSchema)
   .handler(async ({data}): Promise<PackageDetailFilesResponse> => {
     const {arch, pkgname, repo} = data satisfies PackageDetailsPathParams;
     const path = `/v1/package/${repo}/${arch}/${pkgname}/files`;
@@ -56,7 +56,7 @@ export const getPackageFiles = createServerFn({method: 'GET'})
  * Retrieves the list of split packages for a given base package.
  */
 export const getSplitPackages = createServerFn({method: 'GET'})
-  .inputValidator(SplitPackagesQueryParamsSchema)
+  .validator(SplitPackagesQueryParamsSchema)
   .handler(async ({data}): Promise<SplitPackagesResponse> => {
     const {pkgbase, repo} = data satisfies SplitPackagesQueryParams;
     const path = `/v1/split/${repo}/${pkgbase}`;
@@ -69,7 +69,7 @@ export const getSplitPackages = createServerFn({method: 'GET'})
  * Searches for packages across all repositories based on query parameters.
  */
 export const searchPackages = createServerFn({method: 'GET'})
-  .inputValidator(PackagesSearchQueryParamsSchema)
+  .validator(PackagesSearchQueryParamsSchema)
   .handler(async ({data}): Promise<PackageSearchResponse> => {
     const params = data satisfies PackagesSearchQueryParams;
     const query = new URLSearchParams();
@@ -98,7 +98,7 @@ const SourceUrlInputSchema = z.object({
  * Retrieves the source URL for a package (PKGBUILD, AUR, or Arch GitLab).
  */
 export const getSourceUrl = createServerFn({method: 'GET'})
-  .inputValidator(SourceUrlInputSchema)
+  .validator(SourceUrlInputSchema)
   .handler(async ({data}) => {
     return computeSourceUrl(data);
   });

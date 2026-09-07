@@ -168,12 +168,7 @@ function BadgeLinkList({items}: {items: string[]}) {
   return (
     <div className="flex flex-wrap gap-1">
       {items.map(item => (
-        <Badge
-          asChild
-          className="max-w-full whitespace-normal break-words"
-          key={item}
-          variant="secondary"
-        >
+        <Badge asChild key={item} variant="secondary">
           <Link
             search={{
               search: getSearch(item),
@@ -195,11 +190,7 @@ function BadgeList({items}: {items: string[]}) {
   return (
     <div className="flex flex-wrap gap-1">
       {items.map(item => (
-        <Badge
-          className="max-w-full whitespace-normal break-words"
-          key={item}
-          variant="secondary"
-        >
+        <Badge key={item} variant="secondary">
           {item}
         </Badge>
       ))}
@@ -218,7 +209,7 @@ function DetailRow({
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-2 py-3 border-b last:border-b-0">
       <dt className="font-semibold text-muted-foreground">{label}</dt>
-      <dd className="md:col-span-3 min-w-0">{children}</dd>
+      <dd className="md:col-span-3">{children}</dd>
     </div>
   );
 }

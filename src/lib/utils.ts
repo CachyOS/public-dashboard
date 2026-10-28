@@ -33,7 +33,6 @@ export function convertURLSearchParamsToObject(
   return result;
 }
 
-
 export const CACHYOS_DOWNLOAD_BASE = 'https://mirror.zyner.org/cachyos';
 
 /**
